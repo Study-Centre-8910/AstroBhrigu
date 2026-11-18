@@ -1,1 +1,1749 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ASTRO BHRIGU - वैदिक कुंडली एवं ग्रह विश्लेषण कार्यक्षेत्र</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            cream: '#FAF8F5',
+            card: '#FFFFFF',
+            borderWarm: '#EAE4DC',
+            terracotta: '#B85D3B',
+            terracottaHover: '#9E4D2F',
+            terracottaSoft: '#F5EAE4',
+            charcoal: '#1F1E1C',
+            muted: '#6E6A63'
+          },
+          fontFamily: {
+            serifTitle: ['Cinzel', 'Georgia', 'serif'],
+            sansUi: ['Inter', 'Noto Sans Devanagari', 'sans-serif']
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body {
+      background-color: #FAF8F5;
+      color: #1F1E1C;
+      font-family: 'Inter', 'Noto Sans Devanagari', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .soft-shadow {
+      box-shadow: 0 4px 20px -2px rgba(31, 30, 28, 0.05), 0 1px 4px -1px rgba(31, 30, 28, 0.03);
+    }
+    .card-hover {
+      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+    }
+    .card-hover:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 26px -4px rgba(31, 30, 28, 0.08);
+      border-color: #D9CEC1;
+    }
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    input[type=number] {
+      -moz-appearance: textfield;
+    }
+    .chart-planet-item {
+      cursor: pointer;
+      transition: opacity 0.15s ease;
+    }
+    .astro-editable .chart-planet-item:hover {
+      opacity: 0.72;
+      text-decoration: underline;
+    }
+    .astro-editable .rashi-num-node {
+      cursor: context-menu;
+    }
+    .astro-editable .rashi-num-node:hover {
+      fill: #B85D3B;
+      font-weight: 700;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in {
+      animation: fadeIn 0.22s ease-out forwards;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col selection:bg-terracottaSoft selection:text-terracotta">
 
+  <!-- Top Navigation Bar -->
+  <header class="w-full px-4 sm:px-8 py-4 flex items-center justify-between">
+    <div class="flex items-center gap-2">
+      <div id="astroBadge" class="hidden items-center gap-2 bg-[#2B2623] text-[#F7EFEA] text-xs font-medium px-3 py-1.5 rounded-full shadow-sm">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span data-i18n="astroModeActive">एस्ट्रोलॉजर मोड सक्रिय</span>
+        <button onclick="exitAstrologerMode()" class="ml-1 text-[#D4C5BC] hover:text-white underline text-[11px]" data-i18n="exitAstro">बंद करें</button>
+      </div>
+    </div>
+
+    <button id="langToggleBtn" onclick="toggleLanguage()" class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/80 hover:bg-white border border-borderWarm text-xs sm:text-sm font-medium text-charcoal shadow-xs transition cursor-pointer">
+      <svg class="w-4 h-4 text-muted" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="9"></circle>
+        <path d="M3.6 9h16.8M3.6 15h16.8M11.5 3a17 17 0 0 0 0 18M12.5 3a17 17 0 0 1 0 18"></path>
+      </svg>
+      <span>English / हिंदी</span>
+    </button>
+  </header>
+
+  <!-- Toast Notification Banner -->
+  <div id="toastBox" class="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 pointer-events-none opacity-0 transition-all duration-300">
+    <div id="toastMsg" class="bg-charcoal text-white text-xs sm:text-sm font-medium px-4 py-2.5 rounded-full shadow-lg flex items-center gap-2"></div>
+  </div>
+
+  <!-- MAIN CONTENT CONTAINER -->
+  <main class="flex-1 flex flex-col items-center justify-center px-4 pb-12">
+
+    <!-- VIEW 1: HOME PAGE -->
+    <section id="homeView" class="w-full max-w-2xl flex flex-col items-center text-center animate-fade-in">
+      <div id="tridentTrigger" onclick="handleTridentClick()" title="Astro Bhrigu" class="w-16 h-16 sm:w-[72px] sm:h-[72px] rounded-2xl bg-[#F3E9E1] border border-[#E6D7CB] flex items-center justify-center mb-5 cursor-pointer select-none shadow-xs hover:scale-[1.03] active:scale-95 transition">
+        <svg class="w-8 h-8 sm:w-9 sm:h-9 text-terracotta" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M24 6V42" />
+          <path d="M14 14C14 20 18 23 24 23C30 23 34 20 34 14" />
+          <path d="M14 14L12 16M14 14L16 16" />
+          <path d="M34 14L32 16M34 14L36 16" />
+          <path d="M24 6L21.5 9M24 6L26.5 9" />
+          <path d="M18 33H30" />
+        </svg>
+      </div>
+
+      <h1 class="font-serifTitle text-3xl sm:text-[38px] font-bold tracking-[0.08em] text-charcoal uppercase">
+        ASTRO BHRIGU
+      </h1>
+      <p class="mt-2 text-sm sm:text-base text-muted font-normal" data-i18n="appSubtitle">
+        वैदिक कुंडली एवं ग्रह विश्लेषण कार्यक्षेत्र
+      </p>
+
+      <div class="mt-10 w-full grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 text-left">
+        <button onclick="openBirthForm()" class="group bg-card border border-borderWarm rounded-2xl p-6 soft-shadow card-hover flex flex-col items-start cursor-pointer focus:outline-none">
+          <div class="w-10 h-10 rounded-xl bg-[#FBF0E9] text-terracotta flex items-center justify-center mb-4 group-hover:bg-terracotta group-hover:text-white transition">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 5v14M5 12h14" />
+            </svg>
+          </div>
+          <h2 class="text-base sm:text-lg font-semibold text-charcoal" data-i18n="createNewTitle">नई कुंडली बनाएं</h2>
+          <p class="mt-1.5 text-xs sm:text-[13px] text-muted leading-relaxed" data-i18n="createNewDesc">
+            जातक के जन्म विवरण से नई कुंडली बनाएं।
+          </p>
+        </button>
+
+        <button onclick="openSavedModal()" class="group bg-card border border-borderWarm rounded-2xl p-6 soft-shadow card-hover flex flex-col items-start cursor-pointer focus:outline-none">
+          <div class="w-10 h-10 rounded-xl bg-[#EEF3FA] text-[#3B6CB7] flex items-center justify-center mb-4 group-hover:bg-[#3B6CB7] group-hover:text-white transition">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" />
+            </svg>
+          </div>
+          <div class="flex items-center justify-between w-full">
+            <h2 class="text-base sm:text-lg font-semibold text-charcoal" data-i18n="savedChartsTitle">सेव कुंडलियाँ</h2>
+            <span id="savedCountBadge" class="text-xs font-medium px-2 py-0.5 rounded-full bg-[#F4F1EC] text-muted">0</span>
+          </div>
+          <p class="mt-1.5 text-xs sm:text-[13px] text-muted leading-relaxed" data-i18n="savedChartsDesc">
+            पहले से सेव की गई कुंडलियों को खोलें या एक्सपोर्ट करें।
+          </p>
+        </button>
+      </div>
+    </section>
+
+    <!-- VIEW 2: BIRTH DETAILS FORM -->
+    <section id="birthFormView" class="hidden w-full max-w-xl bg-card border border-borderWarm rounded-2xl p-6 sm:p-8 soft-shadow animate-fade-in">
+      <div class="flex items-start justify-between">
+        <div>
+          <h2 class="text-xl sm:text-2xl font-bold text-charcoal" data-i18n="birthDetailsHeading">जन्म विवरण</h2>
+          <p class="mt-1 text-xs sm:text-sm text-muted" data-i18n="birthDetailsSub">
+            सटीक कुंडली गणना के लिए विवरण दर्ज करें
+          </p>
+        </div>
+        <button onclick="goHome()" title="Close" class="p-2 rounded-xl text-muted hover:text-charcoal hover:bg-[#F5F2ED] transition cursor-pointer">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <form id="kundliForm" onsubmit="handleGenerateChart(event)" class="mt-6 space-y-5">
+        <div>
+          <label class="block text-xs sm:text-sm font-medium text-charcoal mb-1.5">
+            <span data-i18n="nativeNameLabel">जातक का नाम</span> <span class="text-terracotta">*</span>
+          </label>
+          <input id="nativeNameInput" type="text" required data-placeholder-hi="जैसे: आरव शर्मा" data-placeholder-en="e.g., Aarav Sharma" placeholder="जैसे: आरव शर्मा" class="w-full px-3.5 py-2.5 rounded-xl border border-borderWarm bg-white text-sm text-charcoal focus:outline-none focus:border-terracotta focus:ring-2 focus:ring-terracotta/15 transition" />
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs sm:text-sm font-medium text-charcoal mb-1.5">
+              <span data-i18n="dobLabel">जन्म तिथि (दिन-माह-वर्ष)</span> <span class="text-terracotta">*</span>
+            </label>
+            <div class="flex items-center rounded-xl border border-borderWarm bg-white px-2.5 py-1.5 focus-within:border-terracotta focus-within:ring-2 focus-within:ring-terracotta/15 transition">
+              <input id="dobDay" type="text" inputmode="numeric" maxlength="2" placeholder="दिन" class="w-10 text-center text-sm text-charcoal focus:outline-none bg-transparent" oninput="handleDateAutoTab(this, 'dobMonth', 2)" />
+              <span class="text-muted/60 select-none">/</span>
+              <input id="dobMonth" type="text" inputmode="numeric" maxlength="2" placeholder="माह" class="w-10 text-center text-sm text-charcoal focus:outline-none bg-transparent" oninput="handleDateAutoTab(this, 'dobYear', 2)" onkeydown="handleBackspaceNav(event, this, 'dobDay')" />
+              <span class="text-muted/60 select-none">/</span>
+              <input id="dobYear" type="text" inputmode="numeric" maxlength="4" placeholder="वर्ष" class="w-14 text-center text-sm text-charcoal focus:outline-none bg-transparent" oninput="handleYearInput(this)" onkeydown="handleBackspaceNav(event, this, 'dobMonth')" />
+
+              <div class="ml-auto relative flex items-center">
+                <button type="button" onclick="openNativeDatePicker()" title="Select from Calendar" class="p-1.5 rounded-lg text-muted hover:text-terracotta hover:bg-terracottaSoft/50 transition cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.9" viewBox="0 0 24 24">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                  </svg>
+                </button>
+                <input id="hiddenDatePicker" type="date" class="sr-only" onchange="syncFromDatePicker(this.value)" />
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs sm:text-sm font-medium text-charcoal mb-1.5">
+              <span data-i18n="tobLabel">जन्म समय</span> <span class="text-terracotta">*</span>
+            </label>
+            <div class="flex items-center rounded-xl border border-borderWarm bg-white px-2.5 py-1.5 focus-within:border-terracotta focus-within:ring-2 focus-within:ring-terracotta/15 transition">
+              <input id="tobHour" type="text" inputmode="numeric" maxlength="2" placeholder="12" class="w-9 text-center text-sm text-charcoal focus:outline-none bg-transparent" oninput="handleTimeAutoTab(this, 'tobMinute', 2)" />
+              <span class="text-muted font-medium select-none">:</span>
+              <input id="tobMinute" type="text" inputmode="numeric" maxlength="2" placeholder="00" class="w-9 text-center text-sm text-charcoal focus:outline-none bg-transparent" oninput="handleTimeAutoTab(this, 'tobAmPm', 2)" onkeydown="handleBackspaceNav(event, this, 'tobHour')" />
+              <select id="tobAmPm" class="ml-1 text-xs sm:text-sm font-medium text-charcoal bg-[#F7F4EF] rounded-lg px-2 py-1 focus:outline-none focus:ring-1 focus:ring-terracotta cursor-pointer">
+                <option value="AM">AM</option>
+                <option value="PM">PM</option>
+              </select>
+
+              <div class="ml-auto relative flex items-center">
+                <button type="button" onclick="openNativeTimePicker()" title="Select from Clock" class="p-1.5 rounded-lg text-muted hover:text-terracotta hover:bg-terracottaSoft/50 transition cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.9" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="9"></circle>
+                    <polyline points="12 7 12 12 15 14"></polyline>
+                  </svg>
+                </button>
+                <input id="hiddenTimePicker" type="time" class="sr-only" onchange="syncFromTimePicker(this.value)" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="relative">
+          <label class="block text-xs sm:text-sm font-medium text-charcoal mb-1.5">
+            <span data-i18n="pobLabel">जन्म स्थान</span> <span class="text-terracotta">*</span>
+          </label>
+          <div class="relative">
+            <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.9" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 21s-6-5.33-6-10a6 6 0 1112 0c0 4.67-6 10-6 10z" />
+                <circle cx="12" cy="11" r="2.2" />
+              </svg>
+            </span>
+            <input id="pobInput" type="text" autocomplete="off" required data-placeholder-hi="शहर का नाम लिखें (जैसे: भिंड, मध्य प्रदेश)" data-placeholder-en="Type city name (e.g., Bhind, Madhya Pradesh)" placeholder="शहर का नाम लिखें (जैसे: भिंड, मध्य प्रदेश)" class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-borderWarm bg-white text-sm text-charcoal focus:outline-none focus:border-terracotta focus:ring-2 focus:ring-terracotta/15 transition" oninput="handleCitySearch(this.value)" onfocus="handleCitySearch(this.value)" />
+          </div>
+
+          <div id="cityDropdown" class="hidden absolute z-30 left-0 right-0 mt-1.5 bg-white border border-borderWarm rounded-xl shadow-lg max-h-56 overflow-y-auto divide-y divide-[#F3EFEA]"></div>
+          <p id="selectedCoordsHint" class="mt-1.5 text-[11px] text-muted flex items-center gap-1.5"></p>
+        </div>
+
+        <div id="formErrorBox" class="hidden text-xs text-red-600 bg-red-50 border border-red-200 rounded-xl px-3.5 py-2.5"></div>
+
+        <div class="pt-3 flex items-center justify-end gap-3 border-t border-[#F2EDE6]">
+          <button type="button" onclick="goHome()" class="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-medium text-muted hover:text-charcoal hover:bg-[#F5F2ED] transition cursor-pointer" data-i18n="cancelBtn">
+            रद्द करें
+          </button>
+          <button type="submit" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-terracotta hover:bg-terracottaHover text-white text-xs sm:text-sm font-medium shadow-xs transition cursor-pointer">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3z" />
+            </svg>
+            <span data-i18n="generateBtn">कुंडली बनाएं</span>
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <!-- VIEW 3: NORTH INDIAN KUNDLI CHART VIEW -->
+    <section id="chartView" class="hidden w-full max-w-4xl flex flex-col items-center animate-fade-in">
+      <div class="w-full flex flex-wrap items-center justify-between gap-3 mb-4 px-1">
+        <div class="flex items-center gap-2.5">
+          <button onclick="backToBirthForm()" data-title-hi="विवरण बदलें" data-title-en="Edit Details" title="विवरण बदलें" class="p-2 rounded-xl bg-white border border-borderWarm text-charcoal hover:bg-[#F5F2ED] transition cursor-pointer">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+          <button onclick="goHome()" data-title-hi="होम पेज" data-title-en="Home Page" title="होम पेज" class="p-2 rounded-xl bg-white border border-borderWarm text-charcoal hover:bg-[#F5F2ED] transition cursor-pointer">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 10.5L12 3l9 7.5V20a1 1 0 01-1 1h-5v-6H9v6H4a1 1 0 01-1-1v-9.5z" />
+            </svg>
+          </button>
+          <div class="ml-1">
+            <h2 id="chartNativeName" class="text-sm sm:text-base font-bold text-charcoal leading-tight">—</h2>
+            <p id="chartNativeMeta" class="text-[11px] sm:text-xs text-muted mt-0.5">—</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button onclick="openGuideModal()" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white border border-borderWarm text-xs sm:text-sm font-medium text-charcoal hover:bg-[#F7F4EF] transition cursor-pointer">
+            <svg class="w-4 h-4 text-muted" fill="none" stroke="currentColor" stroke-width="1.9" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="9"></circle>
+              <path d="M12 16v-4M12 8h.01"></path>
+            </svg>
+            <span data-i18n="guideBtn">गाइड</span>
+          </button>
+
+          <button onclick="shareChartData()" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white border border-borderWarm text-xs sm:text-sm font-medium text-charcoal hover:bg-[#F7F4EF] transition cursor-pointer" title="Share Details">
+            <svg class="w-4 h-4 text-muted" fill="none" stroke="currentColor" stroke-width="1.9" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"></path>
+              <polyline points="16 6 12 2 8 6"></polyline>
+              <line x1="12" y1="2" x2="12" y2="15"></line>
+            </svg>
+            <span data-i18n="shareBtn">शेयर</span>
+          </button>
+
+          <button onclick="saveCurrentChart()" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white border border-borderWarm text-xs sm:text-sm font-medium text-charcoal hover:bg-[#F7F4EF] transition cursor-pointer">
+            <svg class="w-4 h-4 text-muted" fill="none" stroke="currentColor" stroke-width="1.9" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M17 21H7a2 2 0 01-2-2V5a2 2 0 012-2h8l4 4v12a2 2 0 01-2 2z" />
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 3v5h6V3M9 21v-6h6v6" />
+            </svg>
+            <span data-i18n="saveBtn">सेव करें</span>
+          </button>
+
+          <button onclick="downloadChartPng()" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#2F6FED] hover:bg-[#255BD1] text-white text-xs sm:text-sm font-medium shadow-xs transition cursor-pointer">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3" />
+            </svg>
+            <span data-i18n="pngBtn">पीएनजी</span>
+          </button>
+        </div>
+      </div>
+
+      <div id="astroHintStrip" class="hidden w-full mb-3 px-4 py-2.5 rounded-xl bg-[#FBF3ED] border border-[#E8D2C3] text-xs text-[#6E3B23] flex flex-wrap items-center justify-between gap-2">
+        <span data-i18n="astroEditHint">
+          एस्ट्रोलॉजर मोड: किसी भी ग्रह पर क्लिक करके उसे बदलें/रंग दें, या राशि संख्या पर राइट-क्लिक करके राशि व नए ग्रह जोड़ें।
+        </span>
+      </div>
+
+      <div class="w-full bg-card border border-borderWarm rounded-2xl p-4 sm:p-7 soft-shadow flex flex-col items-center">
+        <div class="w-full flex items-center justify-between pb-3 mb-4 border-b border-[#F2EDE6]">
+          <div class="flex items-center gap-2 text-xs sm:text-sm">
+            <span class="w-2.5 h-2.5 rounded-full bg-terracotta inline-block"></span>
+            <span class="font-semibold text-charcoal" data-i18n="chartBannerTitle">वैदिक कुंडली चित्रण:</span>
+            <span class="text-muted hidden sm:inline" data-i18n="chartBannerSub">लग्न एवं नवग्रहों की सटीक स्थिति।</span>
+          </div>
+          <button onclick="openGuideModal()" class="text-muted hover:text-charcoal transition cursor-pointer" title="Color & Status Info">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.9" viewBox="0 0 24 24">
+              <rect x="3" y="3" width="18" height="18" rx="4"></rect>
+              <path d="M12 16v-4M12 8h.01"></path>
+            </svg>
+          </button>
+        </div>
+
+        <div id="kundliSvgWrapper" class="w-full max-w-[540px] aspect-square flex items-center justify-center my-1"></div>
+
+        <div class="mt-4 mb-1">
+          <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#24211E] text-[#FAF8F5] text-xs font-medium shadow-xs">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#E39A7B]"></span>
+            <span data-i18n="accurateBadge">सटीक वैदिक कुंडली चार्ट है यह</span>
+          </span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- MODAL: SAVED CHARTS -->
+  <div id="savedModal" class="hidden fixed inset-0 z-40 bg-black/40 backdrop-blur-[2px] flex items-center justify-center p-4">
+    <div class="bg-white border border-borderWarm rounded-2xl w-full max-w-lg p-6 soft-shadow animate-fade-in">
+      <div class="flex items-center justify-between pb-3 border-b border-[#F2EDE6]">
+        <div>
+          <h3 class="text-lg font-bold text-charcoal" data-i18n="savedModalTitle">सेव की गई कुंडलियाँ</h3>
+          <p class="text-xs text-muted" data-i18n="savedModalSub">खोलने के लिए किसी कुंडली पर क्लिक करें</p>
+        </div>
+        <button onclick="closeModal('savedModal')" class="p-2 rounded-xl text-muted hover:text-charcoal hover:bg-[#F5F2ED] cursor-pointer">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <div id="savedListContainer" class="mt-4 max-h-80 overflow-y-auto space-y-2.5 pr-1"></div>
+    </div>
+  </div>
+
+  <!-- MODAL: PLANET COLOR & STATUS GUIDE -->
+  <div id="guideModal" class="hidden fixed inset-0 z-40 bg-black/40 backdrop-blur-[2px] flex items-center justify-center p-4">
+    <div class="bg-white border border-borderWarm rounded-2xl w-full max-w-md p-6 soft-shadow animate-fade-in">
+      <div class="flex items-center justify-between pb-3 border-b border-[#F2EDE6]">
+        <h3 class="text-lg font-bold text-charcoal" data-i18n="guideModalTitle">ग्रह स्थिति एवं रंग निर्देशिका</h3>
+        <button onclick="closeModal('guideModal')" class="p-2 rounded-xl text-muted hover:text-charcoal hover:bg-[#F5F2ED] cursor-pointer">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <div class="mt-4 space-y-3 text-xs sm:text-sm">
+        <div class="flex items-center justify-between p-2.5 rounded-xl bg-[#FAF8F5] border border-[#EFEAE2]">
+          <span class="font-semibold" style="color:#15803D;" data-i18n="guideExalted">उच्च / मूल त्रिकोण / स्वाग्रही</span>
+          <span class="text-muted text-xs" data-i18n="guideExaltedDesc">हरा (Green)</span>
+        </div>
+        <div class="flex items-center justify-between p-2.5 rounded-xl bg-[#FAF8F5] border border-[#EFEAE2]">
+          <span class="font-semibold" style="color:#EAB308;" data-i18n="guideOwn">मित्र राशि / अच्छा फल</span>
+          <span class="text-muted text-xs" data-i18n="guideOwnDesc">शुद्ध पीला / गोल्डन (Pure Yellow)</span>
+        </div>
+        <div class="flex items-center justify-between p-2.5 rounded-xl bg-[#FAF8F5] border border-[#EFEAE2]">
+          <span class="font-semibold" style="color:#3B82F6;" data-i18n="guideNormal">तटस्थ (Neutral)</span>
+          <span class="text-muted text-xs" data-i18n="guideNormalDesc">नीला (Blue)</span>
+        </div>
+        <div class="flex items-center justify-between p-2.5 rounded-xl bg-[#FAF8F5] border border-[#EFEAE2]">
+          <span class="font-semibold" style="color:#EC4899;" data-i18n="guideMildBad">थोड़ा खराब</span>
+          <span class="text-muted text-xs" data-i18n="guideMildBadDesc">गुलाबी (Pink)</span>
+        </div>
+        <div class="flex items-center justify-between p-2.5 rounded-xl bg-[#FAF8F5] border border-[#EFEAE2]">
+          <span class="font-semibold" style="color:#F97316;" data-i18n="guideModBad">ज्यादा खराब</span>
+          <span class="text-muted text-xs" data-i18n="guideModBadDesc">नारंगी (Orange)</span>
+        </div>
+        <div class="flex items-center justify-between p-2.5 rounded-xl bg-[#FAF8F5] border border-[#EFEAE2]">
+          <span class="font-semibold" style="color:#DC2626;" data-i18n="guideDebilitated">अत्यधिक खराब / नीच</span>
+          <span class="text-muted text-xs" data-i18n="guideDebilitatedDesc">लाल (Red)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ASTROLOGER UID UNLOCK -->
+  <div id="astroUidModal" class="hidden fixed inset-0 z-50 bg-black/45 backdrop-blur-[2px] flex items-center justify-center p-4">
+    <div class="bg-white border border-borderWarm rounded-2xl w-full max-w-sm p-6 soft-shadow animate-fade-in">
+      <div class="flex items-center justify-between pb-2">
+        <div class="flex items-center gap-2">
+          <span class="w-8 h-8 rounded-lg bg-terracottaSoft text-terracotta flex items-center justify-center font-bold">🔱</span>
+          <h3 class="text-base font-bold text-charcoal" data-i18n="astroUnlockTitle">एस्ट्रोलॉजर मोड अनलॉक</h3>
+        </div>
+        <button onclick="closeModal('astroUidModal')" class="p-1.5 rounded-lg text-muted hover:text-charcoal cursor-pointer">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <p class="text-xs text-muted mt-1" data-i18n="astroUnlockSub">
+        चार्ट संपादन अधिकार के लिए अपनी एस्ट्रोलॉजर यूआईडी दर्ज करें।
+      </p>
+      <form onsubmit="submitAstroUid(event)" class="mt-4 space-y-3">
+        <input id="astroUidInput" type="text" autocomplete="off" placeholder="Astrologer UID" class="w-full px-3.5 py-2.5 rounded-xl border border-borderWarm text-sm text-charcoal uppercase tracking-wider focus:outline-none focus:border-terracotta" />
+        <p id="astroUidError" class="hidden text-xs text-red-600"></p>
+        <div class="flex justify-end gap-2 pt-1">
+          <button type="button" onclick="closeModal('astroUidModal')" class="px-3.5 py-2 rounded-xl text-xs font-medium text-muted hover:bg-[#F5F2ED] cursor-pointer" data-i18n="cancelBtn">रद्द करें</button>
+          <button type="submit" class="px-4 py-2 rounded-xl bg-terracotta hover:bg-terracottaHover text-white text-xs font-medium cursor-pointer" data-i18n="unlockBtn">अनलॉक करें</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: ASTROLOGER PLANET EDITOR -->
+  <div id="planetEditorModal" class="hidden fixed inset-0 z-50 bg-black/40 backdrop-blur-[2px] flex items-center justify-center p-4">
+    <div class="bg-white border border-borderWarm rounded-2xl w-full max-w-sm p-5 soft-shadow animate-fade-in">
+      <div class="flex items-center justify-between pb-2.5 border-b border-[#F2EDE6]">
+        <h3 class="text-base font-bold text-charcoal" data-i18n="editPlanetTitle">ग्रह संपादित करें</h3>
+        <button onclick="closeModal('planetEditorModal')" class="p-1.5 rounded-lg text-muted hover:text-charcoal cursor-pointer">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="mt-3.5 space-y-3.5 text-xs sm:text-sm">
+        <div>
+          <label class="block text-xs font-medium text-muted mb-1" data-i18n="selectPlanetLabel">ग्रह चुनें / बदलें</label>
+          <select id="editPlanetKey" class="w-full px-3 py-2 rounded-xl border border-borderWarm bg-white text-charcoal focus:outline-none focus:border-terracotta"></select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-muted mb-1.5" data-i18n="planetColorLabel">ग्रह का रंग</label>
+          <div class="flex items-center gap-2 flex-wrap">
+            <button type="button" onclick="setPlanetColorPreset('#15803D')" class="w-6 h-6 rounded-full border border-gray-300 cursor-pointer" style="background:#15803D" title="Green"></button>
+            <button type="button" onclick="setPlanetColorPreset('#EAB308')" class="w-6 h-6 rounded-full border border-gray-300 cursor-pointer" style="background:#EAB308" title="Pure Yellow"></button>
+            <button type="button" onclick="setPlanetColorPreset('#3B82F6')" class="w-6 h-6 rounded-full border border-gray-300 cursor-pointer" style="background:#3B82F6" title="Blue"></button>
+            <button type="button" onclick="setPlanetColorPreset('#EC4899')" class="w-6 h-6 rounded-full border border-gray-300 cursor-pointer" style="background:#EC4899" title="Pink"></button>
+            <button type="button" onclick="setPlanetColorPreset('#F97316')" class="w-6 h-6 rounded-full border border-gray-300 cursor-pointer" style="background:#F97316" title="Orange"></button>
+            <button type="button" onclick="setPlanetColorPreset('#DC2626')" class="w-6 h-6 rounded-full border border-gray-300 cursor-pointer" style="background:#DC2626" title="Red"></button>
+            <input id="editPlanetColor" type="color" value="#15803D" class="w-7 h-7 rounded cursor-pointer border-0 bg-transparent" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2.5 pt-1">
+          <label class="flex items-center gap-2 p-2.5 rounded-xl border border-borderWarm cursor-pointer hover:bg-[#FAF8F5]">
+            <input id="editPlanetVakri" type="checkbox" class="accent-terracotta w-4 h-4" />
+            <span class="text-xs font-medium" data-i18n="vakriLabel">वक्री (व / R)</span>
+          </label>
+          <label class="flex items-center gap-2 p-2.5 rounded-xl border border-borderWarm cursor-pointer hover:bg-[#FAF8F5]">
+            <input id="editPlanetAst" type="checkbox" class="accent-terracotta w-4 h-4" />
+            <span class="text-xs font-medium" data-i18n="astLabel">अस्त (अ / C)</span>
+          </label>
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-muted mb-1" data-i18n="tagColorLabel">वक्री / अस्त चिह्न का रंग</label>
+          <div class="flex items-center gap-2">
+            <button type="button" onclick="setTagColorPreset('#15803D')" class="w-5 h-5 rounded-full border border-gray-300 cursor-pointer" style="background:#15803D" title="Green"></button>
+            <button type="button" onclick="setTagColorPreset('#EAB308')" class="w-5 h-5 rounded-full border border-gray-300 cursor-pointer" style="background:#EAB308" title="Yellow"></button>
+            <button type="button" onclick="setTagColorPreset('#DC2626')" class="w-5 h-5 rounded-full border border-gray-300 cursor-pointer" style="background:#DC2626"></button>
+            <button type="button" onclick="setTagColorPreset('#2563EB')" class="w-5 h-5 rounded-full border border-gray-300 cursor-pointer" style="background:#2563EB"></button>
+            <input id="editTagColor" type="color" value="#15803D" class="w-6 h-6 rounded cursor-pointer border-0 bg-transparent" />
+          </div>
+        </div>
+
+        <div class="pt-3 flex items-center justify-between border-t border-[#F2EDE6]">
+          <button type="button" onclick="removeEditedPlanet()" class="px-3 py-2 rounded-xl text-xs font-medium text-red-600 hover:bg-red-50 transition cursor-pointer" data-i18n="removePlanetBtn">
+            ग्रह हटाएं
+          </button>
+          <div class="flex gap-2">
+            <button type="button" onclick="closeModal('planetEditorModal')" class="px-3 py-2 rounded-xl text-xs font-medium text-muted hover:bg-[#F5F2ED] cursor-pointer" data-i18n="cancelBtn">रद्द करें</button>
+            <button type="button" onclick="saveEditedPlanet()" class="px-4 py-2 rounded-xl bg-terracotta hover:bg-terracottaHover text-white text-xs font-medium cursor-pointer" data-i18n="applyBtn">लागू करें</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ASTROLOGER HOUSE / RASHI EDITOR -->
+  <div id="houseEditorModal" class="hidden fixed inset-0 z-50 bg-black/40 backdrop-blur-[2px] flex items-center justify-center p-4">
+    <div class="bg-white border border-borderWarm rounded-2xl w-full max-w-sm p-5 soft-shadow animate-fade-in">
+      <div class="flex items-center justify-between pb-2.5 border-b border-[#F2EDE6]">
+        <h3 id="houseEditorHeading" class="text-base font-bold text-charcoal" data-i18n="editHouseTitle">भाव एवं राशि संपादन</h3>
+        <button onclick="closeModal('houseEditorModal')" class="p-1.5 rounded-lg text-muted hover:text-charcoal cursor-pointer">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="mt-3.5 space-y-3.5 text-xs sm:text-sm">
+        <div>
+          <label class="block text-xs font-medium text-muted mb-1" data-i18n="changeRashiLabel">इस भाव की राशि संख्या बदलें (1-12)</label>
+          <select id="editHouseRashiSelect" class="w-full px-3 py-2 rounded-xl border border-borderWarm bg-white text-charcoal focus:outline-none focus:border-terracotta"></select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-muted mb-1" data-i18n="addPlanetLabel">इस भाव में ग्रह जोड़ें</label>
+          <div id="addPlanetArea"></div>
+        </div>
+
+        <div class="pt-3 flex justify-end gap-2 border-t border-[#F2EDE6]">
+          <button type="button" onclick="closeModal('houseEditorModal')" class="px-3 py-2 rounded-xl text-xs font-medium text-muted hover:bg-[#F5F2ED] cursor-pointer" data-i18n="cancelBtn">रद्द करें</button>
+          <button type="button" onclick="saveEditedHouse()" class="px-4 py-2 rounded-xl bg-terracotta hover:bg-terracottaHover text-white text-xs font-medium cursor-pointer" data-i18n="applyBtn">लागू करें</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <canvas id="exportCanvas" width="1200" height="1320" class="hidden"></canvas>
+
+  <script>
+    const I18N = {
+      hi: {
+        appSubtitle: 'वैदिक कुंडली एवं ग्रह विश्लेषण कार्यक्षेत्र',
+        createNewTitle: 'नई कुंडली बनाएं',
+        createNewDesc: 'जातक के जन्म विवरण से नई कुंडली बनाएं।',
+        savedChartsTitle: 'सेव कुंडलियाँ',
+        savedChartsDesc: 'पहले से सेव की गई कुंडलियों को खोलें या एक्सपोर्ट करें।',
+        birthDetailsHeading: 'जन्म विवरण',
+        birthDetailsSub: 'सटीक कुंडली गणना के लिए विवरण दर्ज करें',
+        nativeNameLabel: 'जातक का नाम',
+        dobLabel: 'जन्म तिथि (दिन-माह-वर्ष)',
+        tobLabel: 'जन्म समय',
+        pobLabel: 'जन्म स्थान',
+        cancelBtn: 'रद्द करें',
+        generateBtn: 'कुंडली बनाएं',
+        guideBtn: 'गाइड',
+        shareBtn: 'शेयर',
+        saveBtn: 'सेव करें',
+        pngBtn: 'पीएनजी',
+        chartBannerTitle: 'वैदिक कुंडली चित्रण:',
+        chartBannerSub: 'लग्न एवं नवग्रहों की सटीक स्थिति।',
+        accurateBadge: 'सटीक वैदिक कुंडली चार्ट है यह',
+        savedModalTitle: 'सेव की गई कुंडलियाँ',
+        savedModalSub: 'खोलने के लिए किसी कुंडली पर क्लिक करें',
+        noSavedCharts: 'अभी तक कोई कुंडली सेव नहीं की गई है।',
+        guideModalTitle: 'ग्रह स्थिति एवं रंग निर्देशिका',
+        guideExalted: 'उच्च / मूल त्रिकोण / स्वाग्रही',
+        guideExaltedDesc: 'हरा (Green)',
+        guideOwn: 'मित्र राशि / अच्छा फल',
+        guideOwnDesc: 'शुद्ध पीला / गोल्डन (Pure Yellow)',
+        guideNormal: 'तटस्थ (Neutral)',
+        guideNormalDesc: 'नीला (Blue)',
+        guideMildBad: 'थोड़ा खराब',
+        guideMildBadDesc: 'गुलाबी (Pink)',
+        guideModBad: 'ज्यादा खराब',
+        guideModBadDesc: 'नारंगी (Orange)',
+        guideDebilitated: 'अत्यधिक खराब / नीच',
+        guideDebilitatedDesc: 'लाल (Red)',
+        astroModeActive: 'एस्ट्रोलॉजर मोड सक्रिय',
+        exitAstro: 'बंद करें',
+        astroUnlockTitle: 'एस्ट्रोलॉजर मोड अनलॉक',
+        astroUnlockSub: 'चार्ट संपादन अधिकार के लिए अपनी एस्ट्रोलॉजर यूआईडी दर्ज करें।',
+        unlockBtn: 'अनलॉक करें',
+        astroEditHint: 'एस्ट्रोलॉजर मोड: किसी भी ग्रह पर क्लिक करके उसे बदलें/रंग दें, या राशि संख्या पर राइट-क्लिक करके राशि व नए ग्रह जोड़ें।',
+        editPlanetTitle: 'ग्रह संपादित करें',
+        selectPlanetLabel: 'ग्रह चुनें / बदलें',
+        planetColorLabel: 'ग्रह का रंग',
+        vakriLabel: 'वक्री (व / R)',
+        astLabel: 'अस्त (अ / C)',
+        tagColorLabel: 'वक्री / अस्त चिह्न का रंग',
+        removePlanetBtn: 'ग्रह हटाएं',
+        applyBtn: 'लागू करें',
+        editHouseTitle: 'भाव एवं राशि संपादन',
+        changeRashiLabel: 'इस भाव की राशि संख्या बदलें (1-12)',
+        addPlanetLabel: 'इस भाव में ग्रह जोड़ें',
+        allPlanetsPlacedMsg: 'सभी 9 ग्रह पहले से चार्ट में स्थित हैं। नया ग्रह जोड़ने के लिए पहले किसी भाव से ग्रह हटाएं।',
+        selectPlanetToAdd: '-- जोड़ने के लिए ग्रह चुनें --',
+        toastSaved: 'कुंडली सफलतापूर्वक सेव हो गई!',
+        toastShared: 'कुंडली विवरण क्लिपबोर्ड पर कॉपी हो गया!',
+        toastPng: 'कुंडली पीएनजी इमेज डाउनलोड हो गई!',
+        toastAstroUnlocked: 'एस्ट्रोलॉजर मोड सक्रिय हो गया है!',
+        toastAstroExited: 'एस्ट्रोलॉजर मोड बंद कर दिया गया।',
+        invalidUid: 'अमान्य एस्ट्रोलॉजर यूआईडी। कृपया सही यूआईडी दर्ज करें।',
+        errFillAll: 'कृपया जातक का नाम, सही जन्म तिथि, जन्म समय और जन्म स्थान भरें।',
+        openText: 'खोलें',
+        deleteText: 'हटाएं'
+      },
+      en: {
+        appSubtitle: 'Vedic Chart & Planet Analysis Workspace',
+        createNewTitle: 'Create New Chart',
+        createNewDesc: 'Generate a new birth chart from natal details.',
+        savedChartsTitle: 'Saved Charts',
+        savedChartsDesc: 'Open, edit or export saved charts.',
+        birthDetailsHeading: 'Birth Details',
+        birthDetailsSub: 'Enter details for accurate chart calculation',
+        nativeNameLabel: "Native's Name",
+        dobLabel: 'Date of Birth (DD-MM-YYYY)',
+        tobLabel: 'Birth Time',
+        pobLabel: 'Birth Place',
+        cancelBtn: 'Cancel',
+        generateBtn: 'Generate Chart',
+        guideBtn: 'Guide',
+        shareBtn: 'Share',
+        saveBtn: 'Save',
+        pngBtn: 'PNG',
+        chartBannerTitle: 'Vedic Chart Illustration:',
+        chartBannerSub: 'Exact positions of Lagna & Navagrahas.',
+        accurateBadge: 'Accurate Vedic Kundli Chart',
+        savedModalTitle: 'Saved Charts',
+        savedModalSub: 'Click any chart to open or manage',
+        noSavedCharts: 'No saved charts yet.',
+        guideModalTitle: 'Planet Dignity & Color Guide',
+        guideExalted: 'Exalted / Mooltrikona / Own',
+        guideExaltedDesc: 'Green',
+        guideOwn: 'Friend Sign / Good Result',
+        guideOwnDesc: 'Pure Yellow / Golden',
+        guideNormal: 'Neutral',
+        guideNormalDesc: 'Blue',
+        guideMildBad: 'Mildly Bad',
+        guideMildBadDesc: 'Pink',
+        guideModBad: 'Moderately Bad',
+        guideModBadDesc: 'Orange',
+        guideDebilitated: 'Debilitated / Highly Bad',
+        guideDebilitatedDesc: 'Red',
+        astroModeActive: 'Astrologer Mode Active',
+        exitAstro: 'Exit',
+        astroUnlockTitle: 'Unlock Astrologer Mode',
+        astroUnlockSub: 'Enter your Astrologer UID to enable full chart editing.',
+        unlockBtn: 'Unlock',
+        astroEditHint: 'Astrologer Mode: Click any planet to edit/recolor/remove, or right-click any Rashi number to change Rashi & add planets.',
+        editPlanetTitle: 'Edit Planet',
+        selectPlanetLabel: 'Select / Replace Planet',
+        planetColorLabel: 'Planet Text Color',
+        vakriLabel: 'Retrograde (R)',
+        astLabel: 'Combust (C)',
+        tagColorLabel: 'Retrograde / Combust Tag Color',
+        removePlanetBtn: 'Remove Planet',
+        applyBtn: 'Apply',
+        editHouseTitle: 'Edit House & Rashi',
+        changeRashiLabel: 'Change Rashi Number for this House (1-12)',
+        addPlanetLabel: 'Add Planet to this House',
+        allPlanetsPlacedMsg: 'All 9 planets are already placed on the chart. Remove a planet first to add one here.',
+        selectPlanetToAdd: '-- Select planet to add --',
+        toastSaved: 'Chart saved successfully!',
+        toastShared: 'Chart details copied to clipboard!',
+        toastPng: 'Kundli PNG image downloaded!',
+        toastAstroUnlocked: 'Astrologer Mode Unlocked!',
+        toastAstroExited: 'Exited Astrologer Mode.',
+        invalidUid: 'Invalid Astrologer UID. Please try again.',
+        errFillAll: 'Please enter valid Name, Date of Birth, Birth Time, and Birth Place.',
+        openText: 'Open',
+        deleteText: 'Delete'
+      }
+    };
+
+    const PLANET_META = {
+      Sun:     { hi: 'सूर्य',  en: 'Sun', exalted: 1, mooltrikona: 5, own: [5], enemy: [10, 11], neutral: [2], friend: [1,3,4,6,8,9,12], debilitated: 7 },
+      Moon:    { hi: 'चंद्र',  en: 'Mon', exalted: 2, mooltrikona: 2, own: [4], enemy: [], neutral: [7,10,11], friend: [3,5,6,9,12], debilitated: 8 },
+      Mars:    { hi: 'मंगल',  en: 'Mar', exalted: 10, mooltrikona: 1, own: [1,8], enemy: [6,11], neutral: [2,7], friend: [5,9,12], debilitated: 4 },
+      Mercury: { hi: 'बुध',   en: 'Mer', exalted: 6, mooltrikona: 6, own: [3,6], enemy: [12], neutral: [1,4,8,9], friend: [2,5,7,10,11], debilitated: 12 },
+      Jupiter: { hi: 'गुरु',   en: 'Jup', exalted: 4, mooltrikona: 9, own: [9,12], enemy: [2,7,11], neutral: [3,6], friend: [1,5,8], debilitated: 10 },
+      Venus:   { hi: 'शुक्र',  en: 'Ven', exalted: 12, mooltrikona: 7, own: [2,7], enemy: [4,9], neutral: [1,5,8], friend: [3,10,11], debilitated: 6 },
+      Saturn:  { hi: 'शनि',   en: 'Sat', exalted: 7, mooltrikona: 11, own: [10,11], enemy: [4,5,8], neutral: [9,12], friend: [2,3,6,7], debilitated: 1 },
+      Rahu:    { hi: 'राहु',   en: 'Rah', exalted: 2, mooltrikona: 4, own: [], enemy: [5], neutral: [1,12], friend: [7,10,11], debilitated: 8 },
+      Ketu:    { hi: 'केतु',   en: 'Ket', exalted: 8, mooltrikona: 10, own: [], enemy: [5], neutral: [1,4,6], friend: [7,11], debilitated: 2 }
+    };
+
+    const ALL_PLANET_KEYS = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Rahu', 'Ketu'];
+
+    const RASHI_NAMES = {
+      hi: ['', 'मेष', 'वृषभ', 'मिथुन', 'कर्क', 'सिंह', 'कन्या', 'तुला', 'वृश्चिक', 'धनु', 'मकर', 'कुंभ', 'मीन'],
+      en: ['', 'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces']
+    };
+
+    const INDIAN_CITIES = [
+      { hi: 'भिंड, मध्य प्रदेश', en: 'Bhind, Madhya Pradesh', lat: 26.5647, lon: 78.7873, tz: 5.5 },
+      { hi: 'ग्वालियर, मध्य प्रदेश', en: 'Gwalior, Madhya Pradesh', lat: 26.2183, lon: 78.1828, tz: 5.5 },
+      { hi: 'मुरैना, मध्य प्रदेश', en: 'Morena, Madhya Pradesh', lat: 26.4947, lon: 77.9940, tz: 5.5 },
+      { hi: 'दतिया, मध्य प्रदेश', en: 'Datia, Madhya Pradesh', lat: 25.6653, lon: 78.4609, tz: 5.5 },
+      { hi: 'भोपाल, मध्य प्रदेश', en: 'Bhopal, Madhya Pradesh', lat: 23.2599, lon: 77.4126, tz: 5.5 },
+      { hi: 'इंदौर, मध्य प्रदेश', en: 'Indore, Madhya Pradesh', lat: 22.7196, lon: 75.8577, tz: 5.5 },
+      { hi: 'उज्जैन, मध्य प्रदेश', en: 'Ujjain, Madhya Pradesh', lat: 23.1765, lon: 75.7885, tz: 5.5 },
+      { hi: 'जबलपुर, मध्य प्रदेश', en: 'Jabalpur, Madhya Pradesh', lat: 23.1815, lon: 79.9864, tz: 5.5 },
+      { hi: 'नई दिल्ली, दिल्ली', en: 'New Delhi, Delhi', lat: 28.6139, lon: 77.2090, tz: 5.5 },
+      { hi: 'मुंबई, महाराष्ट्र', en: 'Mumbai, Maharashtra', lat: 19.0760, lon: 72.8777, tz: 5.5 },
+      { hi: 'पुणे, महाराष्ट्र', en: 'Pune, Maharashtra', lat: 18.5204, lon: 73.8567, tz: 5.5 },
+      { hi: 'जयपुर, राजस्थान', en: 'Jaipur, Rajasthan', lat: 26.9124, lon: 75.7873, tz: 5.5 },
+      { hi: 'लखनऊ, उत्तर प्रदेश', en: 'Lucknow, Uttar Pradesh', lat: 26.8467, lon: 80.9462, tz: 5.5 },
+      { hi: 'आगरा, उत्तर प्रदेश', en: 'Agra, Uttar Pradesh', lat: 27.1767, lon: 78.0081, tz: 5.5 },
+      { hi: 'इटावा, उत्तर प्रदेश', en: 'Etawah, Uttar Pradesh', lat: 26.7855, lon: 79.0150, tz: 5.5 },
+      { hi: 'कानपुर, उत्तर प्रदेश', en: 'Kanpur, Uttar Pradesh', lat: 26.4499, lon: 80.3319, tz: 5.5 },
+      { hi: 'वाराणसी, उत्तर प्रदेश', en: 'Varanasi, Uttar Pradesh', lat: 25.3176, lon: 82.9739, tz: 5.5 },
+      { hi: 'प्रयागराज, उत्तर प्रदेश', en: 'Prayagraj, Uttar Pradesh', lat: 25.4358, lon: 81.8463, tz: 5.5 },
+      { hi: 'मथुरा, उत्तर प्रदेश', en: 'Mathura, Uttar Pradesh', lat: 27.4924, lon: 77.6737, tz: 5.5 },
+      { hi: 'अहमदाबाद, गुजरात', en: 'Ahmedabad, Gujarat', lat: 23.0225, lon: 72.5714, tz: 5.5 },
+      { hi: 'सूरत, गुजरात', en: 'Surat, Gujarat', lat: 21.1702, lon: 72.8311, tz: 5.5 },
+      { hi: 'कोलकाता, पश्चिम बंगाल', en: 'Kolkata, West Bengal', lat: 22.5726, lon: 88.3639, tz: 5.5 },
+      { hi: 'पटना, बिहार', en: 'Patna, Bihar', lat: 25.5941, lon: 85.1376, tz: 5.5 },
+      { hi: 'चंडीगढ़, पंजाब', en: 'Chandigarh, India', lat: 30.7333, lon: 76.7794, tz: 5.5 },
+      { hi: 'हरिद्वार, उत्तराखंड', en: 'Haridwar, Uttarakhand', lat: 29.9457, lon: 78.1642, tz: 5.5 },
+      { hi: 'बेंगलुरु, कर्नाटक', en: 'Bengaluru, Karnataka', lat: 12.9716, lon: 77.5946, tz: 5.5 },
+      { hi: 'हैदराबाद, तेलंगाना', en: 'Hyderabad, Telangana', lat: 17.3850, lon: 78.4867, tz: 5.5 },
+      { hi: 'चेन्नई, तमिलनाडु', en: 'Chennai, Tamil Nadu', lat: 13.0827, lon: 80.2707, tz: 5.5 }
+    ];
+
+    let currentLang = 'hi';
+    let isAstrologerMode = false;
+    let tridentClicks = 0;
+    let tridentTimer = null;
+
+    let selectedCity = {
+      hi: 'भिंड, मध्य प्रदेश',
+      en: 'Bhind, Madhya Pradesh',
+      lat: 26.5647,
+      lon: 78.7873,
+      tz: 5.5
+    };
+
+    let currentChart = null;
+    let editingPlanetContext = null;
+    let editingHouseNum = null;
+
+    const DEG2RAD = Math.PI / 180;
+    const RAD2DEG = 180 / Math.PI;
+
+    function norm360(deg) {
+      let d = deg % 360;
+      return d < 0 ? d + 360 : d;
+    }
+
+    function computeJulianDay(year, month, day, hourUT) {
+      let y = year;
+      let m = month;
+      if (m <= 2) {
+        y -= 1;
+        m += 12;
+      }
+      const A = Math.floor(y / 100);
+      const B = 2 - A + Math.floor(A / 4);
+      return Math.floor(365.25 * (y + 4716)) +
+             Math.floor(30.6001 * (m + 1)) +
+             day + hourUT / 24.0 + B - 1524.5;
+    }
+
+    function computeLahiriAyanamsa(jd) {
+      const T = (jd - 2451545.0) / 36525.0;
+      return 23.857092 + 1.396971 * T + 0.000308 * T * T;
+    }
+
+    function solveKepler(Mdeg, e) {
+      const M = norm360(Mdeg) * DEG2RAD;
+      let E = M + e * Math.sin(M) * (1.0 + e * Math.cos(M));
+      for (let i = 0; i < 8; i++) {
+        const dE = (E - e * Math.sin(E) - M) / (1 - e * Math.cos(E));
+        E -= dE;
+        if (Math.abs(dE) < 1e-9) break;
+      }
+      return E;
+    }
+
+    function computeTropicalLongitudes(jd) {
+      const d = jd - 2451545.0;
+      const T = d / 36525.0;
+
+      const L0 = norm360(280.46646 + 36000.76983 * T + 0.0003032 * T * T);
+      const Msun = norm360(357.52911 + 35999.05029 * T - 0.0001537 * T * T);
+      const Mrad = Msun * DEG2RAD;
+      const Csun = (1.914602 - 0.004817 * T - 0.000014 * T * T) * Math.sin(Mrad) +
+                   (0.019993 - 0.000101 * T) * Math.sin(2 * Mrad) +
+                   0.000289 * Math.sin(3 * Mrad);
+      const omega = (125.04 - 1934.136 * T) * DEG2RAD;
+      const sunTrueLon = norm360(L0 + Csun - 0.00569 - 0.00478 * Math.sin(omega));
+
+      const eEarth = 0.016708634 - 0.000042037 * T;
+      const E_earth = solveKepler(Msun, eEarth);
+      const rEarth = 1.000001018 * (1 - eEarth * Math.cos(E_earth));
+      const lonEarth = norm360(sunTrueLon + 180);
+      const xEarth = rEarth * Math.cos(lonEarth * DEG2RAD);
+      const yEarth = rEarth * Math.sin(lonEarth * DEG2RAD);
+
+      const Lp = norm360(218.3164477 + 481267.88123421 * T - 0.0015786 * T * T);
+      const D  = norm360(297.8501921 + 445267.1114034 * T - 0.0018819 * T * T);
+      const M  = norm360(357.5291092 + 35999.0502909 * T - 0.0001536 * T * T);
+      const Mp = norm360(134.9633964 + 477198.8675055 * T + 0.0087414 * T * T);
+      const F  = norm360(93.2720950 + 483202.0175233 * T - 0.0036539 * T * T);
+
+      const dRad = D * DEG2RAD, mRad = M * DEG2RAD, mpRad = Mp * DEG2RAD, fRad = F * DEG2RAD;
+      const moonCorr =
+        6.288774 * Math.sin(mpRad) +
+        1.274027 * Math.sin(2 * dRad - mpRad) +
+        0.658314 * Math.sin(2 * dRad) +
+        0.213618 * Math.sin(2 * mpRad) -
+        0.185116 * Math.sin(mRad) -
+        0.114332 * Math.sin(2 * fRad) +
+        0.058793 * Math.sin(2 * dRad - 2 * mpRad) +
+        0.057066 * Math.sin(2 * dRad - mRad - mpRad) +
+        0.053322 * Math.sin(2 * dRad + mpRad) +
+        0.045758 * Math.sin(2 * dRad - mRad) -
+        0.040923 * Math.sin(mRad - mpRad) -
+        0.034720 * Math.sin(dRad) -
+        0.030383 * Math.sin(mRad + mpRad) +
+        0.015327 * Math.sin(2 * dRad - 2 * fRad) -
+        0.012528 * Math.sin(mpRad + 2 * fRad) +
+        0.010980 * Math.sin(mpRad - 2 * fRad);
+
+      const moonLon = norm360(Lp + moonCorr);
+
+      function calcPlanetGeoLon(a, e0, eDot, i0, iDot, O0, ODot, wBar0, wBarDot, L0p, LDot) {
+        const e = e0 + eDot * T;
+        const inc = (i0 + iDot * T) * DEG2RAD;
+        const Om = (O0 + ODot * T) * DEG2RAD;
+        const wBar = wBar0 + wBarDot * T;
+        const Lp_deg = norm360(L0p + LDot * T);
+        const Mp_deg = norm360(Lp_deg - wBar);
+        const w = (wBar - (O0 + ODot * T)) * DEG2RAD;
+
+        const E = solveKepler(Mp_deg, e);
+        const v = 2 * Math.atan2(Math.sqrt(1 + e) * Math.sin(E / 2), Math.sqrt(1 - e) * Math.cos(E / 2));
+        const r = a * (1 - e * Math.cos(E));
+
+        const u = v + w;
+        const xh = r * (Math.cos(Om) * Math.cos(u) - Math.sin(Om) * Math.sin(u) * Math.cos(inc));
+        const yh = r * (Math.sin(Om) * Math.cos(u) + Math.cos(Om) * Math.sin(u) * Math.cos(inc));
+
+        const xg = xh - xEarth;
+        const yg = yh - yEarth;
+        return norm360(Math.atan2(yg, xg) * RAD2DEG);
+      }
+
+      const mercuryLon = calcPlanetGeoLon(0.38709893, 0.20563069, 0.00002527, 7.00487, -0.005947, 48.33167, -0.12534, 77.45645, 0.16047, 252.25084, 149472.67411);
+      const venusLon   = calcPlanetGeoLon(0.72333199, 0.00677323, -0.00004938, 3.39471, -0.000788, 76.68069, -0.27769, 131.53298, 0.00287, 181.97973, 58517.81539);
+      const marsLon    = calcPlanetGeoLon(1.52366231, 0.09341233, 0.00011902, 1.85061, -0.008131, 49.57854, -0.29257, 336.04084, 0.44441, 355.45332, 19140.29934);
+
+      let jupiterLon = calcPlanetGeoLon(5.20336301, 0.04839266, -0.00012880, 1.30530, -0.001837, 100.55615, 0.20469, 14.75385, 0.21252, 34.40438, 3034.74612);
+      let saturnLon  = calcPlanetGeoLon(9.53707032, 0.05415060, -0.00036762, 2.48446, 0.001936, 113.71504, -0.28867, 92.43194, -0.41897, 49.94432, 1222.11385);
+
+      const Mj = (34.40 + 3034.75 * T) * DEG2RAD;
+      const Ms = (49.94 + 1222.11 * T) * DEG2RAD;
+      jupiterLon = norm360(jupiterLon - 0.332 * Math.sin(2 * Mj - 5 * Ms - 67.6 * DEG2RAD) - 0.056 * Math.sin(2 * Mj - 2 * Ms + 21 * DEG2RAD));
+      saturnLon  = norm360(saturnLon + 0.812 * Math.sin(2 * Mj - 5 * Ms - 67.6 * DEG2RAD) - 0.229 * Math.cos(2 * Mj - 4 * Ms - 2 * DEG2RAD));
+
+      const meanNode = norm360(125.04452 - 1934.136261 * T + 0.0020708 * T * T);
+      const rahuLon = norm360(meanNode - 1.4979 * Math.sin(2 * (Lp - meanNode) * DEG2RAD) - 0.1500 * Math.sin(mRad));
+      const ketuLon = norm360(rahuLon + 180);
+
+      return {
+        Sun: sunTrueLon,
+        Moon: moonLon,
+        Mars: marsLon,
+        Mercury: mercuryLon,
+        Jupiter: jupiterLon,
+        Venus: venusLon,
+        Saturn: saturnLon,
+        Rahu: rahuLon,
+        Ketu: ketuLon
+      };
+    }
+
+    function computeSiderealAscendant(jd, latDeg, lonDeg, ayanamsa) {
+      const T = (jd - 2451545.0) / 36525.0;
+      const GMST = norm360(280.46061837 + 360.98564736629 * (jd - 2451545.0) + 0.000387933 * T * T);
+      const LST = norm360(GMST + lonDeg);
+      const ramc = LST * DEG2RAD;
+
+      const eps = (23.4392911 - 0.0130042 * T) * DEG2RAD;
+      const phi = latDeg * DEG2RAD;
+
+      const y = Math.cos(ramc);
+      const x = -(Math.sin(eps) * Math.tan(phi) + Math.cos(eps) * Math.sin(ramc));
+      const tropAsc = norm360(Math.atan2(y, x) * RAD2DEG);
+
+      return norm360(tropAsc - ayanamsa);
+    }
+
+    // FINAL UNIVERSAL ASTROLOGICAL COLOR & RULE ENGINE (STRICTLY ALIGNED)
+    function getPlanetVedicColor(pKey, rashi, houseNum, housePlanetsAll, allHousesMap) {
+      const meta = PLANET_META[pKey];
+      if (!meta) return '#3B82F6';
+
+      // 1. Rahu & Ketu Special House Rules
+      if (pKey === 'Rahu' && houseNum === 6) return '#15803D'; // 6th house Rahu always green
+      if (pKey === 'Ketu' && houseNum === 12) return '#15803D'; // 12th house Ketu always green
+      if (pKey === 'Ketu' && houseNum === 6) return '#EAB308';  // Ketu in 6th = yellow
+      if (pKey === 'Rahu' && houseNum === 12) return '#EAB308'; // Rahu in 12th = yellow
+
+      // 2. Eclipse Rules (Sun/Moon and affecting planets)
+      const oppHouseNum = ((houseNum - 1 + 6) % 12) + 1;
+      const oppHousePlanets = allHousesMap && allHousesMap[oppHouseNum] ? allHousesMap[oppHouseNum].planets : [];
+      const isOppHouseEclipse = oppHousePlanets.some(p => p.key === 'Sun' || p.key === 'Moon');
+      const hasEclipse = housePlanetsAll.some(p => p.key === 'Sun' || p.key === 'Moon');
+
+      if (hasEclipse || isOppHouseEclipse) {
+        if (pKey === 'Sun' || pKey === 'Moon' || pKey === 'Rahu' || pKey === 'Ketu') {
+          if (houseNum !== 6) return '#DC2626'; // Red during eclipse (except 6th house for affecting planet)
+        }
+      }
+
+      // 3. Sun-Saturn Conjunction Rules
+      const hasSun = housePlanetsAll.some(p => p.key === 'Sun');
+      const hasSaturn = housePlanetsAll.some(p => p.key === 'Saturn');
+      if (hasSun && hasSaturn) {
+        if (pKey === 'Sun' && rashi === meta.own) return '#15803D';
+        if (pKey === 'Saturn' && rashi === meta.own) return '#15803D';
+        let pFriendship = meta.friend.includes(rashi) ? 'friend' : (meta.enemy.includes(rashi) ? 'enemy' : 'neutral');
+        if (pFriendship === 'friend') return '#EAB308'; // Golden/Yellow
+        return '#F97316'; // Orange
+      }
+
+      // 4. Debilitated Planet Co-location Rule (Adopts Exalted/Swagrahi co-planet color)
+      let baseColor = '#3B82F6';
+      let exaltedCoPlanet = housePlanetsAll.find(p => p.key !== pKey && (p.rashi === PLANET_META[p.key].exalted || PLANET_META[p.key].own.includes(p.rashi)));
+      if (exaltedCoPlanet) {
+        baseColor = exaltedCoPlanet.color;
+      } else {
+        if (rashi === meta.exalted || rashi === meta.mooltrikona || meta.own.includes(rashi)) {
+          baseColor = '#15803D'; // Green
+        } else if (meta.friend.includes(rashi)) {
+          baseColor = '#EAB308'; // Pure Yellow / Golden
+        } else if (meta.neutral.includes(rashi)) {
+          baseColor = '#3B82F6'; // Blue
+        } else if (meta.enemy.includes(rashi)) {
+          baseColor = '#EC4899'; // Pink
+        } else if (rashi === meta.debilitated) {
+          baseColor = '#DC2626'; // Red
+        }
+      }
+
+      // 5. 6th, 8th, 12th House Degradation Rule (1 grade down, excluding Rahu/Ketu)
+      const isDusthana = (houseNum === 6 || houseNum === 8 || houseNum === 12);
+      if (isDusthana && pKey !== 'Rahu' && pKey !== 'Ketu') {
+        if (baseColor === '#15803D') baseColor = '#EAB308';
+        else if (baseColor === '#EAB308') baseColor = '#3B82F6';
+        else if (baseColor === '#3B82F6') baseColor = '#EC4899';
+        else if (baseColor === '#EC4899') baseColor = '#F97316';
+        else if (baseColor === '#F97316') baseColor = '#DC2626';
+      }
+
+      return baseColor;
+    }
+
+    function getPlanetTagColor(pKey, isCombust, planetFriendship, houseNum) {
+      if (isCombust) {
+        if (planetFriendship === 'enemy') return '#15803D'; // Enemy combust = Green tag
+        if (planetFriendship === 'friend') return '#DC2626'; // Friend combust = Red tag
+        return '#3B82F6'; // Neutral combust = Neutral tag
+      }
+
+      // Retrograde / Special Node Tags
+      if (pKey === 'Rahu' && houseNum === 6) return '#EAB308'; // Yellow tag for 6th house Rahu
+      if (pKey === 'Ketu' && houseNum === 12) return '#EAB308'; // Yellow tag for 12th house Ketu
+      if (pKey === 'Ketu' && houseNum === 6) return '#15803D';  // Green tag for Ketu in 6th
+      if (pKey === 'Rahu' && houseNum === 12) return '#15803D'; // Green tag for Rahu in 12th
+
+      return '#D97706'; // Default Amber/Yellow tag
+    }
+
+    function calculateVedicChart(details) {
+      const { name, day, month, year, hour24, minute, city } = details;
+      const localHour = hour24 + minute / 60.0;
+      const utHour = localHour - city.tz;
+
+      const jd = computeJulianDay(year, month, day, utHour);
+      const ayanamsa = computeLahiriAyanamsa(jd);
+
+      const tropNow = computeTropicalLongitudes(jd);
+      const tropNext = computeTropicalLongitudes(jd + 0.25);
+
+      const sidAsc = computeSiderealAscendant(jd, city.lat, city.lon, ayanamsa);
+      const lagnaRashi = Math.floor(sidAsc / 30) + 1;
+
+      const houses = {};
+      for (let h = 1; h <= 12; h++) {
+        const rashiNum = ((lagnaRashi - 1 + (h - 1)) % 12) + 1;
+        houses[h] = { house: h, rashi: rashiNum, planets: [] };
+      }
+
+      const sidSun = norm360(tropNow.Sun - ayanamsa);
+      const combustOrbs = { Moon: 12, Mars: 17, Mercury: 14, Jupiter: 11, Venus: 10, Saturn: 15 };
+
+      const rawPlanets = [];
+      ALL_PLANET_KEYS.forEach((pKey) => {
+        const sidLon = norm360(tropNow[pKey] - ayanamsa);
+        const sidLonNext = norm360(tropNext[pKey] - ayanamsa);
+
+        let diff = sidLonNext - sidLon;
+        if (diff > 180) diff -= 360;
+        if (diff < -180) diff += 360;
+
+        let isVakri = (pKey === 'Rahu' || pKey === 'Ketu') ? true : (diff < 0);
+
+        let isAst = false;
+        if (combustOrbs[pKey]) {
+          let sunDist = Math.abs(sidLon - sidSun);
+          if (sunDist > 180) sunDist = 360 - sunDist;
+          if (sunDist <= combustOrbs[pKey]) isAst = true;
+        }
+
+        const rashi = Math.floor(sidLon / 30) + 1;
+        const degreeInSign = sidLon % 30;
+        const houseNum = ((rashi - lagnaRashi + 12) % 12) + 1;
+
+        rawPlanets.push({
+          key: pKey,
+          rashi,
+          degree: degreeInSign,
+          vakri: isVakri,
+          ast: isAst,
+          houseNum
+        });
+      });
+
+      rawPlanets.forEach(pl => {
+        houses[pl.houseNum].planets.push({ ...pl });
+      });
+
+      for (let h = 1; h <= 12; h++) {
+        houses[h].planets.forEach(pl => {
+          const housePlanetsAll = houses[pl.houseNum].planets;
+          let color = getPlanetVedicColor(pl.key, pl.rashi, pl.houseNum, housePlanetsAll, houses);
+          pl.color = color;
+
+          const meta = PLANET_META[pl.key];
+          let pFriendship = meta ? (meta.friend.includes(pl.rashi) ? 'friend' : (meta.enemy.includes(pl.rashi) ? 'enemy' : 'neutral')) : 'neutral';
+          pl.tagColor = getPlanetTagColor(pl.key, pl.ast, pFriendship, pl.houseNum);
+        });
+      }
+
+      const pad2 = (n) => String(n).padStart(2, '0');
+      return {
+        id: 'chart_' + Date.now(),
+        name: name.trim(),
+        dateStr: `${year}-${pad2(month)}-${pad2(day)}`,
+        timeStr: `${pad2(hour24)}:${pad2(minute)}`,
+        city: { ...city },
+        lagnaRashi,
+        ayanamsa: ayanamsa.toFixed(2),
+        houses
+      };
+    }
+
+    const HOUSE_LAYOUT = {
+      1:  { rashiPos: [250, 214], planetCenter: [250, 128] },
+      2:  { rashiPos: [130, 96],  planetCenter: [130, 52]  },
+      3:  { rashiPos: [92, 134],  planetCenter: [48, 134]  },
+      4:  { rashiPos: [208, 255], planetCenter: [128, 252] },
+      5:  { rashiPos: [92, 375],  planetCenter: [48, 375]  },
+      6:  { rashiPos: [130, 412], planetCenter: [130, 456] },
+      7:  { rashiPos: [250, 294], planetCenter: [250, 378] },
+      8:  { rashiPos: [370, 412], planetCenter: [370, 456] },
+      9:  { rashiPos: [408, 375], planetCenter: [452, 375] },
+      10: { rashiPos: [292, 255], planetCenter: [372, 252] },
+      11: { rashiPos: [408, 134], planetCenter: [452, 134] },
+      12: { rashiPos: [370, 96],  planetCenter: [370, 52]  }
+    };
+
+    function renderKundliSvg() {
+      if (!currentChart) return;
+      const wrapper = document.getElementById('kundliSvgWrapper');
+
+      let svg = `<svg id="kundliSvgElement" viewBox="0 0 500 500" class="w-full h-full select-none ${isAstrologerMode ? 'astro-editable' : ''}" xmlns="http://www.w3.org/2000/svg">`;
+      svg += `
+        <rect x="4" y="4" width="492" height="492" rx="4" fill="#FFFFFF" stroke="#8C7B6B" stroke-width="1.8" />
+        <line x1="4" y1="4" x2="496" y2="496" stroke="#8C7B6B" stroke-width="1.35" />
+        <line x1="496" y1="4" x2="4" y2="496" stroke="#8C7B6B" stroke-width="1.35" />
+        <polygon points="250,4 4,250 250,496 496,250" fill="none" stroke="#8C7B6B" stroke-width="1.45" />
+      `;
+
+      for (let h = 1; h <= 12; h++) {
+        const houseData = currentChart.houses[h];
+        const layout = HOUSE_LAYOUT[h];
+        const [rx, ry] = layout.rashiPos;
+        const [px, py] = layout.planetCenter;
+
+        svg += `
+          <text x="${rx}" y="${ry}" text-anchor="middle" dominant-baseline="middle"
+                font-size="13.5" font-weight="600" fill="#6E6A63"
+                class="rashi-num-node"
+                oncontextmenu="openHouseEditor(event, ${h})"
+                onclick="handleRashiClick(event, ${h})">
+            ${houseData.rashi}
+          </text>
+        `;
+
+        const planets = houseData.planets;
+        if (planets.length > 0) {
+          const perRow = 2;
+          const rows = [];
+          for (let i = 0; i < planets.length; i += perRow) {
+            rows.push(planets.slice(i, i + perRow));
+          }
+
+          const lineHeight = 20;
+          const startY = py - ((rows.length - 1) * lineHeight) / 2;
+
+          rows.forEach((rowItems, rowIdx) => {
+            const rowY = startY + rowIdx * lineHeight;
+            const spacing = rowItems.length === 2 ? 52 : 0;
+
+            rowItems.forEach((pl, colIdx) => {
+              const itemX = rowItems.length === 2
+                ? px + (colIdx === 0 ? -spacing / 2 : spacing / 2)
+                : px;
+
+              const labelName = PLANET_META[pl.key][currentLang];
+              const vakriTag = pl.vakri ? (currentLang === 'hi' ? '(व)' : '(R)') : '';
+              const astTag = pl.ast ? (currentLang === 'hi' ? '(अ)' : '(C)') : '';
+              const statusSuffix = `${vakriTag}${astTag}`;
+              const pIndex = rowIdx * perRow + colIdx;
+
+              svg += `
+                <g class="chart-planet-item" onclick="openPlanetEditor(${h}, ${pIndex})">
+                  <text x="${itemX}" y="${rowY}" text-anchor="middle" dominant-baseline="middle" font-size="14" font-weight="600" fill="${pl.color}">
+                    ${labelName}<tspan font-size="11.5" font-weight="600" fill="${pl.tagColor || '#D97706'}">${statusSuffix}</tspan>
+                  </text>
+                </g>
+              `;
+            });
+          });
+        }
+      }
+      svg += `</svg>`;
+      wrapper.innerHTML = svg;
+    }
+
+    function downloadChartPng() {
+      if (!currentChart) return;
+      const canvas = document.getElementById('exportCanvas');
+      const ctx = canvas.getContext('2d');
+      const W = canvas.width;
+      const H = canvas.height;
+
+      ctx.fillStyle = '#FAF8F5';
+      ctx.fillRect(0, 0, W, H);
+
+      ctx.fillStyle = '#1F1E1C';
+      ctx.font = 'bold 34px Georgia, serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('ASTRO BHRIGU', W / 2, 62);
+
+      const cityLabel = currentChart.city[currentLang] || currentChart.city.hi;
+      ctx.fillStyle = '#4A4640';
+      ctx.font = '600 24px Inter, sans-serif';
+      ctx.fillText(`${currentChart.name}  •  ${currentChart.dateStr}  •  ${currentChart.timeStr}  •  ${cityLabel}`, W / 2, 106);
+
+      const cardX = 90, cardY = 140, cardSize = 1020;
+      ctx.fillStyle = '#FFFFFF';
+      ctx.strokeStyle = '#EAE4DC';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.roundRect(cardX, cardY, cardSize, cardSize, 24);
+      ctx.fill();
+      ctx.stroke();
+
+      const ox = cardX + 50;
+      const oy = cardY + 50;
+      const scale = 920 / 500;
+
+      ctx.strokeStyle = '#8C7B6B';
+      ctx.lineWidth = 3;
+      ctx.strokeRect(ox + 4 * scale, oy + 4 * scale, 492 * scale, 492 * scale);
+
+      ctx.lineWidth = 2.4;
+      ctx.beginPath();
+      ctx.moveTo(ox + 4 * scale, oy + 4 * scale);
+      ctx.lineTo(ox + 496 * scale, oy + 496 * scale);
+      ctx.moveTo(ox + 496 * scale, oy + 4 * scale);
+      ctx.lineTo(ox + 4 * scale, oy + 496 * scale);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(ox + 250 * scale, oy + 4 * scale);
+      ctx.lineTo(ox + 4 * scale, oy + 250 * scale);
+      ctx.lineTo(ox + 250 * scale, oy + 496 * scale);
+      ctx.lineTo(ox + 496 * scale, oy + 250 * scale);
+      ctx.closePath();
+      ctx.stroke();
+
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      for (let h = 1; h <= 12; h++) {
+        const houseData = currentChart.houses[h];
+        const layout = HOUSE_LAYOUT[h];
+
+        ctx.fillStyle = '#6E6A63';
+        ctx.font = '600 25px Inter, sans-serif';
+        ctx.fillText(String(houseData.rashi), ox + layout.rashiPos[0] * scale, oy + layout.rashiPos[1] * scale);
+
+        const planets = houseData.planets;
+        if (planets.length > 0) {
+          const perRow = 2;
+          const rows = [];
+          for (let i = 0; i < planets.length; i += perRow) {
+            rows.push(planets.slice(i, i + perRow));
+          }
+          const lineHeight = 38;
+          const startY = oy + layout.planetCenter[1] * scale - ((rows.length - 1) * lineHeight) / 2;
+
+          rows.forEach((rowItems, rowIdx) => {
+            const rowY = startY + rowIdx * lineHeight;
+            const spacing = rowItems.length === 2 ? 98 : 0;
+
+            rowItems.forEach((pl, colIdx) => {
+              const itemX = rowItems.length === 2
+                ? ox + layout.planetCenter[0] * scale + (colIdx === 0 ? -spacing / 2 : spacing / 2)
+                : ox + layout.planetCenter[0] * scale;
+
+              const labelName = PLANET_META[pl.key][currentLang];
+              const vakriTag = pl.vakri ? (currentLang === 'hi' ? '(व)' : '(R)') : '';
+              const astTag = pl.ast ? (currentLang === 'hi' ? '(अ)' : '(C)') : '';
+
+              ctx.fillStyle = pl.color;
+              ctx.font = '600 26px "Noto Sans Devanagari", Inter, sans-serif';
+              ctx.fillText(`${labelName}${vakriTag}${astTag}`, itemX, rowY);
+            });
+          });
+        }
+      }
+
+      ctx.fillStyle = '#6E6A63';
+      ctx.font = '500 20px "Noto Sans Devanagari", Inter, sans-serif';
+      ctx.fillText(I18N[currentLang].accurateBadge, W / 2, H - 55);
+
+      const link = document.createElement('a');
+      const safeName = currentChart.name.replace(/[^a-zA-Z0-9\u0900-\u097F_-]/g, '_') || 'Kundli';
+      link.download = `AstroBhrigu_${safeName}_${currentChart.dateStr}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+
+      showToast(I18N[currentLang].toastPng);
+    }
+
+    function shareChartData() {
+      if (!currentChart) return;
+      const cityLabel = currentChart.city[currentLang] || currentChart.city.hi;
+      let text = `🔱 ASTRO BHRIGU - वैदिक कुंडली विवरण 🔱\n`;
+      text += `नाम: ${currentChart.name}\n`;
+      text += `जन्म तिथि: ${currentChart.dateStr} (${currentChart.timeStr})\n`;
+      text += `स्थान: ${cityLabel}\n`;
+      text += `लग्न राशि: ${RASHI_NAMES[currentLang][currentChart.lagnaRashi]}\n\n`;
+      text += `--- ग्रह स्थिति (भावानुसार) ---\n`;
+      
+      for (let h = 1; h <= 12; h++) {
+        const hData = currentChart.houses[h];
+        if (hData.planets.length > 0) {
+          const pNames = hData.planets.map(p => {
+            const v = p.vakri ? '(व)' : '';
+            const a = p.ast ? '(अ)' : '';
+            return `${PLANET_META[p.key][currentLang]}${v}${a}`;
+          }).join(', ');
+          text += `भाव ${h} (राशि ${RASHI_NAMES[currentLang][hData.rashi]}): ${pNames}\n`;
+        } else {
+          text += `भाव ${h} (राशि ${RASHI_NAMES[currentLang][hData.rashi]}): खाली\n`;
+        }
+      }
+
+      navigator.clipboard.writeText(text).then(() => {
+        showToast(I18N[currentLang].toastShared);
+      }).catch(() => {
+        showToast('Share text generated.');
+      });
+    }
+
+    function handleDateAutoTab(input, nextId, targetLen) {
+      input.value = input.value.replace(/\D/g, '');
+      if (input.value.length >= targetLen) {
+        const nextEl = document.getElementById(nextId);
+        if (nextEl) { nextEl.focus(); nextEl.select(); }
+      }
+    }
+
+    function handleYearInput(input) {
+      input.value = input.value.replace(/\D/g, '');
+    }
+
+    function handleTimeAutoTab(input, nextId, targetLen) {
+      input.value = input.value.replace(/\D/g, '');
+      if (input.value.length >= targetLen) {
+        const nextEl = document.getElementById(nextId);
+        if (nextEl) nextEl.focus();
+      }
+    }
+
+    function handleBackspaceNav(event, input, prevId) {
+      if (event.key === 'Backspace' && input.value.length === 0) {
+        const prevEl = document.getElementById(prevId);
+        if (prevEl) prevEl.focus();
+      }
+    }
+
+    function openNativeDatePicker() {
+      const picker = document.getElementById('hiddenDatePicker');
+      if (picker.showPicker) picker.showPicker();
+      else picker.click();
+    }
+
+    function syncFromDatePicker(isoVal) {
+      if (!isoVal) return;
+      const [y, m, d] = isoVal.split('-');
+      document.getElementById('dobDay').value = d;
+      document.getElementById('dobMonth').value = m;
+      document.getElementById('dobYear').value = y;
+    }
+
+    function openNativeTimePicker() {
+      const picker = document.getElementById('hiddenTimePicker');
+      if (picker.showPicker) picker.showPicker();
+      else picker.click();
+    }
+
+    function syncFromTimePicker(timeVal) {
+      if (!timeVal) return;
+      let [hh, mm] = timeVal.split(':').map(Number);
+      const ampm = hh >= 12 ? 'PM' : 'AM';
+      let h12 = hh % 12;
+      if (h12 === 0) h12 = 12;
+      document.getElementById('tobHour').value = String(h12).padStart(2, '0');
+      document.getElementById('tobMinute').value = String(mm).padStart(2, '0');
+      document.getElementById('tobAmPm').value = ampm;
+    }
+
+    function handleCitySearch(query) {
+      const dropdown = document.getElementById('cityDropdown');
+      const q = query.trim().toLowerCase();
+
+      const matches = q.length === 0
+        ? INDIAN_CITIES.slice(0, 7)
+        : INDIAN_CITIES.filter(c => c.hi.toLowerCase().includes(q) || c.en.toLowerCase().includes(q));
+
+      if (matches.length === 0) {
+        dropdown.classList.add('hidden');
+        return;
+      }
+
+      dropdown.innerHTML = matches.map((city) => `
+        <button type="button" onclick="selectCityItem(${INDIAN_CITIES.indexOf(city)})" class="w-full text-left px-4 py-2.5 hover:bg-[#FAF6F2] flex items-center justify-between transition cursor-pointer">
+          <div>
+            <div class="text-xs sm:text-sm font-medium text-charcoal">${currentLang === 'hi' ? city.hi : city.en}</div>
+            <div class="text-[11px] text-muted">${currentLang === 'hi' ? city.en : city.hi}</div>
+          </div>
+          <span class="text-[10px] font-mono text-muted">${city.lat.toFixed(2)}°N, ${city.lon.toFixed(2)}°E</span>
+        </button>
+      `).join('');
+
+      dropdown.classList.remove('hidden');
+    }
+
+    function selectCityItem(cityIndex) {
+      const city = INDIAN_CITIES[cityIndex];
+      if (!city) return;
+      selectedCity = { ...city };
+      document.getElementById('pobInput').value = currentLang === 'hi' ? city.hi : city.en;
+      document.getElementById('cityDropdown').classList.add('hidden');
+      document.getElementById('selectedCoordsHint').textContent = `📍 ${city.lat.toFixed(4)}° N, ${city.lon.toFixed(4)}° E (IST +5:30)`;
+    }
+
+    document.addEventListener('click', (e) => {
+      const pob = document.getElementById('pobInput');
+      const dd = document.getElementById('cityDropdown');
+      if (pob && dd && !pob.contains(e.target) && !dd.contains(e.target)) {
+        dd.classList.add('hidden');
+      }
+    });
+
+    function handleGenerateChart(e) {
+      e.preventDefault();
+      const errBox = document.getElementById('formErrorBox');
+      errBox.classList.add('hidden');
+
+      const name = document.getElementById('nativeNameInput').value.trim();
+      const day = parseInt(document.getElementById('dobDay').value, 10);
+      const month = parseInt(document.getElementById('dobMonth').value, 10);
+      const year = parseInt(document.getElementById('dobYear').value, 10);
+
+      let hour12 = parseInt(document.getElementById('tobHour').value, 10);
+      const minute = parseInt(document.getElementById('tobMinute').value, 10);
+      const ampm = document.getElementById('tobAmPm').value;
+      const pobText = document.getElementById('pobInput').value.trim();
+
+      if (!name || !day || !month || !year || year < 1800 || year > 2200 || month < 1 || month > 12 || day < 1 || day > 31 || isNaN(hour12) || hour12 < 1 || hour12 > 12 || isNaN(minute) || minute < 0 || minute > 59 || !pobText) {
+        errBox.textContent = I18N[currentLang].errFillAll;
+        errBox.classList.remove('hidden');
+        return;
+      }
+
+      const matchedCity = INDIAN_CITIES.find(c =>
+        c.hi.toLowerCase() === pobText.toLowerCase() ||
+        c.en.toLowerCase() === pobText.toLowerCase() ||
+        c.en.toLowerCase().startsWith(pobText.toLowerCase()) ||
+        c.hi.startsWith(pobText)
+      );
+      if (matchedCity) {
+        selectedCity = { ...matchedCity };
+      } else if (pobText !== selectedCity.hi && pobText !== selectedCity.en) {
+        selectedCity = { hi: pobText, en: pobText, lat: 26.5647, lon: 78.7873, tz: 5.5 };
+      }
+
+      let hour24 = hour12 % 12;
+      if (ampm === 'PM') hour24 += 12;
+
+      currentChart = calculateVedicChart({ name, day, month, year, hour24, minute, city: selectedCity });
+      showChartView();
+    }
+
+    function switchView(viewId) {
+      ['homeView', 'birthFormView', 'chartView'].forEach(id => {
+        document.getElementById(id).classList.add('hidden');
+      });
+      document.getElementById(viewId).classList.remove('hidden');
+    }
+
+    function goHome() {
+      updateSavedCountBadge();
+      switchView('homeView');
+    }
+
+    function openBirthForm() {
+      document.getElementById('formErrorBox').classList.add('hidden');
+      switchView('birthFormView');
+      setTimeout(() => document.getElementById('nativeNameInput').focus(), 80);
+    }
+
+    function backToBirthForm() {
+      switchView('birthFormView');
+    }
+
+    function showChartView() {
+      if (!currentChart) return;
+      document.getElementById('chartNativeName').textContent = currentChart.name;
+      const cityLabel = currentChart.city[currentLang] || currentChart.city.hi;
+      document.getElementById('chartNativeMeta').textContent = `${currentChart.dateStr} • ${currentChart.timeStr} • ${cityLabel}`;
+
+      const astroStrip = document.getElementById('astroHintStrip');
+      if (isAstrologerMode) astroStrip.classList.remove('hidden');
+      else astroStrip.classList.add('hidden');
+
+      renderKundliSvg();
+      switchView('chartView');
+    }
+
+    function getSavedCharts() {
+      try {
+        return JSON.parse(localStorage.getItem('astro_bhrigu_saved_charts') || '[]');
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function setSavedCharts(list) {
+      localStorage.setItem('astro_bhrigu_saved_charts', JSON.stringify(list));
+      updateSavedCountBadge();
+    }
+
+    function updateSavedCountBadge() {
+      const count = getSavedCharts().length;
+      document.getElementById('savedCountBadge').textContent = count;
+    }
+
+    function saveCurrentChart() {
+      if (!currentChart) return;
+      const list = getSavedCharts();
+      const existingIdx = list.findIndex(item => item.id === currentChart.id);
+      const clone = JSON.parse(JSON.stringify(currentChart));
+      if (existingIdx >= 0) list[existingIdx] = clone;
+      else list.unshift(clone);
+      setSavedCharts(list);
+      showToast(I18N[currentLang].toastSaved);
+    }
+
+    function openSavedModal() {
+      renderSavedList();
+      document.getElementById('savedModal').classList.remove('hidden');
+    }
+
+    function renderSavedList() {
+      const container = document.getElementById('savedListContainer');
+      const list = getSavedCharts();
+
+      if (list.length === 0) {
+        container.innerHTML = `<div class="py-10 text-center text-xs sm:text-sm text-muted">${I18N[currentLang].noSavedCharts}</div>`;
+        return;
+      }
+
+      container.innerHTML = list.map((item, idx) => {
+        const cityLabel = item.city[currentLang] || item.city.hi;
+        return `
+          <div class="p-3.5 rounded-xl border border-borderWarm bg-[#FAF8F5] hover:bg-white flex items-center justify-between gap-3 transition">
+            <div onclick="loadSavedChart(${idx})" class="flex-1 cursor-pointer">
+              <div class="text-sm font-semibold text-charcoal">${item.name}</div>
+              <div class="text-xs text-muted mt-0.5">${item.dateStr} • ${item.timeStr} • ${cityLabel}</div>
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="loadSavedChart(${idx})" class="px-3 py-1.5 rounded-lg bg-terracottaSoft text-terracotta hover:bg-terracotta hover:text-white text-xs font-medium transition cursor-pointer">
+                ${I18N[currentLang].openText}
+              </button>
+              <button onclick="deleteSavedChart(${idx})" class="px-2.5 py-1.5 rounded-lg text-red-600 hover:bg-red-50 text-xs font-medium transition cursor-pointer">
+                ${I18N[currentLang].deleteText}
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function loadSavedChart(idx) {
+      const list = getSavedCharts();
+      if (!list[idx]) return;
+      currentChart = JSON.parse(JSON.stringify(list[idx]));
+      closeModal('savedModal');
+      showChartView();
+    }
+
+    function deleteSavedChart(idx) {
+      const list = getSavedCharts();
+      list.splice(idx, 1);
+      setSavedCharts(list);
+      renderSavedList();
+    }
+
+    function handleTridentClick() {
+      tridentClicks++;
+      clearTimeout(tridentTimer);
+      if (tridentClicks >= 3) {
+        tridentClicks = 0;
+        document.getElementById('astroUidError').classList.add('hidden');
+        document.getElementById('astroUidInput').value = '';
+        document.getElementById('astroUidModal').classList.remove('hidden');
+        setTimeout(() => document.getElementById('astroUidInput').focus(), 80);
+      } else {
+        tridentTimer = setTimeout(() => { tridentClicks = 0; }, 900);
+      }
+    }
+
+    function submitAstroUid(e) {
+      e.preventDefault();
+      const raw = document.getElementById('astroUidInput').value.trim().toUpperCase().replace(/\s+/g, '');
+      const errEl = document.getElementById('astroUidError');
+
+      if (raw === 'ANSHARMA8910') {
+        isAstrologerMode = true;
+        closeModal('astroUidModal');
+        document.getElementById('astroBadge').classList.remove('hidden');
+        document.getElementById('astroBadge').classList.add('inline-flex');
+        showToast(I18N[currentLang].toastAstroUnlocked);
+        if (!document.getElementById('chartView').classList.contains('hidden')) showChartView();
+      } else {
+        errEl.textContent = I18N[currentLang].invalidUid;
+        errEl.classList.remove('hidden');
+      }
+    }
+
+    function exitAstrologerMode() {
+      isAstrologerMode = false;
+      document.getElementById('astroBadge').classList.add('hidden');
+      document.getElementById('astroBadge').classList.remove('inline-flex');
+      showToast(I18N[currentLang].toastAstroExited);
+      if (!document.getElementById('chartView').classList.contains('hidden')) showChartView();
+    }
+
+    function openPlanetEditor(houseNum, planetIndex) {
+      if (!isAstrologerMode || !currentChart) return;
+      const planet = currentChart.houses[houseNum].planets[planetIndex];
+      if (!planet) return;
+
+      editingPlanetContext = { houseNum, planetIndex };
+
+      const selectEl = document.getElementById('editPlanetKey');
+      selectEl.innerHTML = ALL_PLANET_KEYS.map(k =>
+        `<option value="${k}" ${k === planet.key ? 'selected' : ''}>${PLANET_META[k].hi} (${PLANET_META[k].en})</option>`
+      ).join('');
+
+      document.getElementById('editPlanetColor').value = planet.color || '#15803D';
+      document.getElementById('editPlanetVakri').checked = !!planet.vakri;
+      document.getElementById('editPlanetAst').checked = !!planet.ast;
+      document.getElementById('editTagColor').value = planet.tagColor || '#D97706';
+
+      document.getElementById('planetEditorModal').classList.remove('hidden');
+    }
+
+    function setPlanetColorPreset(hex) { document.getElementById('editPlanetColor').value = hex; }
+    function setTagColorPreset(hex) { document.getElementById('editTagColor').value = hex; }
+
+    function saveEditedPlanet() {
+      if (!editingPlanetContext || !currentChart) return;
+      const { houseNum, planetIndex } = editingPlanetContext;
+      const planet = currentChart.houses[houseNum].planets[planetIndex];
+      if (!planet) return;
+
+      planet.key = document.getElementById('editPlanetKey').value;
+      planet.color = document.getElementById('editPlanetColor').value;
+      planet.vakri = document.getElementById('editPlanetVakri').checked;
+      planet.ast = document.getElementById('editPlanetAst').checked;
+      planet.tagColor = document.getElementById('editTagColor').value;
+
+      closeModal('planetEditorModal');
+      renderKundliSvg();
+    }
+
+    function removeEditedPlanet() {
+      if (!editingPlanetContext || !currentChart) return;
+      const { houseNum, planetIndex } = editingPlanetContext;
+      currentChart.houses[houseNum].planets.splice(planetIndex, 1);
+      closeModal('planetEditorModal');
+      renderKundliSvg();
+    }
+
+    function handleRashiClick(event, houseNum) {
+      if (!isAstrologerMode) return;
+      openHouseEditor(event, houseNum);
+    }
+
+    function openHouseEditor(event, houseNum) {
+      if (!isAstrologerMode || !currentChart) return;
+      event.preventDefault();
+      editingHouseNum = houseNum;
+
+      const houseData = currentChart.houses[houseNum];
+      const rashiSelect = document.getElementById('editHouseRashiSelect');
+      rashiSelect.innerHTML = Array.from({ length: 12 }, (_, idx) => {
+        const r = idx + 1;
+        return `<option value="${r}" ${r === houseData.rashi ? 'selected' : ''}>${r} - ${RASHI_NAMES[currentLang][r]}</option>`;
+      }).join('');
+
+      const placedKeys = new Set();
+      for (let h = 1; h <= 12; h++) {
+        currentChart.houses[h].planets.forEach(p => placedKeys.add(p.key));
+      }
+      const unplacedKeys = ALL_PLANET_KEYS.filter(k => !placedKeys.has(k));
+
+      const addArea = document.getElementById('addPlanetArea');
+      if (unplacedKeys.length === 0) {
+        addArea.innerHTML = `<div class="p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs leading-relaxed">${I18N[currentLang].allPlanetsPlacedMsg}</div>`;
+      } else {
+        addArea.innerHTML = `
+          <select id="addUnplacedPlanetSelect" class="w-full px-3 py-2 rounded-xl border border-borderWarm bg-white text-charcoal focus:outline-none focus:border-terracotta">
+            <option value="">${I18N[currentLang].selectPlanetToAdd}</option>
+            ${unplacedKeys.map(k => `<option value="${k}">${PLANET_META[k].hi} (${PLANET_META[k].en})</option>`).join('')}
+          </select>
+        `;
+      }
+
+      document.getElementById('houseEditorModal').classList.remove('hidden');
+    }
+
+    function saveEditedHouse() {
+      if (!editingHouseNum || !currentChart) return;
+      const newRashi = parseInt(document.getElementById('editHouseRashiSelect').value, 10);
+      currentChart.houses[editingHouseNum].rashi = newRashi;
+
+      const addSelect = document.getElementById('addUnplacedPlanetSelect');
+      if (addSelect && addSelect.value) {
+        const pKey = addSelect.value;
+        const newPl = {
+          key: pKey,
+          rashi: newRashi,
+          degree: 15,
+          vakri: pKey === 'Rahu' || pKey === 'Ketu',
+          ast: false,
+          color: getPlanetVedicColor(pKey, newRashi, editingHouseNum, currentChart.houses[editingHouseNum].planets, currentChart.houses),
+          tagColor: getPlanetTagColor(pKey, false, 'neutral', editingHouseNum)
+        };
+        currentChart.houses[editingHouseNum].planets.push(newPl);
+      }
+
+      closeModal('houseEditorModal');
+      renderKundliSvg();
+    }
+
+    function toggleLanguage() {
+      currentLang = currentLang === 'hi' ? 'en' : 'hi';
+      applyLanguage();
+    }
+
+    function applyLanguage() {
+      const dict = I18N[currentLang];
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (dict[key]) el.textContent = dict[key];
+      });
+
+      document.querySelectorAll('[data-placeholder-hi]').forEach(el => {
+        el.placeholder = currentLang === 'hi'
+          ? el.getAttribute('data-placeholder-hi')
+          : el.getAttribute('data-placeholder-en');
+      });
+
+      if (selectedCity) {
+        const pobInput = document.getElementById('pobInput');
+        if (pobInput && pobInput.value) {
+          pobInput.value = currentLang === 'hi' ? selectedCity.hi : selectedCity.en;
+        }
+      }
+
+      if (currentChart && !document.getElementById('chartView').classList.contains('hidden')) {
+        const cityLabel = currentChart.city[currentLang] || currentChart.city.hi;
+        document.getElementById('chartNativeMeta').textContent = `${currentChart.dateStr} • ${currentChart.timeStr} • ${cityLabel}`;
+        renderKundliSvg();
+      }
+    }
+
+    function openGuideModal() { document.getElementById('guideModal').classList.remove('hidden'); }
+    function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+    let toastTimeout = null;
+    function showToast(msg) {
+      const box = document.getElementById('toastBox');
+      const txt = document.getElementById('toastMsg');
+      txt.textContent = msg;
+      box.classList.remove('opacity-0');
+      box.classList.add('opacity-100');
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        box.classList.remove('opacity-100');
+        box.classList.add('opacity-0');
+      }, 2600);
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      updateSavedCountBadge();
+      applyLanguage();
+    });
+  </script>
+</body>
+</html>
