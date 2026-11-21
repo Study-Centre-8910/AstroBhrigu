@@ -87,6 +87,14 @@
 </head>
 <body class="min-h-screen flex flex-col bg-slate-50 text-slate-900">
 
+    <!-- ==================== ग्लोबल टॉप-राइट लैंग्वेज स्विच (हर पेज पर) ==================== -->
+    <div class="fixed top-3 right-3 z-50">
+        <button type="button" onclick="toggleLanguage()" id="lang-switch-btn" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/95 backdrop-blur-sm border border-slate-200 text-slate-700 text-xs font-semibold shadow-md hover:bg-slate-50 transition-colors">
+            <i data-lucide="languages" class="w-4 h-4 text-amber-600"></i>
+            <span id="lang-switch-text">English / हिंदी</span>
+        </button>
+    </div>
+
     <!-- ==================== टोस्ट नोटिफिकेशन ==================== -->
     <div id="toast" class="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 hidden items-center gap-2 bg-slate-900 text-white px-4 py-2.5 rounded-full shadow-xl text-sm font-medium transition-all duration-300">
         <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-400 shrink-0"></i>
@@ -95,13 +103,7 @@
 
     <!-- ==================== व्यू 1: होम स्क्रीन ==================== -->
     <div id="view-home" class="flex-1 flex flex-col items-center justify-center p-6 max-w-4xl mx-auto w-full relative">
-        <!-- टॉप राइट लैंग्वेज स्विच -->
-        <div class="absolute top-4 right-4 sm:top-6 sm:right-6">
-            <button type="button" onclick="toggleLanguage()" id="lang-switch-btn" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-700 text-xs font-semibold shadow-sm hover:bg-slate-50 transition-colors">
-                <i data-lucide="languages" class="w-4 h-4 text-amber-600"></i>
-                <span id="lang-switch-text">English / हिंदी</span>
-            </button>
-        </div>
+
 
         <div class="text-center mb-10 mt-8 sm:mt-0">
             <!-- त्रिशूल ट्रिगर बटन -->
@@ -316,7 +318,7 @@
 
     <!-- ==================== व्यू 3C: दैनिक पंचांग ==================== -->
     <div id="view-panchang" class="hidden flex-1 flex-col p-3 sm:p-6 max-w-4xl mx-auto w-full">
-        <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-4 pt-9 sm:pt-0 sm:pr-32">
             <div class="flex items-center gap-2.5">
                 <button type="button" onclick="showView('home')" class="p-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 transition-colors" title="होम">
                     <i data-lucide="arrow-left" class="w-5 h-5"></i>
@@ -385,7 +387,7 @@
     <!-- ==================== व्यू 4: चार्ट वर्कस्पेस ==================== -->
     <div id="view-workspace" class="hidden flex-1 flex-col">
         <!-- टॉप एक्शन बार -->
-        <header class="bg-white border-b border-slate-200 px-3 sm:px-6 py-3 sticky top-0 z-30 shadow-sm">
+        <header class="bg-white border-b border-slate-200 px-3 sm:px-6 py-3 pr-28 sm:pr-36 sticky top-0 z-30 shadow-sm">
             <div class="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-2">
                 <div class="flex items-center gap-2.5 min-w-0">
                     <button type="button" onclick="editCurrentDetails()" class="inline-flex items-center gap-1 px-2.5 py-2 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs font-semibold shrink-0" title="जन्म विवरण पर वापस जाएं">
@@ -460,14 +462,37 @@
                     <i data-lucide="user-check" class="w-4 h-4 text-sky-600 shrink-0"></i>
                     <span data-lang-en="Person Details" data-lang-hi="व्यक्ति विवरण">व्यक्ति विवरण</span>
                 </button>
-                <button type="button" onclick="switchWorkspacePanel('mahakundli')" id="nav-ws-mahakundli" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-100 border border-transparent transition-colors text-left">
-                    <i data-lucide="sun" class="w-4 h-4 text-rose-600 shrink-0"></i>
-                    <span data-lang-en="Mahakundli (Varshaphal)" data-lang-hi="महाकुंडली">महाकुंडली</span>
-                </button>
-                <button type="button" onclick="switchWorkspacePanel('other')" id="nav-ws-other" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-100 border border-transparent transition-colors text-left">
-                    <i data-lucide="sparkles" class="w-4 h-4 text-teal-600 shrink-0"></i>
-                    <span data-lang-en="Other" data-lang-hi="अन्य">अन्य</span>
-                </button>
+                <!-- विशेष कुंडलियां (Advanced Charts) सब-मेनू -->
+                <div>
+                    <button type="button" onclick="toggleSidebarGroup('adv')" id="nav-ws-mahakundli" class="w-full flex items-center justify-between gap-2 px-3.5 py-3 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-100 border border-transparent transition-colors text-left">
+                        <span class="flex items-center gap-3">
+                            <i data-lucide="sun" class="w-4 h-4 text-rose-600 shrink-0"></i>
+                            <span data-lang-en="Advanced Charts" data-lang-hi="विशेष कुंडलियां">विशेष कुंडलियां</span>
+                        </span>
+                        <i data-lucide="chevron-down" id="chev-adv" class="w-4 h-4 text-slate-400 transition-transform"></i>
+                    </button>
+                    <div id="sub-menu-adv" class="hidden pl-7 pr-2 py-1 space-y-1">
+                        <button type="button" onclick="openAdvancedChartMode('yearly')" class="w-full text-left px-3 py-2 rounded-lg text-xs font-semibold text-slate-600 hover:bg-rose-50 hover:text-rose-800" data-lang-en="Yearly & Monthly" data-lang-hi="वार्षिक व मासिक कुंडली">वार्षिक व मासिक कुंडली</button>
+                        <button type="button" onclick="openAdvancedChartMode('chalit')" class="w-full text-left px-3 py-2 rounded-lg text-xs font-semibold text-slate-600 hover:bg-rose-50 hover:text-rose-800" data-lang-en="Chalit Kundli" data-lang-hi="चलित कुंडली">चलित कुंडली</button>
+                        <button type="button" onclick="openAdvancedChartMode('gochar')" class="w-full text-left px-3 py-2 rounded-lg text-xs font-semibold text-slate-600 hover:bg-rose-50 hover:text-rose-800" data-lang-en="Gochar (Transit)" data-lang-hi="गोचर">गोचर</button>
+                        <button type="button" onclick="openAdvancedChartMode('ashtak')" class="w-full text-left px-3 py-2 rounded-lg text-xs font-semibold text-slate-600 hover:bg-rose-50 hover:text-rose-800" data-lang-en="Ashtakavarga" data-lang-hi="अष्टक वर्ग">अष्टक वर्ग</button>
+                    </div>
+                </div>
+
+                <!-- अन्य (Other) सब-मेनू -->
+                <div>
+                    <button type="button" onclick="toggleSidebarGroup('other')" id="nav-ws-other" class="w-full flex items-center justify-between gap-2 px-3.5 py-3 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-100 border border-transparent transition-colors text-left">
+                        <span class="flex items-center gap-3">
+                            <i data-lucide="sparkles" class="w-4 h-4 text-teal-600 shrink-0"></i>
+                            <span data-lang-en="Other" data-lang-hi="अन्य">अन्य</span>
+                        </span>
+                        <i data-lucide="chevron-down" id="chev-other" class="w-4 h-4 text-slate-400 transition-transform"></i>
+                    </button>
+                    <div id="sub-menu-other" class="hidden pl-7 pr-2 py-1 space-y-1">
+                        <button type="button" onclick="openOtherSubOption('nakshatra')" class="w-full text-left px-3 py-2 rounded-lg text-xs font-semibold text-slate-600 hover:bg-teal-50 hover:text-teal-800" data-lang-en="Nakshatra Report" data-lang-hi="नक्षत्र रिपोर्ट">नक्षत्र रिपोर्ट</button>
+                        <button type="button" onclick="openOtherSubOption('lifestyle')" class="w-full text-left px-3 py-2 rounded-lg text-xs font-semibold text-slate-600 hover:bg-teal-50 hover:text-teal-800" data-lang-en="Lifestyle Reports" data-lang-hi="जीवन शैली">जीवन शैली</button>
+                    </div>
+                </div>
             </nav>
             <div class="p-4 border-t border-slate-100 text-[11px] text-slate-400">
                 <span data-lang-en="Swipe left in Dasha for Yogini" data-lang-hi="दशा में बाईं ओर स्वाइप करें → योगिनी दशा">दशा में बाईं ओर स्वाइप करें → योगिनी दशा</span>
@@ -621,7 +646,7 @@
                 <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-5">
                     <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
                         <div>
-                            <h2 class="text-base sm:text-lg font-bold text-slate-900" data-lang-en="Mahakundli (Yearly & Monthly Chart)" data-lang-hi="महाकुंडली (वार्षिक व मासिक कुंडली)">महाकुंडली (वार्षिक व मासिक कुंडली)</h2>
+                            <h2 class="text-base sm:text-lg font-bold text-slate-900" data-lang-en="Advanced Charts" data-lang-hi="विशेष कुंडलियां">विशेष कुंडलियां</h2>
                             <p class="text-xs text-slate-500" data-lang-en="Select year or month for Varshaphal chart and Muntha" data-lang-hi="वर्ष या माह चुनें — वर्षफल कुंडली और मुन्था स्थिति देखें">वर्ष या माह चुनें — वर्षफल कुंडली और मुन्था स्थिति देखें</p>
                         </div>
                         <div class="inline-flex flex-wrap gap-1 rounded-xl bg-slate-100 p-1">
@@ -1011,6 +1036,13 @@
             updateAstrologerModeUI();
             if (!document.getElementById('view-saved-charts').classList.contains('hidden')) {
                 openSavedCharts();
+            }
+            if (!document.getElementById('view-panchang').classList.contains('hidden')) {
+                const pInp = document.getElementById('panchang-date-input');
+                if (pInp && pInp.value) renderPanchangForDate(pInp.value);
+            }
+            if (!document.getElementById('view-workspace').classList.contains('hidden')) {
+                switchWorkspacePanel(activeWsPanel, true);
             }
         }
 
@@ -2596,6 +2628,25 @@
 
         // ==================== साइडबार व पैनल नेविगेशन ====================
         let activeWsPanel = 'chart';
+        function toggleSidebarGroup(group) {
+            const sub = document.getElementById(`sub-menu-${group}`);
+            const chev = document.getElementById(`chev-${group}`);
+            if (sub) sub.classList.toggle('hidden');
+            if (chev) chev.classList.toggle('rotate-180');
+        }
+
+        function openAdvancedChartMode(mode) {
+            mkMode = mode;
+            switchWorkspacePanel('mahakundli');
+            setMahakundliMode(mode);
+        }
+
+        function openOtherSubOption(subTab) {
+            activeOtherSubTab = subTab;
+            switchWorkspacePanel('other');
+            setOtherSubTab(subTab);
+        }
+
         function toggleWorkspaceSidebar(open) {
             const sb = document.getElementById('workspace-sidebar');
             const bd = document.getElementById('sidebar-backdrop');
@@ -2638,7 +2689,7 @@
                 shadbala: { hi: 'ग्रह बल व भाव बल', en: 'Graha & Bhava Bala' },
                 varga:      { hi: 'षोडश वर्ग (16 चार्ट)', en: 'Shodashvarga (16 Charts)' },
                 person:     { hi: 'व्यक्ति विवरण', en: 'Person Details' },
-                mahakundli: { hi: 'महाकुंडली', en: 'Mahakundli' },
+                mahakundli: { hi: 'विशेष कुंडलियां', en: 'Advanced Charts' },
                 other:      { hi: 'अन्य • नक्षत्र रिपोर्ट', en: 'Other • Nakshatra Report' }
             };
             if (pill && titles[panel]) {
@@ -2907,24 +2958,25 @@
             const now = new Date();
             let cursor = birthDate;
 
-            for (let i = 0; i < 8; i++) {
+            // Repeat Yogini cycle 3 times (108 years: Mangala -> Sankata -> Mangala...)
+            for (let i = 0; i < 24; i++) {
                 const yMaha = YOGINI_ORDER[(yoginiStartIdx + i) % 8];
                 const durYears = i === 0 ? yMaha.years * fracRemaining : yMaha.years;
                 const end = addYearsToDate(cursor, durYears);
                 const isCurr = now >= cursor && now <= end;
+                const cycleNum = Math.floor(i / 8) + 1;
 
                 const card = document.createElement('div');
-                card.className = `rounded-xl border p-3 ${isCurr ? 'bg-amber-50/70 border-amber-300' : 'bg-slate-50/70 border-slate-200'}`;
+                card.className = `rounded-xl border p-3 ${isCurr ? 'bg-amber-50/80 border-amber-300 shadow-sm' : 'bg-slate-50/70 border-slate-200'}`;
 
                 const header = document.createElement('div');
                 header.className = 'flex items-center justify-between text-sm font-bold text-slate-900 mb-2 pb-1.5 border-b border-slate-200/70';
                 header.innerHTML = `
-                    <span>${currentLang === 'hi' ? yMaha.hi : yMaha.en} (${getPlanetDisplayName(yMaha.lord)})</span>
+                    <span>${currentLang === 'hi' ? yMaha.hi : yMaha.en} (${getPlanetDisplayName(yMaha.lord)}) <span class="text-[10px] font-semibold text-slate-400">#${cycleNum}</span></span>
                     <span class="text-xs font-semibold text-slate-600">${formatDateIN(cursor)} → ${formatDateIN(end)}</span>
                 `;
                 card.appendChild(header);
 
-                // Antardashas inside this Yogini Mahadasha (read-only)
                 const subGrid = document.createElement('div');
                 subGrid.className = 'grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-[11px]';
                 const spanMs = end.getTime() - cursor.getTime();
@@ -2935,7 +2987,7 @@
                     const subEndMs = subCursorMs + subMs;
                     const subRow = document.createElement('div');
                     const isSubCurr = now.getTime() >= subCursorMs && now.getTime() <= subEndMs;
-                    subRow.className = `flex items-center justify-between px-2 py-1 rounded-lg ${isSubCurr ? 'bg-amber-200/60 font-bold text-amber-950' : 'bg-white text-slate-700'}`;
+                    subRow.className = `flex items-center justify-between px-2 py-1 rounded-lg ${isSubCurr ? 'bg-amber-200/70 font-bold text-amber-950' : 'bg-white text-slate-700'}`;
                     subRow.innerHTML = `
                         <span>${currentLang === 'hi' ? yAntar.hi : yAntar.en}</span>
                         <span>${formatDateIN(new Date(subCursorMs))} – ${formatDateIN(new Date(subEndMs))}</span>
@@ -3692,9 +3744,9 @@
             const mkChartObj = { rashis, planets };
             recalculateAllAutoColors(mkChartObj);
 
-            // Muntha calculation
+            // Muntha calculation: Fixed for the entire year (birthday to birthday, does NOT change monthly!)
             const natalLagnaRashi = currentChart.rashis[1] || 1;
-            const munthaRashi = ((natalLagnaRashi - 1 + yearsElapsed + monthOffset) % 12) + 1;
+            const munthaRashi = ((natalLagnaRashi - 1 + yearsElapsed) % 12) + 1;
             let munthaHouse = 1;
             for (let h = 1; h <= 12; h++) {
                 if (rashis[h] === munthaRashi) { munthaHouse = h; break; }
@@ -4131,21 +4183,60 @@
             return { currentMaha: currentMaha || timeline[0], nextMaha: nextMaha || timeline[1], timeline };
         }
 
+        function getMulankBhagyank(dobStr) {
+            if (!dobStr || !dobStr.includes('-')) return { mulank: 1, bhagyank: 1 };
+            const [y, m, d] = dobStr.split('-').map(Number);
+            const reduce9 = (n) => {
+                while (n > 9) n = String(n).split('').reduce((a, b) => a + Number(b), 0);
+                return n;
+            };
+            return { mulank: reduce9(d), bhagyank: reduce9(String(y) + String(m) + String(d)) };
+        }
+
+        function checkRealKaalSarp(lons) {
+            const rahu = lons.Rahu || 0, ketu = lons.Ketu || 180;
+            const seven = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn'].map(id => lons[id] || 0);
+            const cw = seven.every(p => ((p - rahu + 360) % 360) < ((ketu - rahu + 360) % 360));
+            const ccw = seven.every(p => ((ketu - p + 360) % 360) < ((ketu - rahu + 360) % 360));
+            return cw || ccw;
+        }
+
+        function getDarakaraka(lons) {
+            let minDeg = 31, dkId = 'Venus';
+            ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn'].forEach(id => {
+                const deg = (lons[id] || 0) % 30;
+                if (deg < minDeg) { minDeg = deg; dkId = id; }
+            });
+            return { id: dkId, deg: minDeg };
+        }
+
+        function getMarriageDirection(rashi7) {
+            if ([1, 5, 9].includes(rashi7)) return 'पूर्व (East)';
+            if ([2, 6, 10].includes(rashi7)) return 'दक्षिण (South)';
+            if ([3, 7, 11].includes(rashi7)) return 'पश्चिम (West)';
+            return 'उत्तर (North)';
+        }
+
         function renderLifestyleReport() {
             const card = document.getElementById('lifestyle-report-card');
             if (!card) return;
 
+            const lons = getChartLongitudes();
             const lagnaRashi = currentChart.rashis[1] || 1;
             const lagnaObj = RASHIS.find(x => x.num === lagnaRashi);
             const lagnesh = lagnaObj ? lagnaObj.lord : 'Mars';
+            const moonLon = lons.Moon || 0;
+            const moonRashi = Math.floor(moonLon / 30) + 1;
+            const moonRashiObj = RASHIS.find(x => x.num === moonRashi);
             const r2Obj = RASHIS.find(x => x.num === (currentChart.rashis[2] || 2));
             const r5Obj = RASHIS.find(x => x.num === (currentChart.rashis[5] || 5));
             const r7Obj = RASHIS.find(x => x.num === (currentChart.rashis[7] || 7));
+            const r8Obj = RASHIS.find(x => x.num === (currentChart.rashis[8] || 8));
             const r9Obj = RASHIS.find(x => x.num === (currentChart.rashis[9] || 9));
             const r10Obj = RASHIS.find(x => x.num === (currentChart.rashis[10] || 10));
             const r11Obj = RASHIS.find(x => x.num === (currentChart.rashis[11] || 11));
 
-            const lord2 = r2Obj.lord, lord5 = r5Obj.lord, lord7 = r7Obj.lord, lord9 = r9Obj.lord, lord10 = r10Obj.lord, lord11 = r11Obj.lord;
+            const lord2 = r2Obj.lord, lord5 = r5Obj.lord, lord7 = r7Obj.lord, lord8 = r8Obj.lord, lord9 = r9Obj.lord, lord10 = r10Obj.lord, lord11 = r11Obj.lord;
             const pLag = getPlanetHouseAndColor(lagnesh);
             const pSun = getPlanetHouseAndColor('Sun');
             const pMoon = getPlanetHouseAndColor('Moon');
@@ -4156,15 +4247,54 @@
             const pSat = getPlanetHouseAndColor('Saturn');
             const pRah = getPlanetHouseAndColor('Rahu');
             const pKet = getPlanetHouseAndColor('Ketu');
-            const p7L = getPlanetHouseAndColor(lord7);
-            const p10L = getPlanetHouseAndColor(lord10);
             const p5L = getPlanetHouseAndColor(lord5);
+            const p7L = getPlanetHouseAndColor(lord7);
+            const p8L = getPlanetHouseAndColor(lord8);
             const p9L = getPlanetHouseAndColor(lord9);
+            const p10L = getPlanetHouseAndColor(lord10);
             const p11L = getPlanetHouseAndColor(lord11);
 
-            const h7Planets = (currentChart.planets[7] || []).map(x => getPlanetDisplayName(x.id)).join(', ');
-            const h10Planets = (currentChart.planets[10] || []).map(x => getPlanetDisplayName(x.id)).join(', ');
-            const isGood = (c) => ['green', 'pureYellow'].includes(c);
+            const { mulank, bhagyank } = getMulankBhagyank(currentChart.dob);
+            const dk = getDarakaraka(lons);
+            const hasKaalSarp = checkRealKaalSarp(lons);
+            const vargottamaList = PLANETS.filter(p => {
+                const d1R = Math.floor((lons[p.id] || 0) / 30) + 1;
+                const d9R = computeVargaRashi(lons[p.id] || 0, 9);
+                return d1R === d9R;
+            }).map(p => getPlanetDisplayName(p.id));
+            const d9LagnaR = computeVargaRashi(lons.Asc || 0, 9);
+            const d9LagnaObj = RASHIS.find(x => x.num === d9LagnaR);
+            const d9VenR = computeVargaRashi(lons.Venus || 0, 9);
+            const d9JupR = computeVargaRashi(lons.Jupiter || 0, 9);
+
+            const age = computeExactAge(currentChart.dob);
+            const { currentMaha, nextMaha, timeline } = getVimshottariTimelineSummary();
+            const birthMaha = timeline[0];
+            const birthDate = getChartStartDate();
+
+            const nakSpan = 360 / 27;
+            const nakIdx = Math.floor(moonLon / nakSpan) % 27;
+            const fracRem = 1 - ((moonLon % nakSpan) / nakSpan);
+            const yStartIdx = ((nakIdx + 1) + 3 - 1) % 8;
+            const yBirth = YOGINI_ORDER[yStartIdx];
+            const yBirthEnd = addYearsToDate(birthDate, yBirth.years * fracRem);
+
+            const h5Planets = (currentChart.planets[5] || []).map(x => x.id);
+            const h7Planets = (currentChart.planets[7] || []).map(x => x.id);
+            const h8Planets = (currentChart.planets[8] || []).map(x => x.id);
+            const h10Planets = (currentChart.planets[10] || []).map(x => x.id);
+
+            const has5th7thLink = (p5L.house === 7 || p7L.house === 5 || p5L.house === p7L.house || h5Planets.includes('Venus') || h7Planets.includes('Venus') || h5Planets.includes('Rahu'));
+            const has7thAffliction = (['orange', 'red'].includes(p7L.color) || h7Planets.some(id => ['Rahu', 'Ketu', 'Saturn', 'Sun'].includes(id)) || ['orange', 'red'].includes(pVen.color));
+            const hasDualMarriageYoga = (h7Planets.length >= 2 || ([3, 6, 9, 12].includes(r7Obj.num) && ['orange', 'red'].includes(p7L.color)));
+            const hasDusthana6812 = ([6, 8, 12].includes(p7L.house) || [6, 8, 12].includes(pVen.house));
+            const hasHealthAlert = ([6, 8, 12].includes(pLag.house) || ['orange', 'red'].includes(pLag.color) || ['orange', 'red'].includes(pMoon.color));
+            const hasVehicleRisk = ([6, 8, 12].includes(pMars.house) || ['orange', 'red'].includes(pMars.color));
+            const mahaChrono = timeline.slice(0, 6).map(t => `<strong>${t.name}</strong> (${formatDateIN(t.start)} से ${formatDateIN(t.end)})`).join(' → ');
+
+            const name = currentChart.clientName || 'जातक';
+            const dir = getMarriageDirection(r7Obj.num);
+
             const colorDesc = (c) => ({
                 green: 'अत्यंत बलवान (उच्च/स्वराशि)',
                 pureYellow: 'शुभ व मित्रवत',
@@ -4174,57 +4304,56 @@
                 red: 'अत्यधिक संवेदनशील व परीक्षाकारी'
             }[c] || 'संतुलित');
 
-            const name = currentChart.clientName || 'जातक';
-            const age = computeExactAge(currentChart.dob);
-            const { currentMaha, nextMaha } = getVimshottariTimelineSummary();
-            const curMahaStr = `${currentMaha.name} (${formatDateIN(currentMaha.start)} से ${formatDateIN(currentMaha.end)})`;
-            const nxtMahaStr = `${nextMaha.name} (${formatDateIN(nextMaha.start)} से ${formatDateIN(nextMaha.end)})`;
-
             if (activeLifestyleTab === 'relation') {
                 card.innerHTML = `
                     <h3 class="text-base sm:text-lg font-extrabold text-rose-900">रिलेशनशिप एवं मैरिटल लाइफ विस्तृत रिपोर्ट — ${name}</h3>
+                    <p class="text-xs text-slate-500">जन्म विवरण: ${currentChart.dob} • ${currentChart.tob} • ${currentChart.pob} | मूलांक: ${mulank}, भाग्यांक: ${bhagyank}</p>
 
-                    <p><strong>1. लग्न, स्वभाव और भावनात्मक आधार:</strong> ${name} की जन्म कुंडली में <strong>${lagnaObj.hindi}</strong> लग्न उदित है और लग्नेश <strong>${getPlanetDisplayName(lagnesh)}</strong> वर्तमान में भाव <strong>${pLag.house}</strong> में ${colorDesc(pLag.color)} अवस्था में स्थित हैं। संबंधों की दुनिया में किसी व्यक्ति का मूल स्वभाव, उसकी अपेक्षाएं और सामने वाले के प्रति समर्पण इस बात से तय होता है कि उसका मन (चंद्रमा) और लग्नेश किस भाव में हैं। आपकी कुंडली में चंद्रमा भाव <strong>${pMoon.house}</strong> में ${colorDesc(pMoon.color)} स्थिति में विराजमान हैं। यह स्थिति दर्शाती है कि आप रिश्तों को केवल ऊपरी तौर पर नहीं, बल्कि दिल की गहराई से जीते हैं। जब आप किसी के साथ जुड़ते हैं, तो पूरी निष्ठा और ईमानदारी से साथ निभाते हैं, लेकिन सामने वाले से भी उतनी ही संवेदनशीलता की उम्मीद रखते हैं।</p>
+                    <p><strong>1. जन्म बिंदु, दशा पृष्ठभूमि एवं ग्रह सार:</strong> ${name} का जन्म <strong>${lagnaObj.hindi} (${lagnaRashi})</strong> लग्न और <strong>${moonRashiObj.hindi} (${moonRashi})</strong> चंद्र राशि में हुआ है। जन्म के समय विंशोत्तरी महादशा <strong>${birthMaha.name}</strong> की थी जो <strong>${formatDateIN(birthMaha.end)}</strong> को समाप्त हुई, तथा जन्म के समय योगिनी दशा <strong>${yBirth.hi} (${getPlanetDisplayName(yBirth.lord)})</strong> की थी जो <strong>${formatDateIN(yBirthEnd)}</strong> तक रही। आपकी कुंडली में सबसे कम अंश वाला ग्रह यानी <strong>दाराकारक (Darakaraka) ${getPlanetDisplayName(dk.id)}</strong> (${dk.deg.toFixed(2)}°) है, जो जीवनसाथी के वास्तविक स्वभाव और वैवाहिक जीवन की मुख्य धुरी को नियंत्रित करता है। ${vargottamaList.length > 0 ? `इस कुंडली में <strong>${vargottamaList.join(', ')}</strong> वर्गोत्तम स्थिति में हैं, जो अपने भाव से जुड़े फलों को स्थायी और गहरा बनाते हैं।` : ''} ${hasKaalSarp ? 'कुंडली में राहु-केतु अक्ष के एक ओर सभी ग्रह होने से <strong>कालसर्प योग</strong> निर्मित हो रहा है, जिसके प्रभाव से जीवन के शुरुआती व मध्य वर्षों में रिश्तों और निर्णयों में उतार-चढ़ाव आ सकता है।' : ''}</p>
 
-                    <p><strong>2. सप्तम भाव व जीवनसाथी का स्वरूप:</strong> वैवाहिक जीवन और दीर्घकालिक साझेदारी का मुख्य केंद्र सप्तम भाव होता है। आपकी कुंडली में सप्तम भाव में <strong>${r7Obj.hindi}</strong> राशि है, जिसके स्वामी <strong>${getPlanetDisplayName(lord7)}</strong> भाव <strong>${p7L.house}</strong> में ${colorDesc(p7L.color)} स्थिति में बैठे हैं। ${h7Planets ? `सप्तम भाव में स्वयं <strong>${h7Planets}</strong> की उपस्थिति इस बात का स्पष्ट संकेत है कि आपके जीवनसाथी का व्यक्तित्व अत्यंत प्रभावशाली होगा और विवाह के बाद आपके जीवन की दिशा में बड़ा परिवर्तन आएगा।` : `सप्तम भाव रिक्त होने के कारण दांपत्य जीवन की संपूर्ण गुणवत्ता सप्तमेश ${getPlanetDisplayName(lord7)} की भाव ${p7L.house} में स्थिति और शुक्र-गुरु के आपसी तालमेल से संचालित होती है।`} सप्तमेश का यह भाव संबंध बताता है कि जीवनसाथी के साथ आपका रिश्ता केवल पारिवारिक जिम्मेदारी नहीं, बल्कि एक-दूसरे के विकास का माध्यम बनेगा।</p>
+                    <p><strong>2. बचपन, पारिवारिक माहौल और शुरुआती दशाओं का प्रभाव:</strong> जन्म के बाद प्रारंभिक महादशा <strong>${birthMaha.name}</strong> से लेकर अगली महादशाओं तक का समय आपके पारिवारिक माहौल और भावनात्मक नींव को गढ़ता है। आपकी दशा श्रृंखला इस प्रकार है: ${mahaChrono}। कुंडली के द्वितीय (कुटुंब) भाव में <strong>${r2Obj.hindi}</strong> राशि (स्वामी ${getPlanetDisplayName(lord2)}) और चतुर्थ (माता व गृह सुख) भाव पर चंद्रमा (भाव ${pMoon.house}, ${colorDesc(pMoon.color)}) का प्रभाव दर्शाता है कि बचपन व किशोरावस्था में परिवार की आर्थिक और भावनात्मक परिस्थितियां आपकी सोच पर गहरा असर डाल सकती हैं। ${['orange', 'red'].includes(pSun.color) || [6, 8, 12].includes(pSun.house) ? 'पिता के साथ विचारों में दूरी या कार्य दबाव के कारण संवाद की कमी रह सकती है।' : 'परिवार और पिता के साथ संबंधों में जिम्मेदारियों का आदान-प्रदान स्पष्ट दिखाई देता है।'}</p>
 
-                    <p><strong>3. शुक्र, गुरु और मंगल का प्रेम व दांपत्य प्रभाव:</strong> प्रेम, आकर्षण और भौतिक सुख के कारक <strong>शुक्र</strong> आपकी कुंडली के भाव <strong>${pVen.house}</strong> में ${colorDesc(pVen.color)} अवस्था में हैं। ${isGood(pVen.color) ? 'शुक्र की यह शुभ स्थिति वैवाहिक जीवन में मधुरता, आपसी आकर्षण, सुंदर पारिवारिक वातावरण और जीवनसाथी के सहयोग को मजबूत बनाती है।' : 'शुक्र की संवेदनशील स्थिति यह संकेत देती है कि रिश्तों में अनावश्यक संदेह, अपेक्षाओं के बोझ या छोटी-छोटी बातों को मन में दबाकर रखने से बचना होगा।'} वहीं विवाह और नैतिक स्थिरता के कारक <strong>गुरु</strong> भाव <strong>${pJup.house}</strong> में ${colorDesc(pJup.color)} होकर संबंधों को समझदारी और दीर्घकालिक सुरक्षा प्रदान करते हैं। दूसरी ओर, ऊर्जा और आवेग के कारक <strong>मंगल</strong> भाव <strong>${pMars.house}</strong> में स्थित हैं, जो यह चेतावनी देते हैं कि क्रोध, जल्दबाज़ी या तीखे संवाद से दांपत्य शांति को नुकसान पहुंच सकता है—इसलिए किसी भी विवाद के समय 24 घंटे का धैर्य रखना आपके रिश्ते के लिए वरदान साबित होगा।</p>
+                    <p><strong>3. प्रेम संबंध, आकर्षण एवं भावनात्मक मोड़ (केवल वास्तविक योगानुसार):</strong> ${has5th7thLink ? `आपकी कुंडली में पंचम भाव (${r5Obj.hindi}, स्वामी ${getPlanetDisplayName(lord5)} भाव ${p5L.house} में) और सप्तम भाव/शुक्र के बीच सीधा संबंध बन रहा है। इसके प्रभाव से युवावस्था में—विशेषकर जब <strong>राहु, शुक्र, चंद्र या बुध</strong> की अंतर्दशा अथवा योगिनी की सिद्धा/भद्रिका दशा सक्रिय हो—तब किसी परिचित या मित्र मंडली के व्यक्ति के प्रति गहरा आकर्षण या प्रेम संबंध बनने की प्रबल संभावना रह सकती है। ध्यान रखें कि यदि इन संबंधों में पारदर्शिता न हो तो मनमुटाव या अलगाव की स्थिति भी बन सकती है।` : `आपकी कुंडली में पंचम भाव (स्वामी ${getPlanetDisplayName(lord5)} भाव ${p5L.house}) और सप्तम भाव के बीच कोई उग्र आवेगपूर्ण प्रेम-भटकाव का योग नहीं बन रहा है, इसलिए आप भावनाओं में बहने के बजाय व्यावहारिक और परिवार-स्वीकृत संबंधों को प्राथमिकता दे सकते हैं।`}</p>
 
-                    <p><strong>4. पंचम भाव (प्रेम संबंध) और द्वितीय भाव (कुटुंब सुख):</strong> प्रेम प्रसंगों और भावनात्मक जुड़ाव का पंचम भाव <strong>${r5Obj.hindi}</strong> राशि से जुड़ा है, जिसके स्वामी <strong>${getPlanetDisplayName(lord5)}</strong> भाव <strong>${p5L.house}</strong> में हैं। यह योग दर्शाता है कि युवावस्था और परिपक्वता के बीच आपके जीवन में प्रेम और आकर्षण के स्पष्ट अवसर आते हैं, किंतु सच्चा और स्थायी जुड़ाव तभी टिकता है जब विचारों में पारदर्शिता हो। कुटुंब और वाणी के द्वितीय भाव (स्वामी <strong>${getPlanetDisplayName(lord2)}</strong>) तथा सुख के चतुर्थ भाव पर राहु (भाव <strong>${pRah.house}</strong>) व केतु (भाव <strong>${pKet.house}</strong>) की दृष्टि या उपस्थिति कभी-कभी बाहरी लोगों या पारिवारिक गलतफहमियों के कारण तनाव उत्पन्न कर सकती है। इसलिए अपने निजी वैवाहिक निर्णयों में तीसरे व्यक्ति का हस्तक्षेप कम से कम रखें।</p>
+                    <p><strong>4. विवाह समय, दिशा और नवांश (D9) विश्लेषण:</strong> वैवाहिक जीवन का मुख्य केंद्र सप्तम भाव (${r7Obj.hindi}, स्वामी ${getPlanetDisplayName(lord7)} भाव ${p7L.house} में ${colorDesc(p7L.color)}) है। सप्तम भाव की राशि के अनुसार आपका विवाह जन्म स्थान से <strong>${dir}</strong> दिशा की ओर होने की प्रबल संभावना है। नवांश कुंडली (D9) में <strong>${d9LagnaObj.hindi}</strong> लग्न उदित है और शुक्र ${RASHIS.find(x=>x.num===d9VenR).hindi} तथा गुरु ${RASHIS.find(x=>x.num===d9JupR).hindi} राशि में हैं—यह दर्शाता है कि जीवनसाथी ${['green','pureYellow'].includes(pVen.color) ? 'आकर्षक, समझदार और व्यावहारिक' : 'स्पष्टवादी, स्वतंत्र विचारों वाला किंतु कभी-कभी जिद्दी स्वभाव का'} हो सकता है।</p>
 
-                    <p><strong>5. समय-चक्र व दशा अनुसार भविष्यवाणी (कब क्या होगा):</strong> आपकी वर्तमान आयु <strong>${age.years} वर्ष</strong> है और इस समय आपके जीवन में <strong>${curMahaStr}</strong> की महादशा चल रही है। महादशा का यह चरण आपके रिश्तों की परीक्षा और परिपक्वता दोनों लेकर आता है। वर्तमान महादशा के दौरान जब-जब शुक्र, सप्तमेश ${getPlanetDisplayName(lord7)} या गुरु की अंतर्दशा आएगी, तब-तब विवाह, सगाई, संतान सुख या जीवनसाथी के माध्यम से भाग्योदय के प्रबल योग बनेंगे। विशेष रूप से आगामी <strong>${nxtMahaStr}</strong> की महादशा में प्रवेश करने पर पारिवारिक जीवन और साझेदारी में बड़ा मोड़ आएगा—जहां पुराने मतभेद समाप्त होकर एक नई स्थिरता और आपसी विश्वास का निर्माण होगा। यदि आपका विवाह हो चुका है, तो इस आगामी चरण में जीवनसाथी के करियर या स्वास्थ्य में सुधार और साथ मिलकर संपत्ति अर्जित करने के सुंदर अवसर बनेंगे।</p>
+                    <p><strong>5. वैवाहिक जीवन की चुनौतियां, संवेदनशील समय व संतान योग:</strong> वर्तमान में आपकी आयु <strong>${age.years} वर्ष</strong> है और <strong>${currentMaha.name}</strong> की महादशा (${formatDateIN(currentMaha.start)} से ${formatDateIN(currentMaha.end)}) चल रही है, जिसके बाद <strong>${nextMaha.name}</strong> महादशा (${formatDateIN(nextMaha.start)} से ${formatDateIN(nextMaha.end)}) आरंभ होगी। ${has7thAffliction || hasDusthana6812 ? `सप्तम भाव/सप्तमेश या शुक्र पर क्रूर व संवेदनशील ग्रहों का प्रभाव होने के कारण विवाह के बाद शुरुआती वर्षों में आपसी तालमेल, ससुराल पक्ष या अहंकार से जुड़े मतभेद उत्पन्न हो सकते हैं। ${hasDualMarriageYoga ? 'कुंडली में द्वि-विवाह या संबंध टूटकर पुनः जुड़ने की सूक्ष्म संभावना भी दिखाई देती है—इसलिए विवाह पूर्व कुंडली मिलान और संवाद में धैर्य रखना अत्यंत आवश्यक है।' : ''}` : 'सप्तम भाव व सप्तमेश की स्थिति संतुलित होने से दांपत्य जीवन में गंभीर संकट के योग नहीं दिखते, सामान्य नोकझोंक के बावजूद साथ बना रह सकता है।'} संतान भाव (पंचमेश ${getPlanetDisplayName(lord5)} भाव ${p5L.house}) और गुरु (भाव ${pJup.house}, ${colorDesc(pJup.color)}) के अनुसार विवाह के उपरांत योग्य दशा में संतान सुख की प्राप्ति हो सकती है${['orange','red'].includes(p5L.color) || h5Planets.some(id=>['Rahu','Ketu','Saturn'].includes(id)) ? ', हालांकि संतान के स्वास्थ्य या शुरुआती गर्भ/पालन में विशेष सावधानी बरतना उचित रहेगा।' : '।'} </p>
 
-                    <p><strong>6. व्यावहारिक सुझाव व संतुलन:</strong> आपकी कुंडली यह स्पष्ट बताती है कि रिश्तों में सफलता का मूल मंत्र 'संवाद और समय' है। शुक्रवार और गुरुवार को सकारात्मक पारिवारिक संवाद, अपने जीवनसाथी की भावनाओं को बिना जज किए सुनना, और मंगल-राहु जनित आवेग से बचना आपके रिलेशनशिप व मैरिटल लाइफ को अत्यंत सुखद, स्थिर और समृद्ध बनाए रखेगा।</p>
+                    <p><strong>6. सावधानी, कर्मिक संकेत व निष्कर्ष:</strong> ${hasVehicleRisk ? 'मंगल की भाव ' + pMars.house + ' में स्थिति के कारण वाहन चलाते समय और क्रोध में निर्णय लेते समय विशेष सतर्कता आवश्यक है। ' : ''}${hasHealthAlert ? 'लग्नेश या चंद्रमा के संवेदनशील होने से मानसिक तनाव, अनिद्रा या मौसमी स्वास्थ्य समस्याओं के प्रति सचेत रहें। ' : ''}यह संपूर्ण विश्लेषण आपकी कुंडली में मौजूद ग्रह स्थितियों के आधार पर संभावित परिणामों ("हो सकता है") को दर्शाता है। सही समय पर ग्रहों के अनुकूल आचरण, विनम्र संवाद और धैर्य से आप किसी भी कठिन दशा के प्रभाव को काफी हद तक कम कर सकते हैं।</p>
                 `;
             } else if (activeLifestyleTab === 'career') {
                 card.innerHTML = `
                     <h3 class="text-base sm:text-lg font-extrabold text-indigo-900">करियर, धन एवं आजीविका विस्तृत रिपोर्ट — ${name}</h3>
+                    <p class="text-xs text-slate-500">जन्म विवरण: ${currentChart.dob} • ${currentChart.tob} • ${currentChart.pob} | मूलांक: ${mulank}, भाग्यांक: ${bhagyank}</p>
 
-                    <p><strong>1. कर्म भाव (दशम घर) और पेशेवर पहचान:</strong> ${name} की जन्म कुंडली में आजीविका, पद, प्रतिष्ठा और कर्म क्षेत्र का मुख्य केंद्र दशम भाव है, जिसमें <strong>${r10Obj.hindi}</strong> राशि स्थित है। इस भाव के स्वामी <strong>${getPlanetDisplayName(lord10)}</strong> वर्तमान में भाव <strong>${p10L.house}</strong> में ${colorDesc(p10L.color)} स्थिति में विराजमान हैं। ${h10Planets ? `दशम भाव में स्वयं <strong>${h10Planets}</strong> के विराजमान होने से आपके भीतर कार्यक्षेत्र में आगे बढ़ने, नेतृत्व करने और अपनी स्वतंत्र पहचान बनाने की प्रबल ऊर्जा मौजूद है।` : `दशम भाव के रिक्त होने के कारण आपके करियर की पूरी दिशा दशमेश ${getPlanetDisplayName(lord10)} की भाव ${p10L.house} में स्थिति, सूर्य-शनि के बल और लग्नेश की शक्ति से तय होती है।`} आप ऐसे कार्य में अधिक सफल होते हैं जहां आपकी बुद्धिमत्ता, निर्णय क्षमता और व्यक्तिगत जिम्मेदारी का सीधा उपयोग हो।</p>
+                    <p><strong>1. कर्म भाव (10वां घर), लग्नेश और कार्यक्षमता:</strong> ${name} की कुंडली में <strong>${lagnaObj.hindi}</strong> लग्न है और कर्म भाव (दशम घर) में <strong>${r10Obj.hindi}</strong> राशि स्थित है, जिसके स्वामी <strong>${getPlanetDisplayName(lord10)}</strong> भाव <strong>${p10L.house}</strong> में ${colorDesc(p10L.color)} स्थिति में हैं। ${h10Planets.length > 0 ? `दशम भाव में स्वयं <strong>${h10Planets.map(getPlanetDisplayName).join(', ')}</strong> के बैठे होने से आपके करियर की दिशा सीधे इन्हीं ग्रहों के कार्यक्षेत्रों से जुड़ेगी।` : `दशम भाव खाली होने से करियर की संपूर्ण बागडोर दशमेश ${getPlanetDisplayName(lord10)} और लग्नेश ${getPlanetDisplayName(lagnesh)} (भाव ${pLag.house}) के हाथ में है।`} आपका मूलांक ${mulank} और भाग्यांक ${bhagyank} भी आपकी कार्यशैली में स्वतंत्र निर्णय और व्यावहारिक सोच को बढ़ावा देता है।</p>
 
-                    <p><strong>2. लग्नेश, बुध और सूर्य-शनि का व्यावसायिक विश्लेषण:</strong> लग्नेश <strong>${getPlanetDisplayName(lagnesh)}</strong> भाव <strong>${pLag.house}</strong> में ${colorDesc(pLag.color)} होकर आपकी कार्यक्षमता और लक्ष्य के प्रति निरंतरता को दर्शाते हैं। वहीं बुद्धि, व्यापार, संवाद और तकनीकी कौशल के कारक <strong>बुध</strong> भाव <strong>${pMerc.house}</strong> में ${colorDesc(pMerc.color)} अवस्था में हैं। बुध का यह स्थान बताता है कि लेखन, परामर्श, बैंकिंग, फाइनेंस, आईटी, डेटा विश्लेषण, शिक्षण, प्रबंधन, या स्वयं का व्यापार आपके लिए अत्यंत उपयुक्त क्षेत्र हो सकते हैं। प्रशासन, सरकारी क्षेत्र और अधिकार के कारक <strong>सूर्य</strong> भाव <strong>${pSun.house}</strong> में ${colorDesc(pSun.color)} हैं, जबकि परिश्रम, अनुशासन और दीर्घकालिक सफलता के कारक <strong>शनि</strong> भाव <strong>${pSat.house}</strong> में ${colorDesc(pSat.color)} स्थिति में हैं। ${isGood(pSun.color) || isGood(pSat.color) ? 'यह ग्रह विन्यास दर्शाता है कि जैसे-जैसे आपकी आयु और अनुभव बढ़ेगा, वैसे-वैसे आपका पद, प्रभाव और आर्थिक आधार मजबूत होता जाएगा।' : 'यह स्थिति बताती है कि करियर के शुरुआती वर्षों में आपको अपनी योग्यता सिद्ध करने के लिए दोगुनी मेहनत करनी पड़ सकती है, किंतु यही संघर्ष आगे चलकर आपको अजेय बनाएगा।'}</p>
+                    <p><strong>2. शिक्षा, भटकाव और शुरुआती करियर संघर्ष (तिथि-आधारित):</strong> जन्म के समय <strong>${birthMaha.name}</strong> महादशा (${formatDateIN(birthMaha.end)} तक) के बाद आने वाली दशाओं (${mahaChrono}) में शिक्षा और करियर की नींव रखी जाती है। आपकी कुंडली में बुध भाव <strong>${pMerc.house}</strong> (${colorDesc(pMerc.color)}) और पंचमेश ${getPlanetDisplayName(lord5)} भाव <strong>${p5L.house}</strong> में हैं। ${['orange','red'].includes(pMerc.color) || [6,8,12].includes(p5L.house) || h5Planets.includes('Rahu') ? '16 से 22 वर्ष की आयु के बीच एकाग्रता में कमी, गलत संगति या अध्ययन में रुकावट की संभावना बन सकती है, लेकिन सही मार्गदर्शन से आप तकनीकी या व्यावसायिक क्षेत्र में संभल सकते हैं।' : 'शिक्षा और कौशल निर्माण में आपकी पकड़ मजबूत रह सकती है, विशेषकर विश्लेषण, प्रबंधन, वित्त या तकनीकी विषयों में।'}</p>
 
-                    <p><strong>3. भाग्य भाव (9वां), लाभ भाव (11वां) और धन संचय:</strong> केवल मेहनत ही नहीं, बल्कि सही समय पर अवसर और धन लाभ भी कुंडली के 9वें और 11वें भाव से देखा जाता है। आपकी कुंडली में नवमेश (भाग्येश) <strong>${getPlanetDisplayName(lord9)}</strong> भाव <strong>${p9L.house}</strong> में और एकादशेश (लाभेश) <strong>${getPlanetDisplayName(lord11)}</strong> भाव <strong>${p11L.house}</strong> में स्थित हैं। गुरु की भाव <strong>${pJup.house}</strong> में ${colorDesc(pJup.color)} उपस्थिति ज्ञान, सही सलाह और नैतिक मार्ग से धन आगमन का संकेत देती है। वहीं राहु (भाव <strong>${pRah.house}</strong>) और केतु (भाव <strong>${pKet.house}</strong>) यह दर्शाते हैं कि आधुनिक तकनीक, ऑनलाइन माध्यम, विदेशी संपर्कों या अनूठे विचारों से आपको अचानक और बड़ा आर्थिक लाभ मिल सकता है—बशर्ते आप शॉर्टकट या जोखिम भरे सट्टे से दूर रहें।</p>
+                    <p><strong>3. उपयुक्त कार्यक्षेत्र, नौकरी बनाम व्यापार:</strong> सूर्य (भाव ${pSun.house}, ${colorDesc(pSun.color)}), शनि (भाव ${pSat.house}, ${colorDesc(pSat.color)}) और बुध की स्थिति के अनुसार आपके लिए प्रशासन, तकनीकी सेवाएं, डेटा/अकाउंट्स, परामर्श, शिक्षा, स्वास्थ्य/प्रबंधन या स्वतंत्र व्यवसाय अनुकूल हो सकते हैं। ${['green','pureYellow'].includes(p10L.color) || ['green','pureYellow'].includes(pMerc.color) ? 'स्वतंत्र व्यापार या नेतृत्व की भूमिका में समय के साथ अच्छी उन्नति हो सकती है।' : 'शुरुआती वर्षों में नौकरी या किसी अनुभवी संस्था के साथ काम करके अनुभव बटोरना अधिक सुरक्षित रहेगा, उसके बाद ही स्वतंत्र कार्य में हाथ डालें।'}</p>
 
-                    <p><strong>4. समय-चक्र व दशा अनुसार करियर भविष्यवाणी:</strong> आपकी वर्तमान आयु <strong>${age.years} वर्ष</strong> है और इस समय आपके जीवन में <strong>${curMahaStr}</strong> की महादशा सक्रिय है। वर्तमान समय में आपके कार्यक्षेत्र में स्थिरता बनाने, नए कौशल सीखने और अपनी साख मजबूत करने पर ध्यान देना सबसे महत्वपूर्ण है। इस महादशा के भीतर जब भी दशमेश ${getPlanetDisplayName(lord10)}, बुध, गुरु या लाभेश ${getPlanetDisplayName(lord11)} की अंतर्दशा चलेगी, तब नौकरी में पदोन्नति, वेतन वृद्धि, नए प्रोजेक्ट या स्वतंत्र व्यवसाय के विस्तार के मजबूत अवसर आएंगे। विशेषकर जब आप आगामी <strong>${nxtMahaStr}</strong> की महादशा में प्रवेश करेंगे, तब आपके करियर की दिशा में एक निर्णायक उछाल देखने को मिलेगा। यदि वर्तमान में आप किसी बदलाव या स्थानांतरण की सोच रहे हैं, तो बिना ठोस वित्तीय बैकअप के आवेग में निर्णय न लें; योजनाबद्ध बदलाव आपको बड़ी सफलता दिलाएगा।</p>
+                    <p><strong>4. धन संचय, अचानक लाभ व अष्टम-द्वादश प्रभाव:</strong> धन भाव (${r2Obj.hindi}, स्वामी ${getPlanetDisplayName(lord2)}) और लाभ भाव (${r11Obj.hindi}, स्वामी ${getPlanetDisplayName(lord11)} भाव ${p11L.house}) की स्थिति बताती है कि आपकी आय का स्तर कैसा रहेगा। गुरु भाव <strong>${pJup.house}</strong> (${colorDesc(pJup.color)}) में रहकर नैतिक आय और बचत को प्रभावित करते हैं, जबकि राहु (भाव ${pRah.house}) व केतु (भाव ${pKet.house}) अचानक लाभ या अचानक खर्च दोनों दे सकते हैं। यदि आपका अष्टमेश (${getPlanetDisplayName(lord8)} भाव ${p8L.house}) या शनि कमजोर है, तो बिना जांचे-परखे किसी को बड़ा कर्ज देने या सट्टेबाजी से बचना चाहिए।</p>
 
-                    <p><strong>5. कार्यक्षेत्र में सावधानियां और सफलता के सूत्र:</strong> आपकी कुंडली के अनुसार, कार्यस्थल पर राजनीति, अनावश्यक वाद-विवाद और अधूरे छोड़े गए प्रोजेक्ट आपकी प्रगति में बाधा बन सकते हैं। अपने वरिष्ठों व सहकर्मियों के साथ स्पष्ट और विनम्र संवाद रखें, समय प्रबंधन को प्राथमिकता दें और हर आर्थिक समझौते को लिखित रूप में स्पष्ट रखें। निरंतर अध्ययन, अनुशासन और धैर्य के बल पर यह कुंडली आपको एक सम्मानित, स्वतंत्र और आर्थिक रूप से सुरक्षित करियर प्रदान करने में पूर्ण सक्षम है।</p>
+                    <p><strong>5. वर्तमान व आगामी महादशा में करियर भविष्यवाणी:</strong> वर्तमान आयु <strong>${age.years} वर्ष</strong> में आपकी <strong>${currentMaha.name}</strong> महादशा (${formatDateIN(currentMaha.start)} से ${formatDateIN(currentMaha.end)}) चल रही है। इस अवधि में जब भी दशमेश ${getPlanetDisplayName(lord10)}, लाभेश ${getPlanetDisplayName(lord11)} या लग्नेश ${getPlanetDisplayName(lagnesh)} की अंतर्दशा आएगी, तब पदोन्नति, नई नौकरी, स्थान परिवर्तन या आय वृद्धि के अवसर बन सकते हैं। इसके बाद आने वाली <strong>${nextMaha.name}</strong> महादशा (${formatDateIN(nextMaha.start)} से ${formatDateIN(nextMaha.end)}) आपके करियर का सबसे निर्णायक मोड़ साबित हो सकती है—जिसमें लंबे समय से रुके कार्य पूरे होने और स्थायी आर्थिक आधार बनने की प्रबल संभावना है।</p>
+
+                    <p><strong>6. कार्यस्थल सावधानियां व सफलता के सूत्र:</strong> ${hasKaalSarp ? 'कालसर्प योग के कारण कार्यस्थल पर प्रतिस्पर्धा और गुप्त विरोधियों से सावधान रहें। ' : ''}कार्यस्थल पर जल्दबाज़ी में इस्तीफा देने या सहकर्मियों से विवाद करने से बचें। लिखित दस्तावेज़ों को स्पष्ट रखें और नियमित कौशल उन्नयन करते रहें—यही आपके लिए स्थायी सफलता का मार्ग है।</p>
                 `;
             } else {
                 card.innerHTML = `
                     <h3 class="text-base sm:text-lg font-extrabold text-emerald-900">कम्प्लीट लाइफ ओवरव्यू (संपूर्ण जीवन विश्लेषण) — ${name}</h3>
+                    <p class="text-xs text-slate-500">जन्म विवरण: ${currentChart.dob} • ${currentChart.tob} • ${currentChart.pob} | मूलांक: ${mulank}, भाग्यांक: ${bhagyank}</p>
 
-                    <p><strong>1. व्यक्तित्व की मूल संरचना और लग्न प्रभाव:</strong> ${name} की संपूर्ण जन्म कुंडली का गहराई से अध्ययन करने पर स्पष्ट होता है कि <strong>${lagnaObj.hindi}</strong> लग्न आपके व्यक्तित्व को एक विशिष्ट पहचान, सोचने की गहराई और जीवन के प्रति व्यावहारिक दृष्टिकोण प्रदान करता है। लग्नेश <strong>${getPlanetDisplayName(lagnesh)}</strong> आपकी कुंडली के भाव <strong>${pLag.house}</strong> में ${colorDesc(pLag.color)} अवस्था में विराजमान हैं। ज्योतिष में लग्नेश पूरे जीवन-रथ का सारथी होता है। ${isGood(pLag.color) ? 'लग्नेश की मजबूत और सकारात्मक स्थिति आपको कठिन से कठिन परिस्थितियों में भी डटे रहने, आत्मविश्वास के साथ निर्णय लेने और जीवन में उच्च स्तर की प्रगति प्राप्त करने की शक्ति देती है।' : 'लग्नेश की संवेदनशील स्थिति यह संकेत देती है कि आपको जीवन में किसी भी बड़ी सफलता के लिए आत्म-अनुशासन, मानसिक शांति और स्वास्थ्य के प्रति निरंतर जागरूकता बनाए रखनी होगी।'}</p>
+                    <p><strong>1. संपूर्ण व्यक्तित्व, लग्न एवं नवांश आधार:</strong> ${name} का जन्म <strong>${lagnaObj.hindi}</strong> लग्न, <strong>${moonRashiObj.hindi}</strong> चंद्र राशि और नवांश लग्न <strong>${d9LagnaObj.hindi}</strong> में हुआ है। लग्नेश <strong>${getPlanetDisplayName(lagnesh)}</strong> भाव <strong>${pLag.house}</strong> में ${colorDesc(pLag.color)} अवस्था में विराजमान हैं। लग्नेश जीवन के समग्र स्वास्थ्य, आत्मविश्वास और भाग्य को खींचने की क्षमता का प्रतीक होता है। ${vargottamaList.length > 0 ? `आपकी कुंडली में <strong>${vargottamaList.join(', ')}</strong> वर्गोत्तम हैं, जिसका अर्थ है कि जीवन के महत्वपूर्ण चरणों में इन ग्रहों से जुड़े क्षेत्र विशेष रूप से प्रभावी रहेंगे।` : ''} ${hasKaalSarp ? 'चूंकि सभी सात ग्रह राहु-केतु के मध्य स्थित हैं, इसलिए कुंडली में कालसर्प योग बन रहा है—जो व्यक्ति को साधारण से असाधारण संघर्ष और फिर बड़ी सफलता की ओर ले जा सकता है।' : ''}</p>
 
-                    <p><strong>2. मन, बुद्धि और निर्णय क्षमता (चंद्रमा व बुध):</strong> मनुष्य के जीवन की आधी जीत और हार उसके मन की स्थिति पर निर्भर करती है। आपकी कुंडली में चंद्रमा भाव <strong>${pMoon.house}</strong> में ${colorDesc(pMoon.color)} हैं और बुद्धि के स्वामी बुध भाव <strong>${pMerc.house}</strong> में ${colorDesc(pMerc.color)} हैं। चंद्रमा की यह स्थिति आपके भीतर संवेदनशीलता, कल्पनाशीलता और परिस्थितियों को पहले से भांप लेने की क्षमता देती है। वहीं बुध आपकी तार्किक शक्ति, संवाद शैली और समस्या समाधान के कौशल को निर्धारित करते हैं। जब चंद्रमा और बुध के बीच संतुलन रहता है, तब आप कठिन निर्णय भी बेहद सटीकता से लेते हैं; परंतु अत्यधिक चिंता या ओवरथिंकिंग से बचना आपके मानसिक स्वास्थ्य के लिए अत्यंत आवश्यक है।</p>
+                    <p><strong>2. मन, बुद्धि, साहस और कर्म का संतुलन:</strong> चंद्रमा भाव <strong>${pMoon.house}</strong> (${colorDesc(pMoon.color)}) में, बुध भाव <strong>${pMerc.house}</strong> (${colorDesc(pMerc.color)}) में, तथा मंगल भाव <strong>${pMars.house}</strong> (${colorDesc(pMars.color)}) में स्थित हैं। यह त्रयी बताती है कि आप किसी स्थिति पर कितनी तेजी से प्रतिक्रिया देते हैं। जब चंद्रमा और बुध संतुलित होते हैं, तब आप कठिन से कठिन समस्या का हल शांत दिमाग से निकाल लेते हैं; किंतु यदि चंद्रमा पीड़ित हो तो अनावश्यक चिंता और भावनात्मक उतार-चढ़ाव निर्णय क्षमता को प्रभावित कर सकता है।</p>
 
-                    <p><strong>3. धन, परिवार, कर्म और भाग्य का त्रिकोण:</strong> आपकी कुंडली में धन व परिवार (द्वितीयेश ${getPlanetDisplayName(lord2)}), संतान व बुद्धि (पंचमेश ${getPlanetDisplayName(lord5)} भाव ${p5L.house}), भाग्य व धर्म (नवमेश ${getPlanetDisplayName(lord9)} भाव ${p9L.house}), तथा कर्म व प्रतिष्ठा (दशमेश ${getPlanetDisplayName(lord10)} भाव ${p10L.house}) जीवन के मुख्य स्तंभ हैं। गुरु भाव <strong>${pJup.house}</strong> में ${colorDesc(pJup.color)} होकर आपके जीवन में नैतिक मूल्यों, शिक्षा, सलाह और ईश्वरीय कृपा के स्तर को दर्शाते हैं। शुक्र भाव <strong>${pVen.house}</strong> में ${colorDesc(pVen.color)} होकर सुख-सुविधाओं, वाहन, गृह सुख और कलात्मक रुचि को प्रभावित करते हैं। वहीं मंगल (भाव <strong>${pMars.house}</strong>) आपके साहस व ऊर्जा को और शनि (भाव <strong>${pSat.house}</strong>) आपके धैर्य, कर्मफल और दीर्घकालिक स्थिरता को नियंत्रित करते हैं।</p>
+                    <p><strong>3. भाग्य, धर्म, धन और पारिवारिक स्तंभ:</strong> नवमेश (भाग्येश) <strong>${getPlanetDisplayName(lord9)}</strong> भाव <strong>${p9L.house}</strong> में, गुरु भाव <strong>${pJup.house}</strong> (${colorDesc(pJup.color)}) में, और शुक्र भाव <strong>${pVen.house}</strong> (${colorDesc(pVen.color)}) में स्थित हैं। ये तीनों ग्रह जीवन में सुख-सुविधा, घर-वाहन, शिक्षा, आध्यात्मिक समझ और सामाजिक सम्मान के मुख्य कारक हैं। वहीं शनि (भाव <strong>${pSat.house}</strong>, ${colorDesc(pSat.color)}) जीवन के हर क्षेत्र में अनुशासन, कर्म का हिसाब और धैर्य की परीक्षा लेते हैं—शनि की साढ़ेसाती के चरणों (जब गोचर शनि चंद्र राशि ${moonRashiObj.hindi} से 12वीं, 1ली और 2री राशि में भ्रमण करते हैं) में जीवन आपको कठोर अनुभवों से परिपक्व बना सकता है।</p>
 
-                    <p><strong>4. राहु-केतु और जीवन के कर्मिक सबक:</strong> छाया ग्रह राहु (भाव <strong>${pRah.house}</strong>) और केतु (भाव <strong>${pKet.house}</strong>) यह बताते हैं कि इस जन्म में आपकी मुख्य महत्वाकांक्षा किस दिशा में रहेगी और आपको किस क्षेत्र में वैराग्य या अनुभव प्राप्त होगा। राहु जिस भाव में होता है, वहां व्यक्ति को अत्यधिक पाने की इच्छा और नए प्रयोग करने की प्रेरणा देता है, जबकि केतु व्यक्ति को आध्यात्मिक गहराई, सूक्ष्म दृष्टि और आंतरिक परिपक्वता प्रदान करता है। इन दोनों ग्रहों की स्थिति को समझते हुए यदि आप लालच, भ्रम और जल्दबाज़ी से बचते हैं, तो यही राहु-केतु आपको असाधारण ऊंचाइयों तक पहुंचा सकते हैं।</p>
+                    <p><strong>4. जीवन की संपूर्ण दशा समयरेखा (कब क्या हो सकता है):</strong> जन्म के समय <strong>${birthMaha.name}</strong> महादशा (${formatDateIN(birthMaha.end)} तक) और योगिनी की <strong>${yBirth.hi}</strong> दशा (${formatDateIN(yBirthEnd)} तक) से आपकी जीवन यात्रा आरंभ हुई। आपकी प्रमुख महादशाओं का क्रम इस प्रकार है: ${mahaChrono}। वर्तमान में <strong>${age.years} वर्ष</strong> की आयु में आपकी <strong>${currentMaha.name}</strong> महादशा (${formatDateIN(currentMaha.start)} से ${formatDateIN(currentMaha.end)}) सक्रिय है। इस समय जो भी चुनौतियां या अवसर आ रहे हैं, वे सीधे इस महादशा के स्वामी ग्रह के भाव (${getPlanetHouseAndColor(currentMaha.id).house}) और उसकी स्थिति से जुड़े हैं। आगे आने वाली <strong>${nextMaha.name}</strong> महादशा (${formatDateIN(nextMaha.start)} से ${formatDateIN(nextMaha.end)}) में जीवन के मुख्य लक्ष्यों—करियर, घर, परिवार और आर्थिक स्थिरता—में बड़ा बदलाव देखने को मिल सकता है।</p>
 
-                    <p><strong>5. जीवन का समय-चक्र और दशाओं का प्रभाव:</strong> वर्तमान में आपकी आयु <strong>${age.years} वर्ष, ${age.months} माह</strong> है और आप <strong>${curMahaStr}</strong> की महादशा से गुजर रहे हैं। जीवन के इस चरण में आपके सामने अनुभवों, जिम्मेदारियों और आत्म-निर्माण के महत्वपूर्ण अवसर आ रहे हैं। यदि आप वर्तमान समय का उपयोग अपनी नींव मजबूत करने, स्वास्थ्य सुधारने और सही संबंधों को संजोने में करते हैं, तो आगामी <strong>${nxtMahaStr}</strong> की महादशा आपके जीवन में स्थिरता, मान-सम्मान, संपत्ति और पारिवारिक संतोष का सुनहरा दौर लेकर आएगी। गोचर में जब भी गुरु और शनि आपके लग्न, पंचम, नवम या एकादश भाव से शुभ संबंध बनाएंगे, तब-तब जीवन में बड़े सकारात्मक मोड़—जैसे घर निर्माण, करियर में बड़ी छलांग, और पारिवारिक मांगलिक कार्य—संपन्न होंगे।</p>
+                    <p><strong>5. स्वास्थ्य, कानूनी/विवाद चेतावनी और कर्मिक सुरक्षा:</strong> ${hasHealthAlert ? 'लग्नेश या चंद्रमा पर संवेदनशील प्रभाव होने से रक्तचाप, अनिद्रा, पाचन या मौसमी रोगों के प्रति लापरवाही न बरतें। ' : 'स्वास्थ्य सामान्यतः संतुलित रह सकता है, बस नियमित दिनचर्या बनाए रखें। '}${[6, 8, 12].includes(pMars.house) || [6, 8, 12].includes(pSat.house) || h8Planets.length >= 2 ? 'अष्टम या छठे भाव के प्रभाव के कारण कानूनी विवाद, दस्तावेज़ी लापरवाही, या गुप्त शत्रुओं से सावधान रहना आवश्यक रहेगा; किसी भी बड़े समझौते से पहले पूरी जांच करें। ' : ''}${hasVehicleRisk ? 'वाहन चलाते समय गति और क्रोध पर नियंत्रण रखें। ' : ''}</p>
 
-                    <p><strong>6. स्वास्थ्य, जीवनशैली और अंतिम निष्कर्ष:</strong> आपकी कुंडली का समग्र निचोड़ यह है कि आपका जीवन क्रमिक विकास (Step-by-step Growth) का है। नियमित प्रातःकालीन दिनचर्या, संतुलित आहार, क्रोध व तनाव से दूरी, और अपने बड़ों व गुरुजनों के सम्मान से आपकी कुंडली के शुभ योग कई गुना प्रबल हो जाते हैं। धैर्य, ईमानदारी और स्पष्ट लक्ष्य के साथ आगे बढ़ने पर यह कुंडली आपको एक सार्थक, समृद्ध और सम्मानित जीवन प्रदान करती है।</p>
+                    <p><strong>6. अंतिम निष्कर्ष व जीवन सूत्र:</strong> यह रिपोर्ट आपकी कुंडली के वास्तविक ग्रह-योगों पर आधारित संभावित जीवन-दिशा प्रस्तुत करती है। किसी भी अशुभ या परीक्षाकारी दशा में घबराने के बजाय ईमानदारी, नियमित साधना, माता-पिता व गुरुजनों के सम्मान, और संयमित वाणी से जीवन में अत्यंत सकारात्मक और स्थिर परिणाम प्राप्त किए जा सकते हैं।</p>
                 `;
             }
         }
@@ -4731,32 +4860,72 @@
             }
 
             // Overview Panel (Clean, Uncluttered)
+            // Gandmool (Mool Nakshatra: Ashwini 0, Ashlesha 8, Magha 9, Jyeshtha 17, Mula 18, Revati 26)
+            const MOOL_NAKS = [0, 8, 9, 17, 18, 26];
+            const isMoolNow = MOOL_NAKS.includes(snap.nakIdx);
+            let moolText = '';
+            if (isMoolNow) {
+                moolText = `<span class="text-rose-700 font-bold">गंडमूल सक्रिय है</span> (${nakName} नक्षत्र — ${formatDateTimeShort(nakEnd)} तक)`;
+            } else {
+                let mStart = null, mEnd = null;
+                const stepMs = 3 * 3600 * 1000;
+                for (let i = 1; i < 160; i++) {
+                    const dt = new Date(baseDate.getTime() + i * stepMs);
+                    const sn = getPanchangSnapshot(dt);
+                    const inM = MOOL_NAKS.includes(sn.nakIdx);
+                    if (!mStart && inM) mStart = dt;
+                    if (mStart && !inM) { mEnd = dt; break; }
+                }
+                moolText = `<span class="text-emerald-700 font-bold">गंडमूल नहीं है</span> • अगला मूल: ${mStart ? formatDateTimeShort(mStart) : '-'} से ${mEnd ? formatDateTimeShort(mEnd) : '-'}`;
+            }
+
             const ov = document.getElementById('pan-view-overview');
             ov.innerHTML = `
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                    <div class="p-3.5 rounded-xl bg-teal-50/70 border border-teal-200">
-                        <div class="text-[11px] font-semibold text-teal-700">तिथि व पक्ष</div>
-                        <div class="text-sm font-extrabold text-slate-900 mt-0.5">${pakshaHi} • ${tithiName}</div>
-                        <div class="text-[11px] text-slate-600 mt-0.5">${formatDateTimeShort(tithiEnd)} तक</div>
-                    </div>
-                    <div class="p-3.5 rounded-xl bg-indigo-50/70 border border-indigo-200">
-                        <div class="text-[11px] font-semibold text-indigo-700">वर्तमान नक्षत्र</div>
-                        <div class="text-sm font-extrabold text-slate-900 mt-0.5">${nakName}</div>
-                        <div class="text-[11px] text-slate-600 mt-0.5">${formatClockTime(nakStart)} से ${formatDateTimeShort(nakEnd)} तक</div>
-                    </div>
-                    <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
-                        <div class="text-[11px] font-semibold text-slate-500">योग व करण</div>
-                        <div class="text-sm font-bold text-slate-900 mt-0.5">${YOGAS_HI[snap.yogaIdx]} • ${snap.karanaName}</div>
-                    </div>
-                    <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
-                        <div class="text-[11px] font-semibold text-slate-500">सूर्योदय / सूर्यास्त व राहुकाल</div>
-                        <div class="text-sm font-bold text-slate-900 mt-0.5">${formatClockTime(sunrise)} / ${formatClockTime(sunset)}</div>
-                        <div class="text-[11px] text-rose-700 font-semibold mt-0.5">राहुकाल: ${RAHU_SLOTS[dayOfWeek]}</div>
+                <div class="rounded-2xl bg-gradient-to-r from-teal-700 via-teal-600 to-emerald-600 text-white p-4 sm:p-5 shadow-sm">
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <div>
+                            <div class="text-[11px] uppercase tracking-wider text-teal-100 font-semibold">${currentLang === 'hi' ? WEEKDAYS_HI[dayOfWeek] : WEEKDAYS_EN[dayOfWeek]} • ${formatDateIN(baseDate)}</div>
+                            <div class="text-lg sm:text-xl font-extrabold mt-0.5">${pakshaHi} • ${tithiName}</div>
+                            <div class="text-xs text-teal-100 mt-0.5">${formatDateTimeShort(tithiEnd)} तक</div>
+                        </div>
+                        <div class="text-right bg-white/15 backdrop-blur-xs rounded-xl px-3.5 py-2 border border-white/20">
+                            <div class="text-[10px] text-teal-100 font-semibold">सूर्योदय / सूर्यास्त</div>
+                            <div class="text-xs sm:text-sm font-bold">${formatClockTime(sunrise)} / ${formatClockTime(sunset)}</div>
+                        </div>
                     </div>
                 </div>
-                <div class="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-xs text-slate-800 space-y-1">
-                    <div><strong>पंचक स्थिति:</strong> ${panchakText}</div>
-                    <div><strong>भद्रा स्थिति:</strong> ${snap.isBhadra ? '<span class="text-rose-700 font-bold">भद्रा सक्रिय है (विष्टि करण)</span>' : '<span class="text-emerald-700 font-bold">भद्रा नहीं है</span>'} • <strong>अभिजित मुहूर्त:</strong> 11:45 AM – 12:30 PM</div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                    <div class="p-3.5 rounded-2xl bg-indigo-50/70 border border-indigo-200/80">
+                        <div class="text-[11px] font-bold text-indigo-700 uppercase">नक्षत्र</div>
+                        <div class="text-base font-extrabold text-slate-900 mt-0.5">${nakName}</div>
+                        <div class="text-[11px] text-slate-600 mt-0.5">${formatClockTime(nakStart)} – ${formatDateTimeShort(nakEnd)}</div>
+                    </div>
+                    <div class="p-3.5 rounded-2xl bg-amber-50/70 border border-amber-200/80">
+                        <div class="text-[11px] font-bold text-amber-800 uppercase">योग व करण</div>
+                        <div class="text-sm font-extrabold text-slate-900 mt-0.5">${YOGAS_HI[snap.yogaIdx]}</div>
+                        <div class="text-[11px] text-slate-600 mt-0.5">करण: ${snap.karanaName}</div>
+                    </div>
+                    <div class="p-3.5 rounded-2xl bg-rose-50/70 border border-rose-200/80">
+                        <div class="text-[11px] font-bold text-rose-700 uppercase">राहुकाल व अभिजित</div>
+                        <div class="text-xs font-extrabold text-rose-900 mt-1">राहुकाल: ${RAHU_SLOTS[dayOfWeek]}</div>
+                        <div class="text-[11px] text-emerald-800 font-semibold mt-0.5">अभिजित: ${dayOfWeek === 3 ? 'वर्जित' : '11:45 AM – 12:30 PM'}</div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 gap-2.5 text-xs">
+                    <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 flex flex-wrap items-center justify-between gap-2">
+                        <span class="font-bold text-slate-700">पंचक स्थिति</span>
+                        <span class="text-slate-800">${panchakText}</span>
+                    </div>
+                    <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 flex flex-wrap items-center justify-between gap-2">
+                        <span class="font-bold text-slate-700">गंडमूल (मूल)</span>
+                        <span class="text-slate-800">${moolText}</span>
+                    </div>
+                    <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 flex flex-wrap items-center justify-between gap-2">
+                        <span class="font-bold text-slate-700">भद्रा स्थिति</span>
+                        <span>${snap.isBhadra ? '<span class="text-rose-700 font-bold">भद्रा सक्रिय है (विष्टि करण)</span>' : '<span class="text-emerald-700 font-bold">भद्रा नहीं है</span>'}</span>
+                    </div>
                 </div>
             `;
 
