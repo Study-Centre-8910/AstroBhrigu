@@ -5201,17 +5201,32 @@
             }
 
             // Overview Panel (Clean, Uncluttered)
-            // Gandmool (Mool Nakshatra: Ashwini 0, Ashlesha 8, Magha 9, Jyeshtha 17, Mula 18, Revati 26)
+            // Gandmool: check at current live time if selected date is today, else noon (12:00 PM) so same-day transitions after 06:30 AM are accurately detected
+            const nowDt = new Date();
+            const isTodaySelected = (nowDt.getFullYear() === y && (nowDt.getMonth() + 1) === m && nowDt.getDate() === d);
+            const moolRefDate = isTodaySelected ? nowDt : new Date(y, m - 1, d, 12, 0, 0);
+            const moolSnap = getPanchangSnapshot(moolRefDate);
             const MOOL_NAKS = [0, 8, 9, 17, 18, 26];
-            const isMoolNow = MOOL_NAKS.includes(snap.nakIdx);
+            const isMoolNow = MOOL_NAKS.includes(moolSnap.nakIdx);
             let moolText = '';
             if (isMoolNow) {
-                moolText = `<span class="text-rose-700 font-bold">गंडमूल सक्रिय है</span> (${nakName} नक्षत्र — ${formatDateTimeShort(nakEnd)} तक)`;
+                // Find exact end of continuous Gandmool span (e.g. Revati + Ashwini together)
+                let mEnd = moolRefDate;
+                const stepMs = 1 * 3600 * 1000;
+                for (let i = 1; i < 96; i++) {
+                    const dt = new Date(moolRefDate.getTime() + i * stepMs);
+                    if (!MOOL_NAKS.includes(getPanchangSnapshot(dt).nakIdx)) {
+                        mEnd = dt;
+                        break;
+                    }
+                }
+                const mNakName = currentLang === 'hi' ? NAKSHATRAS_HI[moolSnap.nakIdx] : NAKSHATRAS_EN[moolSnap.nakIdx];
+                moolText = `<span class="text-rose-700 font-bold">गंडमूल सक्रिय है</span> (${mNakName} नक्षत्र — ${formatDateTimeShort(mEnd)} तक)`;
             } else {
                 let mStart = null, mEnd = null;
-                const stepMs = 3 * 3600 * 1000;
-                for (let i = 1; i < 160; i++) {
-                    const dt = new Date(baseDate.getTime() + i * stepMs);
+                const stepMs = 2 * 3600 * 1000;
+                for (let i = 1; i < 240; i++) {
+                    const dt = new Date(moolRefDate.getTime() + i * stepMs);
                     const sn = getPanchangSnapshot(dt);
                     const inM = MOOL_NAKS.includes(sn.nakIdx);
                     if (!mStart && inM) mStart = dt;
