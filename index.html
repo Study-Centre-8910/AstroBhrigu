@@ -4498,6 +4498,48 @@
             return 'उत्तर (North)';
         }
 
+        function getFullYoginiWindows(moonLon, birthDate) {
+            const nakSpan = 360 / 27;
+            const nakIdx = Math.floor(moonLon / nakSpan) % 27;
+            const fracRem = 1 - ((moonLon % nakSpan) / nakSpan);
+            const yStartIdx = ((nakIdx + 1) + 3 - 1) % 8;
+            const res = [];
+            let cursor = birthDate;
+            for (let i = 0; i < 16; i++) {
+                const yM = YOGINI_ORDER[(yStartIdx + i) % 8];
+                const dur = i === 0 ? yM.years * fracRem : yM.years;
+                const end = addYearsToDate(cursor, dur);
+                const antars = [];
+                const spanMs = end.getTime() - cursor.getTime();
+                let sMs = cursor.getTime();
+                for (let j = 0; j < 8; j++) {
+                    const yA = YOGINI_ORDER[(yStartIdx + i + j) % 8];
+                    const aMs = spanMs * (yA.years / 36);
+                    antars.push({ hi: yA.hi, en: yA.en, lord: yA.lord, start: new Date(sMs), end: new Date(sMs + aMs) });
+                    sMs += aMs;
+                }
+                res.push({ hi: yM.hi, en: yM.en, lord: yM.lord, years: yM.years, start: cursor, end, antars });
+                cursor = end;
+            }
+            return res;
+        }
+
+        function getVimshottariAntardashas(timeline) {
+            const all = [];
+            timeline.forEach(m => {
+                const mIdx = VIM_ORDER.findIndex(x => x.id === m.id);
+                const spanMs = m.end.getTime() - m.start.getTime();
+                let curMs = m.start.getTime();
+                for (let i = 0; i < 9; i++) {
+                    const a = VIM_ORDER[(mIdx + i) % 9];
+                    const aMs = spanMs * (a.years / 120);
+                    all.push({ mahaId: m.id, mahaName: m.name, antarId: a.id, antarName: getPlanetDisplayName(a.id), start: new Date(curMs), end: new Date(curMs + aMs) });
+                    curMs += aMs;
+                }
+            });
+            return all;
+        }
+
         function renderLifestyleReport() {
             const card = document.getElementById('lifestyle-report-card');
             if (!card) return;
@@ -4550,28 +4592,57 @@
 
             const age = computeExactAge(currentChart.dob);
             const { currentMaha, nextMaha, timeline } = getVimshottariTimelineSummary();
+            const allAntars = getVimshottariAntardashas(timeline);
             const birthMaha = timeline[0];
             const birthDate = getChartStartDate();
-
-            const nakSpan = 360 / 27;
-            const nakIdx = Math.floor(moonLon / nakSpan) % 27;
-            const fracRem = 1 - ((moonLon % nakSpan) / nakSpan);
-            const yStartIdx = ((nakIdx + 1) + 3 - 1) % 8;
-            const yBirth = YOGINI_ORDER[yStartIdx];
-            const yBirthEnd = addYearsToDate(birthDate, yBirth.years * fracRem);
+            const yoginiList = getFullYoginiWindows(moonLon, birthDate);
+            const yBirth = yoginiList[0];
 
             const h5Planets = (currentChart.planets[5] || []).map(x => x.id);
+            const h6Planets = (currentChart.planets[6] || []).map(x => x.id);
             const h7Planets = (currentChart.planets[7] || []).map(x => x.id);
             const h8Planets = (currentChart.planets[8] || []).map(x => x.id);
             const h10Planets = (currentChart.planets[10] || []).map(x => x.id);
 
-            const has5th7thLink = (p5L.house === 7 || p7L.house === 5 || p5L.house === p7L.house || h5Planets.includes('Venus') || h7Planets.includes('Venus') || h5Planets.includes('Rahu'));
+            // Real Love / Attraction / Trap Triggers (including 5th lord in 6/8/12, Venus in 6/8/12, Moon+Mercury in 8th, etc.)
+            const hasLoveAttractionYoga = (
+                p5L.house === 7 || p7L.house === 5 || p5L.house === p7L.house ||
+                [5, 6, 7, 8, 12].includes(pVen.house) ||
+                [6, 8, 12].includes(p5L.house) ||
+                (pMoon.house === pMerc.house && [5, 7, 8, 12].includes(pMoon.house)) ||
+                h5Planets.some(id => ['Venus', 'Moon', 'Rahu', 'Mercury'].includes(id)) ||
+                h7Planets.some(id => ['Venus', 'Rahu', 'Moon'].includes(id))
+            );
+            const hasTrapOrHeartbreakYoga = (
+                [6, 8, 12].includes(pVen.house) || [6, 8, 12].includes(p5L.house) ||
+                ['orange', 'red'].includes(pVen.color) || ['orange', 'red'].includes(pMoon.color) ||
+                pRah.house === 5 || pKet.house === 5 || pRah.house === 7 || pKet.house === 7 ||
+                (pMoon.house === 8 || pVen.house === 6 || pVen.house === 8)
+            );
             const has7thAffliction = (['orange', 'red'].includes(p7L.color) || h7Planets.some(id => ['Rahu', 'Ketu', 'Saturn', 'Sun'].includes(id)) || ['orange', 'red'].includes(pVen.color));
             const hasDualMarriageYoga = (h7Planets.length >= 2 || ([3, 6, 9, 12].includes(r7Obj.num) && ['orange', 'red'].includes(p7L.color)));
-            const hasDusthana6812 = ([6, 8, 12].includes(p7L.house) || [6, 8, 12].includes(pVen.house));
             const hasHealthAlert = ([6, 8, 12].includes(pLag.house) || ['orange', 'red'].includes(pLag.color) || ['orange', 'red'].includes(pMoon.color));
-            const hasVehicleRisk = ([6, 8, 12].includes(pMars.house) || ['orange', 'red'].includes(pMars.color));
+            const hasVehicleRisk = ([6, 8, 12].includes(pMars.house) || ['orange', 'red'].includes(pMars.color) || pMars.house === 8);
             const mahaChrono = timeline.slice(0, 6).map(t => `<strong>${t.name}</strong> (${formatDateIN(t.start)} से ${formatDateIN(t.end)})`).join(' → ');
+
+            // Find real youth windows (age 13 to 27) for Yogini Bhadrika/Siddha/Ulka/Sankata
+            const age13Ms = addYearsToDate(birthDate, 13).getTime();
+            const age27Ms = addYearsToDate(birthDate, 27).getTime();
+            const age19Ms = addYearsToDate(birthDate, 19).getTime();
+            const age33Ms = addYearsToDate(birthDate, 33).getTime();
+
+            const youthYoginis = yoginiList.filter(y => y.end.getTime() > age13Ms && y.start.getTime() < age27Ms);
+            const loveYoginiWin = youthYoginis.find(y => ['सिद्धा', 'भद्रिका'].includes(y.hi)) || youthYoginis[0];
+            let siddhaSubWin = null;
+            if (loveYoginiWin) {
+                siddhaSubWin = loveYoginiWin.antars.find(a => a.hi === 'सिद्धा' && a.end.getTime() > age13Ms) || loveYoginiWin.antars[1];
+            }
+            const trapYoginiWin = youthYoginis.find(y => ['उल्का', 'संकटा'].includes(y.hi) && y.start.getTime() > age13Ms);
+
+            // Marriage window in Vimshottari (age 19 to 33) matching 7th lord / Venus / Jupiter / Rahu / DK
+            const marriageTargets = [lord7, 'Venus', 'Jupiter', dk.id, 'Rahu'];
+            const marriageAntar = allAntars.find(a => a.start.getTime() >= age19Ms && a.start.getTime() <= age33Ms && marriageTargets.includes(a.antarId))
+                || allAntars.find(a => a.start.getTime() >= age19Ms && a.start.getTime() <= age33Ms);
 
             const name = currentChart.clientName || 'जातक';
             const dir = getMarriageDirection(r7Obj.num);
@@ -4586,55 +4657,44 @@
             }[c] || 'संतुलित');
 
             if (activeLifestyleTab === 'relation') {
+                const loveSection = hasLoveAttractionYoga ? `
+                    <p><strong>3. प्रेम संबंध, आकर्षण एवं भावनात्मक परीक्षा (वास्तविक योग व तिथियां):</strong> आपकी कुंडली में प्रेम, आकर्षण और मन से जुड़े वास्तविक योग बन रहे हैं—विशेषकर पंचमेश <strong>${getPlanetDisplayName(lord5)}</strong> के भाव <strong>${p5L.house}</strong> में होने, शुक्र की भाव <strong>${pVen.house}</strong> में स्थिति${pMoon.house === pMerc.house ? ` और भाव ${pMoon.house} में चंद्र-बुध की युति` : ''} के कारण युवावस्था में किसी परिचित या करीबी व्यक्ति की ओर गहरा भावनात्मक आकर्षण हो सकता है। आपकी योगिनी दशा के अनुसार <strong>${loveYoginiWin ? loveYoginiWin.hi + ' (' + formatDateIN(loveYoginiWin.start) + ' से ' + formatDateIN(loveYoginiWin.end) + ')' : ''}</strong>${siddhaSubWin ? ` तथा इसके भीतर <strong>सिद्धा अंतरदशा (${formatDateIN(siddhaSubWin.start)} से ${formatDateIN(siddhaSubWin.end)})</strong>` : ''} के दौरान किसी विशेष व्यक्ति से जुड़ने और मजबूत यादें बनने की संभावना रह सकती है। ${hasTrapOrHeartbreakYoga ? `हालांकि, शुक्र/पंचमेश या चंद्रमा के संवेदनशील भाव (${pVen.house}/${pMoon.house}) में होने के कारण ${trapYoginiWin ? `<strong>${trapYoginiWin.hi} दशा (${formatDateIN(trapYoginiWin.start)} से ${formatDateIN(trapYoginiWin.end)})</strong> में ` : ''}किसी गलत व्यक्ति के आकर्षण, धोखे या भावनात्मक ट्रैप में फंसकर दिल टूटने की भी आशंका बन सकती है—अतः इस दौर में भावनाओं में बहने से बचना अत्यंत आवश्यक रहेगा।` : ''}</p>
+                ` : `
+                    <p><strong>3. प्रेम संबंध एवं भावनात्मक स्थिरता:</strong> आपकी कुंडली में पंचम भाव (स्वामी ${getPlanetDisplayName(lord5)} भाव ${p5L.house}) और शुक्र (भाव ${pVen.house}) के बीच किसी उग्र भटकाव या भावनात्मक ट्रैप का योग नहीं बन रहा है। इसलिए आप रिश्तों में अनावश्यक भटकाव से दूर रहकर स्थिर और परिवार-सम्मत जुड़ाव को प्राथमिकता दे सकते हैं।</p>
+                `;
+
                 card.innerHTML = `
                     <h3 class="text-base sm:text-lg font-extrabold text-rose-900">रिलेशनशिप एवं मैरिटल लाइफ विस्तृत रिपोर्ट — ${name}</h3>
                     <p class="text-xs text-slate-500">जन्म विवरण: ${currentChart.dob} • ${currentChart.tob} • ${currentChart.pob} | मूलांक: ${mulank}, भाग्यांक: ${bhagyank}</p>
 
-                    <p><strong>1. जन्म बिंदु, दशा पृष्ठभूमि एवं ग्रह सार:</strong> ${name} का जन्म <strong>${lagnaObj.hindi} (${lagnaRashi})</strong> लग्न और <strong>${moonRashiObj.hindi} (${moonRashi})</strong> चंद्र राशि में हुआ है। जन्म के समय विंशोत्तरी महादशा <strong>${birthMaha.name}</strong> की थी जो <strong>${formatDateIN(birthMaha.end)}</strong> को समाप्त हुई, तथा जन्म के समय योगिनी दशा <strong>${yBirth.hi} (${getPlanetDisplayName(yBirth.lord)})</strong> की थी जो <strong>${formatDateIN(yBirthEnd)}</strong> तक रही। आपकी कुंडली में सबसे कम अंश वाला ग्रह यानी <strong>दाराकारक (Darakaraka) ${getPlanetDisplayName(dk.id)}</strong> (${dk.deg.toFixed(2)}°) है, जो जीवनसाथी के वास्तविक स्वभाव और वैवाहिक जीवन की मुख्य धुरी को नियंत्रित करता है। ${vargottamaList.length > 0 ? `इस कुंडली में <strong>${vargottamaList.join(', ')}</strong> वर्गोत्तम स्थिति में हैं, जो अपने भाव से जुड़े फलों को स्थायी और गहरा बनाते हैं।` : ''} ${hasKaalSarp ? 'कुंडली में राहु-केतु अक्ष के एक ओर सभी ग्रह होने से <strong>कालसर्प योग</strong> निर्मित हो रहा है, जिसके प्रभाव से जीवन के शुरुआती व मध्य वर्षों में रिश्तों और निर्णयों में उतार-चढ़ाव आ सकता है।' : ''}</p>
+                    <p><strong>1. जन्म बिंदु, दशा पृष्ठभूमि एवं ग्रह सार:</strong> ${name} का जन्म <strong>${lagnaObj.hindi} (${lagnaRashi})</strong> लग्न और <strong>${moonRashiObj.hindi} (${moonRashi})</strong> चंद्र राशि में हुआ है। जन्म के समय विंशोत्तरी महादशा <strong>${birthMaha.name}</strong> की थी जो <strong>${formatDateIN(birthMaha.end)}</strong> को समाप्त हुई, तथा जन्म के समय योगिनी दशा <strong>${yBirth.hi} (${getPlanetDisplayName(yBirth.lord)})</strong> की थी जो <strong>${formatDateIN(yBirth.end)}</strong> तक रही। आपकी कुंडली में सबसे कम अंश वाला ग्रह यानी <strong>दाराकारक (Darakaraka) ${getPlanetDisplayName(dk.id)}</strong> (${dk.deg.toFixed(2)}°) है, जो जीवनसाथी के वास्तविक स्वभाव को दर्शाता है। ${vargottamaList.length > 0 ? `इस कुंडली में <strong>${vargottamaList.join(', ')}</strong> वर्गोत्तम हैं।` : ''} ${hasKaalSarp ? 'कुंडली में राहु-केतु अक्ष के एक ओर सभी ग्रह होने से <strong>कालसर्प योग</strong> निर्मित हो रहा है।' : ''}</p>
 
-                    <p><strong>2. बचपन, पारिवारिक माहौल और शुरुआती दशाओं का प्रभाव:</strong> जन्म के बाद प्रारंभिक महादशा <strong>${birthMaha.name}</strong> से लेकर अगली महादशाओं तक का समय आपके पारिवारिक माहौल और भावनात्मक नींव को गढ़ता है। आपकी दशा श्रृंखला इस प्रकार है: ${mahaChrono}। कुंडली के द्वितीय (कुटुंब) भाव में <strong>${r2Obj.hindi}</strong> राशि (स्वामी ${getPlanetDisplayName(lord2)}) और चतुर्थ (माता व गृह सुख) भाव पर चंद्रमा (भाव ${pMoon.house}, ${colorDesc(pMoon.color)}) का प्रभाव दर्शाता है कि बचपन व किशोरावस्था में परिवार की आर्थिक और भावनात्मक परिस्थितियां आपकी सोच पर गहरा असर डाल सकती हैं। ${['orange', 'red'].includes(pSun.color) || [6, 8, 12].includes(pSun.house) ? 'पिता के साथ विचारों में दूरी या कार्य दबाव के कारण संवाद की कमी रह सकती है।' : 'परिवार और पिता के साथ संबंधों में जिम्मेदारियों का आदान-प्रदान स्पष्ट दिखाई देता है।'}</p>
+                    <p><strong>2. बचपन, पारिवारिक माहौल और दशा क्रम:</strong> आपकी प्रमुख महादशा श्रृंखला इस प्रकार है: ${mahaChrono}। द्वितीय (कुटुंब) भाव में <strong>${r2Obj.hindi}</strong> (स्वामी ${getPlanetDisplayName(lord2)}) और चंद्रमा (भाव ${pMoon.house}, ${colorDesc(pMoon.color)}) का प्रभाव दर्शाता है कि शुरुआती वर्षों में घर का माहौल और माता-पिता से जुड़े अनुभव आपके मन पर गहरा असर डाल सकते हैं। ${['orange', 'red'].includes(pSun.color) || [6, 8, 12].includes(pSun.house) ? 'पिता के साथ विचारों में दूरी या कार्य दबाव के कारण कभी-कभी तनाव रह सकता है।' : 'परिवार में जिम्मेदारियों और सहयोग का संतुलन बना रह सकता है।'}</p>
 
-                    <p><strong>3. प्रेम संबंध, आकर्षण एवं भावनात्मक मोड़ (केवल वास्तविक योगानुसार):</strong> ${has5th7thLink ? `आपकी कुंडली में पंचम भाव (${r5Obj.hindi}, स्वामी ${getPlanetDisplayName(lord5)} भाव ${p5L.house} में) और सप्तम भाव/शुक्र के बीच सीधा संबंध बन रहा है। इसके प्रभाव से युवावस्था में—विशेषकर जब <strong>राहु, शुक्र, चंद्र या बुध</strong> की अंतर्दशा अथवा योगिनी की सिद्धा/भद्रिका दशा सक्रिय हो—तब किसी परिचित या मित्र मंडली के व्यक्ति के प्रति गहरा आकर्षण या प्रेम संबंध बनने की प्रबल संभावना रह सकती है। ध्यान रखें कि यदि इन संबंधों में पारदर्शिता न हो तो मनमुटाव या अलगाव की स्थिति भी बन सकती है।` : `आपकी कुंडली में पंचम भाव (स्वामी ${getPlanetDisplayName(lord5)} भाव ${p5L.house}) और सप्तम भाव के बीच कोई उग्र आवेगपूर्ण प्रेम-भटकाव का योग नहीं बन रहा है, इसलिए आप भावनाओं में बहने के बजाय व्यावहारिक और परिवार-स्वीकृत संबंधों को प्राथमिकता दे सकते हैं।`}</p>
+                    ${loveSection}
 
-                    <p><strong>4. विवाह समय, दिशा और नवांश (D9) विश्लेषण:</strong> वैवाहिक जीवन का मुख्य केंद्र सप्तम भाव (${r7Obj.hindi}, स्वामी ${getPlanetDisplayName(lord7)} भाव ${p7L.house} में ${colorDesc(p7L.color)}) है। सप्तम भाव की राशि के अनुसार आपका विवाह जन्म स्थान से <strong>${dir}</strong> दिशा की ओर होने की प्रबल संभावना है। नवांश कुंडली (D9) में <strong>${d9LagnaObj.hindi}</strong> लग्न उदित है और शुक्र ${RASHIS.find(x=>x.num===d9VenR).hindi} तथा गुरु ${RASHIS.find(x=>x.num===d9JupR).hindi} राशि में हैं—यह दर्शाता है कि जीवनसाथी ${['green','pureYellow'].includes(pVen.color) ? 'आकर्षक, समझदार और व्यावहारिक' : 'स्पष्टवादी, स्वतंत्र विचारों वाला किंतु कभी-कभी जिद्दी स्वभाव का'} हो सकता है।</p>
+                    <p><strong>4. विवाह की संभावित समय-सीमा, दिशा और नवांश (D9):</strong> सप्तम भाव (${r7Obj.hindi}, स्वामी ${getPlanetDisplayName(lord7)} भाव ${p7L.house} में ${colorDesc(p7L.color)}) के अनुसार आपका विवाह जन्म स्थान से <strong>${dir}</strong> दिशा की ओर हो सकता है। ${marriageAntar ? `दशा गणना के अनुसार <strong>${marriageAntar.mahaName} महादशा में ${marriageAntar.antarName} अंतर्दशा (${formatDateIN(marriageAntar.start)} से ${formatDateIN(marriageAntar.end)})</strong> के आसपास जीवनसाथी से मिलन या विवाह का प्रबल योग बन सकता है।` : ''} नवांश (D9) में <strong>${d9LagnaObj.hindi}</strong> लग्न है तथा शुक्र ${RASHIS.find(x=>x.num===d9VenR).hindi} व गुरु ${RASHIS.find(x=>x.num===d9JupR).hindi} राशि में हैं, जिससे जीवनसाथी ${['green','pureYellow'].includes(pVen.color) ? 'सौम्य, आकर्षक और सहयोगी' : 'सक्रिय, स्पष्टवादी और स्वतंत्र विचारों वाला'} हो सकता है।</p>
 
-                    <p><strong>5. वैवाहिक जीवन की चुनौतियां, संवेदनशील समय व संतान योग:</strong> वर्तमान में आपकी आयु <strong>${age.years} वर्ष</strong> है और <strong>${currentMaha.name}</strong> की महादशा (${formatDateIN(currentMaha.start)} से ${formatDateIN(currentMaha.end)}) चल रही है, जिसके बाद <strong>${nextMaha.name}</strong> महादशा (${formatDateIN(nextMaha.start)} से ${formatDateIN(nextMaha.end)}) आरंभ होगी। ${has7thAffliction || hasDusthana6812 ? `सप्तम भाव/सप्तमेश या शुक्र पर क्रूर व संवेदनशील ग्रहों का प्रभाव होने के कारण विवाह के बाद शुरुआती वर्षों में आपसी तालमेल, ससुराल पक्ष या अहंकार से जुड़े मतभेद उत्पन्न हो सकते हैं। ${hasDualMarriageYoga ? 'कुंडली में द्वि-विवाह या संबंध टूटकर पुनः जुड़ने की सूक्ष्म संभावना भी दिखाई देती है—इसलिए विवाह पूर्व कुंडली मिलान और संवाद में धैर्य रखना अत्यंत आवश्यक है।' : ''}` : 'सप्तम भाव व सप्तमेश की स्थिति संतुलित होने से दांपत्य जीवन में गंभीर संकट के योग नहीं दिखते, सामान्य नोकझोंक के बावजूद साथ बना रह सकता है।'} संतान भाव (पंचमेश ${getPlanetDisplayName(lord5)} भाव ${p5L.house}) और गुरु (भाव ${pJup.house}, ${colorDesc(pJup.color)}) के अनुसार विवाह के उपरांत योग्य दशा में संतान सुख की प्राप्ति हो सकती है${['orange','red'].includes(p5L.color) || h5Planets.some(id=>['Rahu','Ketu','Saturn'].includes(id)) ? ', हालांकि संतान के स्वास्थ्य या शुरुआती गर्भ/पालन में विशेष सावधानी बरतना उचित रहेगा।' : '।'} </p>
+                    <p><strong>5. वैवाहिक जीवन, चुनौतियां एवं संतान योग:</strong> वर्तमान में आपकी आयु <strong>${age.years} वर्ष</strong> है और <strong>${currentMaha.name}</strong> महादशा (${formatDateIN(currentMaha.start)} से ${formatDateIN(currentMaha.end)}) चल रही है, जिसके बाद <strong>${nextMaha.name}</strong> महादशा (${formatDateIN(nextMaha.start)} से ${formatDateIN(nextMaha.end)}) आरंभ होगी। ${has7thAffliction ? `सप्तम भाव/सप्तमेश या शुक्र पर संवेदनशील ग्रहों का प्रभाव होने के कारण विवाह के बाद आपसी तालमेल, ससुराल पक्ष या अहंकार से जुड़े मतभेद उत्पन्न हो सकते हैं। ${hasDualMarriageYoga ? 'कुंडली में एकाधिक विवाह या संबंध टूटकर पुनः जुड़ने की सूक्ष्म संभावना भी दिखती है—अतः कुंडली मिलान और धैर्य अत्यंत आवश्यक रहेगा।' : ''}` : 'सप्तम भाव पर गुरु या शुभ ग्रहों की सुरक्षा होने से बड़ी समस्याओं के बीच भी रिश्ता संभल सकता है।'} पंचमेश ${getPlanetDisplayName(lord5)} (भाव ${p5L.house}) और गुरु (भाव ${pJup.house}) के अनुसार विवाह के बाद योग्य दशा में संतान सुख की प्राप्ति हो सकती है${['orange','red'].includes(p5L.color) || h5Planets.some(id=>['Rahu','Ketu','Saturn'].includes(id)) ? ', हालांकि संतान के स्वास्थ्य या शुरुआती समय में विशेष सावधानी बरतनी चाहिए।' : '।'}</p>
 
-                    <p><strong>6. सावधानी, कर्मिक संकेत व निष्कर्ष:</strong> ${hasVehicleRisk ? 'मंगल की भाव ' + pMars.house + ' में स्थिति के कारण वाहन चलाते समय और क्रोध में निर्णय लेते समय विशेष सतर्कता आवश्यक है। ' : ''}${hasHealthAlert ? 'लग्नेश या चंद्रमा के संवेदनशील होने से मानसिक तनाव, अनिद्रा या मौसमी स्वास्थ्य समस्याओं के प्रति सचेत रहें। ' : ''}यह संपूर्ण विश्लेषण आपकी कुंडली में मौजूद ग्रह स्थितियों के आधार पर संभावित परिणामों ("हो सकता है") को दर्शाता है। सही समय पर ग्रहों के अनुकूल आचरण, विनम्र संवाद और धैर्य से आप किसी भी कठिन दशा के प्रभाव को काफी हद तक कम कर सकते हैं।</p>
+                    <p><strong>6. सावधानी व निष्कर्ष:</strong> ${hasVehicleRisk ? 'मंगल की स्थिति के कारण वाहन चलाते समय और क्रोध में निर्णय लेते समय विशेष सावधानी रखें। ' : ''}${hasHealthAlert ? 'लग्नेश या चंद्रमा के संवेदनशील होने से मानसिक तनाव और स्वास्थ्य के प्रति सचेत रहें। ' : ''}ध्यान रहे कि ये सभी संकेत आपकी कुंडली के ग्रह-योगों पर आधारित संभावनाएं ("हो सकता है") हैं—सचेत आचरण, संवाद और ग्रहों के अनुकूल उपायों से जीवन को अत्यंत सुखद बनाया जा सकता है।</p>
                 `;
             } else if (activeLifestyleTab === 'career') {
                 card.innerHTML = `
                     <h3 class="text-base sm:text-lg font-extrabold text-indigo-900">करियर, धन एवं आजीविका विस्तृत रिपोर्ट — ${name}</h3>
                     <p class="text-xs text-slate-500">जन्म विवरण: ${currentChart.dob} • ${currentChart.tob} • ${currentChart.pob} | मूलांक: ${mulank}, भाग्यांक: ${bhagyank}</p>
-
-                    <p><strong>1. कर्म भाव (10वां घर), लग्नेश और कार्यक्षमता:</strong> ${name} की कुंडली में <strong>${lagnaObj.hindi}</strong> लग्न है और कर्म भाव (दशम घर) में <strong>${r10Obj.hindi}</strong> राशि स्थित है, जिसके स्वामी <strong>${getPlanetDisplayName(lord10)}</strong> भाव <strong>${p10L.house}</strong> में ${colorDesc(p10L.color)} स्थिति में हैं। ${h10Planets.length > 0 ? `दशम भाव में स्वयं <strong>${h10Planets.map(getPlanetDisplayName).join(', ')}</strong> के बैठे होने से आपके करियर की दिशा सीधे इन्हीं ग्रहों के कार्यक्षेत्रों से जुड़ेगी।` : `दशम भाव खाली होने से करियर की संपूर्ण बागडोर दशमेश ${getPlanetDisplayName(lord10)} और लग्नेश ${getPlanetDisplayName(lagnesh)} (भाव ${pLag.house}) के हाथ में है।`} आपका मूलांक ${mulank} और भाग्यांक ${bhagyank} भी आपकी कार्यशैली में स्वतंत्र निर्णय और व्यावहारिक सोच को बढ़ावा देता है।</p>
-
-                    <p><strong>2. शिक्षा, भटकाव और शुरुआती करियर संघर्ष (तिथि-आधारित):</strong> जन्म के समय <strong>${birthMaha.name}</strong> महादशा (${formatDateIN(birthMaha.end)} तक) के बाद आने वाली दशाओं (${mahaChrono}) में शिक्षा और करियर की नींव रखी जाती है। आपकी कुंडली में बुध भाव <strong>${pMerc.house}</strong> (${colorDesc(pMerc.color)}) और पंचमेश ${getPlanetDisplayName(lord5)} भाव <strong>${p5L.house}</strong> में हैं। ${['orange','red'].includes(pMerc.color) || [6,8,12].includes(p5L.house) || h5Planets.includes('Rahu') ? '16 से 22 वर्ष की आयु के बीच एकाग्रता में कमी, गलत संगति या अध्ययन में रुकावट की संभावना बन सकती है, लेकिन सही मार्गदर्शन से आप तकनीकी या व्यावसायिक क्षेत्र में संभल सकते हैं।' : 'शिक्षा और कौशल निर्माण में आपकी पकड़ मजबूत रह सकती है, विशेषकर विश्लेषण, प्रबंधन, वित्त या तकनीकी विषयों में।'}</p>
-
-                    <p><strong>3. उपयुक्त कार्यक्षेत्र, नौकरी बनाम व्यापार:</strong> सूर्य (भाव ${pSun.house}, ${colorDesc(pSun.color)}), शनि (भाव ${pSat.house}, ${colorDesc(pSat.color)}) और बुध की स्थिति के अनुसार आपके लिए प्रशासन, तकनीकी सेवाएं, डेटा/अकाउंट्स, परामर्श, शिक्षा, स्वास्थ्य/प्रबंधन या स्वतंत्र व्यवसाय अनुकूल हो सकते हैं। ${['green','pureYellow'].includes(p10L.color) || ['green','pureYellow'].includes(pMerc.color) ? 'स्वतंत्र व्यापार या नेतृत्व की भूमिका में समय के साथ अच्छी उन्नति हो सकती है।' : 'शुरुआती वर्षों में नौकरी या किसी अनुभवी संस्था के साथ काम करके अनुभव बटोरना अधिक सुरक्षित रहेगा, उसके बाद ही स्वतंत्र कार्य में हाथ डालें।'}</p>
-
-                    <p><strong>4. धन संचय, अचानक लाभ व अष्टम-द्वादश प्रभाव:</strong> धन भाव (${r2Obj.hindi}, स्वामी ${getPlanetDisplayName(lord2)}) और लाभ भाव (${r11Obj.hindi}, स्वामी ${getPlanetDisplayName(lord11)} भाव ${p11L.house}) की स्थिति बताती है कि आपकी आय का स्तर कैसा रहेगा। गुरु भाव <strong>${pJup.house}</strong> (${colorDesc(pJup.color)}) में रहकर नैतिक आय और बचत को प्रभावित करते हैं, जबकि राहु (भाव ${pRah.house}) व केतु (भाव ${pKet.house}) अचानक लाभ या अचानक खर्च दोनों दे सकते हैं। यदि आपका अष्टमेश (${getPlanetDisplayName(lord8)} भाव ${p8L.house}) या शनि कमजोर है, तो बिना जांचे-परखे किसी को बड़ा कर्ज देने या सट्टेबाजी से बचना चाहिए।</p>
-
-                    <p><strong>5. वर्तमान व आगामी महादशा में करियर भविष्यवाणी:</strong> वर्तमान आयु <strong>${age.years} वर्ष</strong> में आपकी <strong>${currentMaha.name}</strong> महादशा (${formatDateIN(currentMaha.start)} से ${formatDateIN(currentMaha.end)}) चल रही है। इस अवधि में जब भी दशमेश ${getPlanetDisplayName(lord10)}, लाभेश ${getPlanetDisplayName(lord11)} या लग्नेश ${getPlanetDisplayName(lagnesh)} की अंतर्दशा आएगी, तब पदोन्नति, नई नौकरी, स्थान परिवर्तन या आय वृद्धि के अवसर बन सकते हैं। इसके बाद आने वाली <strong>${nextMaha.name}</strong> महादशा (${formatDateIN(nextMaha.start)} से ${formatDateIN(nextMaha.end)}) आपके करियर का सबसे निर्णायक मोड़ साबित हो सकती है—जिसमें लंबे समय से रुके कार्य पूरे होने और स्थायी आर्थिक आधार बनने की प्रबल संभावना है।</p>
-
-                    <p><strong>6. कार्यस्थल सावधानियां व सफलता के सूत्र:</strong> ${hasKaalSarp ? 'कालसर्प योग के कारण कार्यस्थल पर प्रतिस्पर्धा और गुप्त विरोधियों से सावधान रहें। ' : ''}कार्यस्थल पर जल्दबाज़ी में इस्तीफा देने या सहकर्मियों से विवाद करने से बचें। लिखित दस्तावेज़ों को स्पष्ट रखें और नियमित कौशल उन्नयन करते रहें—यही आपके लिए स्थायी सफलता का मार्ग है।</p>
+                    <p><strong>1. कर्म भाव (10वां घर), लग्नेश और कार्यक्षमता:</strong> ${name} की कुंडली में <strong>${lagnaObj.hindi}</strong> लग्न है और कर्म भाव में <strong>${r10Obj.hindi}</strong> राशि (स्वामी <strong>${getPlanetDisplayName(lord10)}</strong> भाव <strong>${p10L.house}</strong> में ${colorDesc(p10L.color)}) है। ${h10Planets.length > 0 ? `दशम भाव में <strong>${h10Planets.map(getPlanetDisplayName).join(', ')}</strong> की उपस्थिति आपके करियर को इन्हीं ग्रहों के क्षेत्रों से जोड़ेगी।` : `दशम भाव खाली होने से करियर की दिशा दशमेश ${getPlanetDisplayName(lord10)} और लग्नेश ${getPlanetDisplayName(lagnesh)} (भाव ${pLag.house}) से तय होती है।`}</p>
+                    <p><strong>2. शिक्षा, शुरुआती संघर्ष व उपयुक्त क्षेत्र:</strong> आपकी महादशा श्रृंखला (${mahaChrono}) में शिक्षा और करियर की नींव रखी जाती है। बुध भाव <strong>${pMerc.house}</strong> (${colorDesc(pMerc.color)}), सूर्य भाव <strong>${pSun.house}</strong> और शनि भाव <strong>${pSat.house}</strong> के अनुसार प्रशासन, तकनीकी सेवाएं, वित्त, डेटा/आईटी, परामर्श, शिक्षा या स्वतंत्र व्यवसाय आपके लिए अनुकूल हो सकते हैं। ${['orange','red'].includes(pMerc.color) || [6,8,12].includes(p5L.house) || [6,8,12].includes(pMoon.house) ? 'किशोरावस्था से 22 वर्ष के बीच पढ़ाई में ध्यान भटकने या उतार-चढ़ाव की संभावना बन सकती है, लेकिन अनुशासन से आप संभल सकते हैं।' : 'शिक्षा और कौशल में आपकी पकड़ मजबूत रह सकती है।'}</p>
+                    <p><strong>3. धन संचय, वर्तमान व आगामी दशा:</strong> धन भाव (${r2Obj.hindi}) और लाभ भाव (${r11Obj.hindi}, स्वामी ${getPlanetDisplayName(lord11)} भाव ${p11L.house}) के अनुसार वर्तमान आयु <strong>${age.years} वर्ष</strong> में <strong>${currentMaha.name}</strong> महादशा (${formatDateIN(currentMaha.start)} से ${formatDateIN(currentMaha.end)}) चल रही है। आगामी <strong>${nextMaha.name}</strong> महादशा (${formatDateIN(nextMaha.start)} से ${formatDateIN(nextMaha.end)}) में करियर और आर्थिक स्थिति में बड़ा सकारात्मक मोड़ आने की संभावना बन सकती है।</p>
+                    <p><strong>4. सावधानियां:</strong> ${hasKaalSarp ? 'कालसर्प योग के कारण कार्यस्थल पर प्रतिस्पर्धा से सतर्क रहें। ' : ''}जल्दबाज़ी में बड़ा वित्तीय जोखिम लेने से बचें और लिखित समझौतों को स्पष्ट रखें।</p>
                 `;
             } else {
                 card.innerHTML = `
-                    <h3 class="text-base sm:text-lg font-extrabold text-emerald-900">कम्प्लीट लाइफ ओवरव्यू (संपूर्ण जीवन विश्लेषण) — ${name}</h3>
+                    <h3 class="text-base sm:text-lg font-extrabold text-emerald-900">कम्प्लीट लाइफ ओवरव्यू — ${name}</h3>
                     <p class="text-xs text-slate-500">जन्म विवरण: ${currentChart.dob} • ${currentChart.tob} • ${currentChart.pob} | मूलांक: ${mulank}, भाग्यांक: ${bhagyank}</p>
-
-                    <p><strong>1. संपूर्ण व्यक्तित्व, लग्न एवं नवांश आधार:</strong> ${name} का जन्म <strong>${lagnaObj.hindi}</strong> लग्न, <strong>${moonRashiObj.hindi}</strong> चंद्र राशि और नवांश लग्न <strong>${d9LagnaObj.hindi}</strong> में हुआ है। लग्नेश <strong>${getPlanetDisplayName(lagnesh)}</strong> भाव <strong>${pLag.house}</strong> में ${colorDesc(pLag.color)} अवस्था में विराजमान हैं। लग्नेश जीवन के समग्र स्वास्थ्य, आत्मविश्वास और भाग्य को खींचने की क्षमता का प्रतीक होता है। ${vargottamaList.length > 0 ? `आपकी कुंडली में <strong>${vargottamaList.join(', ')}</strong> वर्गोत्तम हैं, जिसका अर्थ है कि जीवन के महत्वपूर्ण चरणों में इन ग्रहों से जुड़े क्षेत्र विशेष रूप से प्रभावी रहेंगे।` : ''} ${hasKaalSarp ? 'चूंकि सभी सात ग्रह राहु-केतु के मध्य स्थित हैं, इसलिए कुंडली में कालसर्प योग बन रहा है—जो व्यक्ति को साधारण से असाधारण संघर्ष और फिर बड़ी सफलता की ओर ले जा सकता है।' : ''}</p>
-
-                    <p><strong>2. मन, बुद्धि, साहस और कर्म का संतुलन:</strong> चंद्रमा भाव <strong>${pMoon.house}</strong> (${colorDesc(pMoon.color)}) में, बुध भाव <strong>${pMerc.house}</strong> (${colorDesc(pMerc.color)}) में, तथा मंगल भाव <strong>${pMars.house}</strong> (${colorDesc(pMars.color)}) में स्थित हैं। यह त्रयी बताती है कि आप किसी स्थिति पर कितनी तेजी से प्रतिक्रिया देते हैं। जब चंद्रमा और बुध संतुलित होते हैं, तब आप कठिन से कठिन समस्या का हल शांत दिमाग से निकाल लेते हैं; किंतु यदि चंद्रमा पीड़ित हो तो अनावश्यक चिंता और भावनात्मक उतार-चढ़ाव निर्णय क्षमता को प्रभावित कर सकता है।</p>
-
-                    <p><strong>3. भाग्य, धर्म, धन और पारिवारिक स्तंभ:</strong> नवमेश (भाग्येश) <strong>${getPlanetDisplayName(lord9)}</strong> भाव <strong>${p9L.house}</strong> में, गुरु भाव <strong>${pJup.house}</strong> (${colorDesc(pJup.color)}) में, और शुक्र भाव <strong>${pVen.house}</strong> (${colorDesc(pVen.color)}) में स्थित हैं। ये तीनों ग्रह जीवन में सुख-सुविधा, घर-वाहन, शिक्षा, आध्यात्मिक समझ और सामाजिक सम्मान के मुख्य कारक हैं। वहीं शनि (भाव <strong>${pSat.house}</strong>, ${colorDesc(pSat.color)}) जीवन के हर क्षेत्र में अनुशासन, कर्म का हिसाब और धैर्य की परीक्षा लेते हैं—शनि की साढ़ेसाती के चरणों (जब गोचर शनि चंद्र राशि ${moonRashiObj.hindi} से 12वीं, 1ली और 2री राशि में भ्रमण करते हैं) में जीवन आपको कठोर अनुभवों से परिपक्व बना सकता है।</p>
-
-                    <p><strong>4. जीवन की संपूर्ण दशा समयरेखा (कब क्या हो सकता है):</strong> जन्म के समय <strong>${birthMaha.name}</strong> महादशा (${formatDateIN(birthMaha.end)} तक) और योगिनी की <strong>${yBirth.hi}</strong> दशा (${formatDateIN(yBirthEnd)} तक) से आपकी जीवन यात्रा आरंभ हुई। आपकी प्रमुख महादशाओं का क्रम इस प्रकार है: ${mahaChrono}। वर्तमान में <strong>${age.years} वर्ष</strong> की आयु में आपकी <strong>${currentMaha.name}</strong> महादशा (${formatDateIN(currentMaha.start)} से ${formatDateIN(currentMaha.end)}) सक्रिय है। इस समय जो भी चुनौतियां या अवसर आ रहे हैं, वे सीधे इस महादशा के स्वामी ग्रह के भाव (${getPlanetHouseAndColor(currentMaha.id).house}) और उसकी स्थिति से जुड़े हैं। आगे आने वाली <strong>${nextMaha.name}</strong> महादशा (${formatDateIN(nextMaha.start)} से ${formatDateIN(nextMaha.end)}) में जीवन के मुख्य लक्ष्यों—करियर, घर, परिवार और आर्थिक स्थिरता—में बड़ा बदलाव देखने को मिल सकता है।</p>
-
-                    <p><strong>5. स्वास्थ्य, कानूनी/विवाद चेतावनी और कर्मिक सुरक्षा:</strong> ${hasHealthAlert ? 'लग्नेश या चंद्रमा पर संवेदनशील प्रभाव होने से रक्तचाप, अनिद्रा, पाचन या मौसमी रोगों के प्रति लापरवाही न बरतें। ' : 'स्वास्थ्य सामान्यतः संतुलित रह सकता है, बस नियमित दिनचर्या बनाए रखें। '}${[6, 8, 12].includes(pMars.house) || [6, 8, 12].includes(pSat.house) || h8Planets.length >= 2 ? 'अष्टम या छठे भाव के प्रभाव के कारण कानूनी विवाद, दस्तावेज़ी लापरवाही, या गुप्त शत्रुओं से सावधान रहना आवश्यक रहेगा; किसी भी बड़े समझौते से पहले पूरी जांच करें। ' : ''}${hasVehicleRisk ? 'वाहन चलाते समय गति और क्रोध पर नियंत्रण रखें। ' : ''}</p>
-
-                    <p><strong>6. अंतिम निष्कर्ष व जीवन सूत्र:</strong> यह रिपोर्ट आपकी कुंडली के वास्तविक ग्रह-योगों पर आधारित संभावित जीवन-दिशा प्रस्तुत करती है। किसी भी अशुभ या परीक्षाकारी दशा में घबराने के बजाय ईमानदारी, नियमित साधना, माता-पिता व गुरुजनों के सम्मान, और संयमित वाणी से जीवन में अत्यंत सकारात्मक और स्थिर परिणाम प्राप्त किए जा सकते हैं।</p>
+                    <p><strong>1. व्यक्तित्व व ग्रह आधार:</strong> ${name} की कुंडली में <strong>${lagnaObj.hindi}</strong> लग्न, <strong>${moonRashiObj.hindi}</strong> चंद्र राशि और नवांश लग्न <strong>${d9LagnaObj.hindi}</strong> है। लग्नेश <strong>${getPlanetDisplayName(lagnesh)}</strong> भाव <strong>${pLag.house}</strong> में ${colorDesc(pLag.color)} हैं। ${vargottamaList.length > 0 ? `<strong>${vargottamaList.join(', ')}</strong> वर्गोत्तम स्थिति में हैं। ` : ''}${hasKaalSarp ? 'कुंडली में कालसर्प योग भी बन रहा है, जो संघर्ष के बाद बड़ी सफलता दे सकता है।' : ''}</p>
+                    <p><strong>2. जीवन दशा समयरेखा:</strong> जन्म के समय <strong>${birthMaha.name}</strong> महादशा (${formatDateIN(birthMaha.end)} तक) और योगिनी की <strong>${yBirth.hi}</strong> दशा (${formatDateIN(yBirth.end)} तक) थी। आपकी महादशाओं का क्रम: ${mahaChrono}। वर्तमान आयु <strong>${age.years} वर्ष</strong> में <strong>${currentMaha.name}</strong> महादशा (${formatDateIN(currentMaha.start)} से ${formatDateIN(currentMaha.end)}) सक्रिय है, जिसके बाद <strong>${nextMaha.name}</strong> महादशा (${formatDateIN(nextMaha.start)} से ${formatDateIN(nextMaha.end)}) जीवन में नए अवसर और स्थिरता ला सकती है।</p>
+                    <p><strong>3. स्वास्थ्य, साढ़ेसाती व सुरक्षा:</strong> ${hasHealthAlert ? 'लग्नेश या चंद्रमा के संवेदनशील होने से तनाव, अनिद्रा या मौसमी स्वास्थ्य समस्याओं का ध्यान रखें। ' : 'स्वास्थ्य सामान्यतः संतुलित रह सकता है। '}${hasVehicleRisk ? 'मंगल के प्रभाव से वाहन और क्रोध पर नियंत्रण आवश्यक है। ' : ''}शनि की साढ़ेसाती के चरणों में धैर्य, ईमानदारी और गुरुजनों के सम्मान से जीवन में स्थायी उन्नति प्राप्त हो सकती है।</p>
                 `;
             }
         }
