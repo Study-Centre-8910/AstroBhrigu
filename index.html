@@ -171,6 +171,17 @@
                 <h2 class="text-xl font-bold text-slate-900 mb-1" data-lang-en="Panchang" data-lang-hi="पंचांग">पंचांग</h2>
                 <p class="text-sm text-slate-500" data-lang-en="Tithi, Nakshatra, Panchak, Choghadiya, Hora & more." data-lang-hi="तिथि, नक्षत्र, पंचक, भद्रा, चौघड़िया व होरा देखें।">तिथि, नक्षत्र, पंचक, भद्रा, चौघड़िया व होरा देखें।</p>
             </button>
+
+            <!-- ग्रह चक्र (3D Live Planetary Chart) कार्ड -->
+            <button type="button" onclick="openGrahaChakraView()" class="group sm:col-span-2 flex flex-col sm:flex-row items-start sm:items-center gap-4 p-6 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white rounded-2xl border border-indigo-500/40 shadow-md hover:shadow-xl hover:border-amber-400 transition-all text-left">
+                <div class="w-12 h-12 rounded-xl bg-amber-500 text-slate-950 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform shadow-sm">
+                    <i data-lucide="orbit" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h2 class="text-xl font-bold text-white mb-0.5" data-lang-en="Graha Chakra (3D Live)" data-lang-hi="ग्रह चक्र (3D लाइव कुंडली)">ग्रह चक्र (3D लाइव कुंडली)</h2>
+                    <p class="text-xs sm:text-sm text-indigo-200" data-lang-en="Watch 3D rotating planets move in real-time across houses, with Rahu Black Hole, combust dimming & retrograde motion." data-lang-hi="अपनी धुरी पर घूमते 3D ग्रह, राहु ब्लैक होल, अस्त व वक्री गति को लाइव या किसी भी तारीख पर देखें।">अपनी धुरी पर घूमते 3D ग्रह, राहु ब्लैक होल, अस्त व वक्री गति को लाइव या किसी भी तारीख पर देखें।</p>
+                </div>
+            </button>
         </div>
     </div>
 
@@ -384,6 +395,59 @@
         </div>
     </div>
 
+    <!-- ==================== व्यू 3D: ग्रह चक्र (3D लाइव कुंडली) ==================== -->
+    <div id="view-graha-chakra" class="hidden flex-1 flex-col p-3 sm:p-5 max-w-5xl mx-auto w-full">
+        <div class="flex flex-wrap items-center justify-between gap-2.5 mb-3 pt-8 sm:pt-0 sm:pr-32">
+            <div class="flex items-center gap-2.5">
+                <button type="button" onclick="closeGrahaChakraView()" class="p-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 transition-colors">
+                    <i data-lucide="arrow-left" class="w-5 h-5"></i>
+                </button>
+                <div>
+                    <h2 class="text-lg sm:text-2xl font-bold text-slate-900" data-lang-en="Graha Chakra (3D Live)" data-lang-hi="ग्रह चक्र (3D लाइव कुंडली)">ग्रह चक्र (3D लाइव कुंडली)</h2>
+                    <p id="gc-time-subtitle" class="text-xs text-slate-500"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- नियंत्रण बार -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-3 mb-3 flex flex-wrap items-end gap-2.5 text-xs">
+            <div>
+                <label class="block text-[10px] font-bold text-slate-500 mb-1" data-lang-en="Date & Time" data-lang-hi="दिनांक व समय">दिनांक व समय</label>
+                <input type="datetime-local" id="gc-datetime-input" onchange="setGrahaChakraCustomTime(this.value)" class="px-2.5 py-1.5 rounded-xl border border-slate-300 bg-white font-semibold text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
+            <button type="button" onclick="setGrahaChakraLiveNow()" class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-sm transition-colors" data-lang-en="Live Now" data-lang-hi="वर्तमान (Live)">वर्तमान (Live)</button>
+            <div>
+                <label class="block text-[10px] font-bold text-slate-500 mb-1" data-lang-en="1st House Rashi" data-lang-hi="प्रथम भाव राशि">प्रथम भाव राशि</label>
+                <select id="gc-lagna-select" onchange="gcLagnaRashi = parseInt(this.value, 10)" class="px-2.5 py-1.5 rounded-xl border border-slate-300 bg-white font-semibold text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500"></select>
+            </div>
+            <div>
+                <label class="block text-[10px] font-bold text-slate-500 mb-1" data-lang-en="Motion Speed" data-lang-hi="गति (Speed)">गति (Speed)</label>
+                <select id="gc-speed-select" onchange="gcSpeedMode = this.value" class="px-2.5 py-1.5 rounded-xl border border-slate-300 bg-white font-semibold text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500">
+                    <option value="live" data-lang-en="Real-time (1x)" data-lang-hi="वास्तविक (1x)">वास्तविक (1x)</option>
+                    <option value="hour" data-lang-en="1 Hour / sec" data-lang-hi="1 घंटा / सेकंड">1 घंटा / सेकंड</option>
+                    <option value="day" data-lang-en="1 Day / sec" data-lang-hi="1 दिन / सेकंड">1 दिन / सेकंड</option>
+                    <option value="month" data-lang-en="15 Days / sec" data-lang-hi="15 दिन / सेकंड">15 दिन / सेकंड</option>
+                    <option value="pause" data-lang-en="Paused" data-lang-hi="रोकें (Pause)">रोकें (Pause)</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-[10px] font-bold text-slate-500 mb-1" data-lang-en="Chart Theme" data-lang-hi="चार्ट रंग">चार्ट रंग</label>
+                <div class="inline-flex rounded-xl bg-slate-100 p-0.5 border border-slate-200">
+                    <button type="button" onclick="setGcTheme('dark')" id="gc-theme-dark" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-900 text-white" data-lang-en="Black" data-lang-hi="ब्लैक">ब्लैक</button>
+                    <button type="button" onclick="setGcTheme('light')" id="gc-theme-light" class="px-2.5 py-1 rounded-lg text-xs font-bold text-slate-700" data-lang-en="White" data-lang-hi="वाइट">वाइट</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- बड़ी 3D कुंडली कैनवास -->
+        <div id="gc-canvas-wrap" class="w-full max-w-[660px] mx-auto bg-slate-950 rounded-2xl border-2 border-indigo-500/40 shadow-xl p-2 relative">
+            <canvas id="graha-chakra-canvas" width="900" height="900" class="w-full h-auto block rounded-xl"></canvas>
+        </div>
+
+        <!-- ग्रह स्थिति व संकेत -->
+        <div id="gc-legend-bar" class="w-full max-w-[660px] mx-auto mt-3 grid grid-cols-2 sm:grid-cols-3 gap-1.5 text-[11px]"></div>
+    </div>
+
     <!-- ==================== व्यू 4: चार्ट वर्कस्पेस ==================== -->
     <div id="view-workspace" class="hidden flex-1 flex-col">
         <!-- टॉप एक्शन बार -->
@@ -448,7 +512,7 @@
                 </button>
                 <button type="button" onclick="switchWorkspacePanel('dasha')" id="nav-ws-dasha" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-100 border border-transparent transition-colors text-left">
                     <i data-lucide="clock" class="w-4 h-4 text-indigo-600 shrink-0"></i>
-                    <span data-lang-en="Vimshottari & Yogini Dasha" data-lang-hi="विंशोत्तरी व योगिनी दशा">विंशोत्तरी व योगिनी दशा</span>
+                    <span data-lang-en="Mahadasha" data-lang-hi="महादशा">महादशा</span>
                 </button>
                 <button type="button" onclick="switchWorkspacePanel('shadbala')" id="nav-ws-shadbala" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-100 border border-transparent transition-colors text-left">
                     <i data-lucide="bar-chart-3" class="w-4 h-4 text-emerald-600 shrink-0"></i>
@@ -569,9 +633,10 @@
             <div id="ws-panel-dasha" class="hidden w-full max-w-3xl flex-col gap-3">
                 <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-3 sm:p-4">
                     <div class="flex items-center justify-between gap-2 mb-3">
-                        <div class="inline-flex rounded-xl bg-slate-100 p-1">
-                            <button type="button" onclick="setDashaTab('vimshottari')" id="tab-vimshottari" class="px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold bg-white text-indigo-700 shadow-sm transition-all" data-lang-en="Vimshottari" data-lang-hi="विंशोत्तरी दशा">विंशोत्तरी दशा</button>
-                            <button type="button" onclick="setDashaTab('yogini')" id="tab-yogini" class="px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold text-slate-600 hover:text-slate-900 transition-all" data-lang-en="Yogini" data-lang-hi="योगिनी दशा">योगिनी दशा</button>
+                        <div class="inline-flex flex-wrap gap-1 rounded-xl bg-slate-100 p-1">
+                            <button type="button" onclick="setDashaTab('vimshottari')" id="tab-vimshottari" class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold bg-white text-indigo-700 shadow-sm transition-all" data-lang-en="Vimshottari" data-lang-hi="विंशोत्तरी दशा">विंशोत्तरी दशा</button>
+                            <button type="button" onclick="setDashaTab('yogini')" id="tab-yogini" class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold text-slate-600 hover:text-slate-900 transition-all" data-lang-en="Yogini" data-lang-hi="योगिनी दशा">योगिनी दशा</button>
+                            <button type="button" onclick="setDashaTab('chara')" id="tab-chara" class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold text-slate-600 hover:text-slate-900 transition-all" data-lang-en="Chara Dasha" data-lang-hi="चर दशा">चर दशा</button>
                         </div>
                         <span class="text-[11px] text-slate-400 hidden sm:inline" data-lang-en="Swipe left for Yogini Dasha" data-lang-hi="बाईं ओर स्वाइप करें → योगिनी दशा">बाईं ओर स्वाइप करें → योगिनी दशा</span>
                     </div>
@@ -587,6 +652,11 @@
                         <div id="dasha-yogini-view" class="hidden">
                             <div id="yogini-info" class="mb-3 px-3 py-2 rounded-xl bg-amber-50 border border-amber-100 text-xs text-amber-900 font-medium"></div>
                             <div id="yogini-list" class="space-y-2.5"></div>
+                        </div>
+                        <!-- चर दशा व्यू -->
+                        <div id="dasha-chara-view" class="hidden">
+                            <div id="chara-info" class="mb-3 px-3 py-2 rounded-xl bg-emerald-50 border border-emerald-100 text-xs text-emerald-900 font-medium"></div>
+                            <div id="chara-list" class="space-y-2.5"></div>
                         </div>
                     </div>
                 </div>
@@ -1487,10 +1557,28 @@
 
             function getMoonSiderealLon(dayOffset = 0) {
                 const dVal = d + dayOffset;
-                const Lm = norm360(218.3164477 + 13.17639648 * dVal);
-                const Mm = norm360(134.9633964 + 13.06499295 * dVal) * deg2rad;
-                const D  = norm360(297.8501921 + 12.19074912 * dVal) * deg2rad;
-                return norm360((Lm + 6.288774 * Math.sin(Mm) + 1.274027 * Math.sin(2 * D - Mm) + 0.658314 * Math.sin(2 * D)) - ayanamsa);
+                const T_m = dVal / 36525.0;
+                const Lm = norm360(218.3164477 + 481267.88123421 * T_m - 0.0015786 * T_m * T_m);
+                const D  = norm360(297.8501921 + 445267.1114034 * T_m - 0.0018819 * T_m * T_m) * deg2rad;
+                const Ms = norm360(357.5291092 + 35999.0502909 * T_m - 0.0001536 * T_m * T_m) * deg2rad;
+                const Mm = norm360(134.9633964 + 477198.8675055 * T_m + 0.0087414 * T_m * T_m) * deg2rad;
+                const F  = norm360(93.2720950  + 483202.0175233 * T_m - 0.0036539 * T_m * T_m) * deg2rad;
+                const E_corr = 1 - 0.002516 * T_m;
+                const corr =
+                    6.288774 * Math.sin(Mm)
+                    + 1.274027 * Math.sin(2 * D - Mm)
+                    + 0.658314 * Math.sin(2 * D)
+                    + 0.213618 * Math.sin(2 * Mm)
+                    - 0.185116 * E_corr * Math.sin(Ms)
+                    - 0.114332 * Math.sin(2 * F)
+                    + 0.058793 * Math.sin(2 * D - 2 * Mm)
+                    + 0.057066 * E_corr * Math.sin(2 * D - Ms - Mm)
+                    + 0.053322 * Math.sin(2 * D + Mm)
+                    + 0.045758 * E_corr * Math.sin(2 * D - Ms)
+                    - 0.040923 * E_corr * Math.sin(Ms - Mm)
+                    - 0.034720 * Math.sin(D)
+                    - 0.030383 * E_corr * Math.sin(Ms + Mm);
+                return norm360((Lm + corr) - ayanamsa);
             }
 
             const rahuLon = norm360(norm360(125.04452 - 0.0529537648 * d) - ayanamsa);
@@ -1596,7 +1684,7 @@
 
         function showView(viewName) {
             hideContextMenus();
-            ['home', 'new-chart', 'saved-charts', 'milan', 'panchang', 'workspace'].forEach(v => {
+            ['home', 'new-chart', 'saved-charts', 'milan', 'panchang', 'graha-chakra', 'workspace'].forEach(v => {
                 const el = document.getElementById(`view-${v}`);
                 if (el) { el.classList.add('hidden'); el.classList.remove('flex'); }
             });
@@ -2685,7 +2773,7 @@
             const pill = document.getElementById('ws-active-section-pill');
             const titles = {
                 chart:    { hi: 'लग्न कुंडली (D1)', en: 'Lagna Chart (D1)' },
-                dasha:    { hi: 'विंशोत्तरी व योगिनी दशा', en: 'Vimshottari & Yogini Dasha' },
+                dasha:    { hi: 'महादशा (विंशोत्तरी • योगिनी • चर)', en: 'Mahadasha (Vimshottari • Yogini • Chara)' },
                 shadbala: { hi: 'ग्रह बल व भाव बल', en: 'Graha & Bhava Bala' },
                 varga:      { hi: 'षोडश वर्ग (16 चार्ट)', en: 'Shodashvarga (16 Charts)' },
                 person:     { hi: 'व्यक्ति विवरण', en: 'Person Details' },
@@ -2709,10 +2797,30 @@
             if (currentChart.longitudes && typeof currentChart.longitudes.Moon === 'number') {
                 return currentChart.longitudes;
             }
-            // Fallback for older saved charts without stored longitudes
-            const fallback = {};
-            const r1 = currentChart.rashis[1] || 1;
-            fallback.Asc = (r1 - 1) * 30 + 15;
+            // Recompute exact ephemeris from DOB/TOB/POB if older saved chart lacks longitudes
+            if (currentChart.dob && currentChart.dob.includes('-')) {
+                const [by, bm, bd] = currentChart.dob.split('-').map(Number);
+                const [bh, bmin] = (currentChart.tob || '12:00').split(':').map(Number);
+                let utH = (bh || 12) + ((bmin || 0) / 60.0) - 5.5;
+                let utDay = bd, utMonth = bm, utYear = by;
+                if (utH < 0) {
+                    utH += 24;
+                    const prev = new Date(Date.UTC(by, bm - 1, bd - 1));
+                    utYear = prev.getUTCFullYear(); utMonth = prev.getUTCMonth() + 1; utDay = prev.getUTCDate();
+                } else if (utH >= 24) {
+                    utH -= 24;
+                    const next = new Date(Date.UTC(by, bm - 1, bd + 1));
+                    utYear = next.getUTCFullYear(); utMonth = next.getUTCMonth() + 1; utDay = next.getUTCDate();
+                }
+                let y = utYear, m = utMonth;
+                if (m <= 2) { y -= 1; m += 12; }
+                const A = Math.floor(y / 100), B = 2 - A + Math.floor(A / 4);
+                const jd = Math.floor(365.25 * (y + 4716)) + Math.floor(30.6001 * (m + 1)) + utDay + (utH / 24.0) + B - 1524.5;
+                const res = computeSiderealChartAtJD(jd, currentChart.lat || 26.5645, currentChart.lon || 78.7873);
+                currentChart.longitudes = Object.assign({ Asc: res.asc }, res.pLons);
+                return currentChart.longitudes;
+            }
+            const fallback = { Asc: 15 };
             for (let h = 1; h <= 12; h++) {
                 const r = currentChart.rashis[h] || 1;
                 (currentChart.planets[h] || []).forEach((p, idx) => {
@@ -2788,22 +2896,29 @@
 
         function setDashaTab(tab) {
             activeDashaTab = tab;
-            const vimV = document.getElementById('dasha-vimshottari-view');
-            const yogV = document.getElementById('dasha-yogini-view');
-            const tVim = document.getElementById('tab-vimshottari');
-            const tYog = document.getElementById('tab-yogini');
-
-            if (tab === 'vimshottari') {
-                vimV.classList.remove('hidden');
-                yogV.classList.add('hidden');
-                tVim.className = 'px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold bg-white text-indigo-700 shadow-sm transition-all';
-                tYog.className = 'px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold text-slate-600 hover:text-slate-900 transition-all';
-            } else {
-                vimV.classList.add('hidden');
-                yogV.classList.remove('hidden');
-                tYog.className = 'px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold bg-white text-amber-700 shadow-sm transition-all';
-                tVim.className = 'px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold text-slate-600 hover:text-slate-900 transition-all';
-            }
+            const views = {
+                vimshottari: document.getElementById('dasha-vimshottari-view'),
+                yogini:      document.getElementById('dasha-yogini-view'),
+                chara:       document.getElementById('dasha-chara-view')
+            };
+            const tabs = {
+                vimshottari: document.getElementById('tab-vimshottari'),
+                yogini:      document.getElementById('tab-yogini'),
+                chara:       document.getElementById('tab-chara')
+            };
+            const activeColors = {
+                vimshottari: 'text-indigo-700',
+                yogini:      'text-amber-700',
+                chara:       'text-emerald-700'
+            };
+            ['vimshottari', 'yogini', 'chara'].forEach(k => {
+                if (views[k]) views[k].classList.toggle('hidden', k !== tab);
+                if (tabs[k]) {
+                    tabs[k].className = k === tab
+                        ? `px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold bg-white ${activeColors[k]} shadow-sm transition-all`
+                        : 'px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold text-slate-600 hover:text-slate-900 transition-all';
+                }
+            });
         }
 
         function setupDashaSwipe() {
@@ -2819,8 +2934,10 @@
                 const dx = e.changedTouches[0].clientX - startX;
                 const dy = e.changedTouches[0].clientY - startY;
                 if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.4) {
-                    if (dx < 0 && activeDashaTab === 'vimshottari') setDashaTab('yogini');
-                    else if (dx > 0 && activeDashaTab === 'yogini') setDashaTab('vimshottari');
+                    const order = ['vimshottari', 'yogini', 'chara'];
+                    const idx = order.indexOf(activeDashaTab);
+                    if (dx < 0 && idx < 2) setDashaTab(order[idx + 1]);
+                    else if (dx > 0 && idx > 0) setDashaTab(order[idx - 1]);
                 }
             }, { passive: true });
         }
@@ -2830,6 +2947,7 @@
             setupDashaSwipe();
             renderVimshottari();
             renderYogini();
+            renderCharaDasha();
             setDashaTab(activeDashaTab);
         }
 
@@ -3010,47 +3128,171 @@
 
             const EXALT_DEG = { Sun: 10, Moon: 33, Mars: 298, Mercury: 165, Jupiter: 95, Venus: 357, Saturn: 200 };
             const NAISARGIKA = { Sun: 60.0, Moon: 51.43, Venus: 42.86, Jupiter: 34.29, Mercury: 25.71, Mars: 17.14, Saturn: 8.57 };
-            const DIG_HOUSE = { Sun: 10, Mars: 10, Jupiter: 1, Mercury: 1, Moon: 4, Venus: 4, Saturn: 7 };
             const REQ_RUPAS = { Sun: 6.5, Moon: 6.0, Mars: 5.0, Mercury: 7.0, Jupiter: 6.5, Venus: 5.5, Saturn: 5.0 };
+            const MOOL_RASHI = { Sun: 5, Moon: 2, Mars: 1, Mercury: 6, Jupiter: 9, Venus: 7, Saturn: 11 };
+            const OWN_RASHIS = { Sun: [5], Moon: [4], Mars: [1, 8], Mercury: [3, 6], Jupiter: [9, 12], Venus: [2, 7], Saturn: [10, 11] };
+            const NAT_FRIENDS = {
+                Sun: ['Moon', 'Mars', 'Jupiter'], Moon: ['Sun', 'Mercury'], Mars: ['Sun', 'Moon', 'Jupiter'],
+                Mercury: ['Sun', 'Venus'], Jupiter: ['Sun', 'Moon', 'Mars'], Venus: ['Mercury', 'Saturn'], Saturn: ['Mercury', 'Venus']
+            };
+            const NAT_ENEMIES = {
+                Sun: ['Venus', 'Saturn'], Moon: [], Mars: ['Mercury'],
+                Mercury: ['Moon'], Jupiter: ['Mercury', 'Venus'], Venus: ['Sun', 'Moon'], Saturn: ['Sun', 'Moon', 'Mars']
+            };
 
             const sunLon = lons.Sun || 0;
             const moonLon = lons.Moon || 0;
-            const [hh] = (currentChart.tob || '12:00').split(':').map(Number);
-            const isDay = hh >= 6 && hh < 18;
+            const ascLon = lons.Asc || 0;
+            const lagnaRashi = Math.floor(ascLon / 30) + 1;
 
+            const birthDate = getChartStartDate();
+            const dayOfWeek = birthDate.getDay(); // 0=Sun..6=Sat
+            const [hh, mm] = (currentChart.tob || '12:00').split(':').map(Number);
+            const hourDec = (hh || 12) + (mm || 0) / 60;
+            const isDay = hourDec >= 6 && hourDec < 18;
+            const DAY_LORD_MAP = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn'];
+            const HORA_SEQ = ['Sun', 'Venus', 'Mercury', 'Moon', 'Saturn', 'Jupiter', 'Mars'];
+            const varaLord = DAY_LORD_MAP[dayOfWeek];
+            const hoursSinceSunrise = ((hourDec - 6) + 24) % 24;
+            const horaIdx = (HORA_SEQ.indexOf(varaLord) + Math.floor(hoursSinceSunrise)) % 7;
+            const horaLord = HORA_SEQ[horaIdx];
+
+            // Helper: Sapta Vargaja Bala (D1, D2, D3, D7, D9, D12, D30)
+            function getSaptavargaja(pid, pLon) {
+                const divs = [1, 2, 3, 7, 9, 12, 30];
+                const d1R = Math.floor(pLon / 30) + 1;
+                let total = 0;
+                divs.forEach((div, idx) => {
+                    const vr = computeVargaRashi(pLon, div);
+                    const lord = RASHIS.find(x => x.num === vr).lord;
+                    if (div === 1 && MOOL_RASHI[pid] === vr) {
+                        total += 45;
+                    } else if (OWN_RASHIS[pid].includes(vr)) {
+                        total += 30;
+                    } else if (lord === pid) {
+                        total += 30;
+                    } else {
+                        // Temporary friendship in D1
+                        const lordR = Math.floor((lons[lord] || 0) / 30) + 1;
+                        const dist = ((lordR - d1R + 12) % 12) + 1;
+                        const tempFriend = [2, 3, 4, 10, 11, 12].includes(dist);
+                        const isNatF = NAT_FRIENDS[pid].includes(lord);
+                        const isNatE = NAT_ENEMIES[pid].includes(lord);
+                        let relScore = 10; // Neutral
+                        if (isNatF && tempFriend) relScore = 22.5;
+                        else if ((isNatF && !tempFriend) || (!isNatF && !isNatE && tempFriend)) relScore = 15;
+                        else if (!isNatF && !isNatE && !tempFriend) relScore = 7.5;
+                        else if (isNatE && tempFriend) relScore = 10;
+                        else if (isNatE && !tempFriend) relScore = (idx === 0 ? 2 : 3.75);
+                        total += relScore;
+                    }
+                });
+                return total;
+            }
+
+            const sevenIds = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn'];
             const planetStrengthMap = {};
-            const rows = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn'].map(pid => {
+
+            const rows = sevenIds.map(pid => {
                 const lon = lons[pid] || 0;
                 const rashiNum = Math.floor(lon / 30) + 1;
+                const degInSign = lon % 30;
 
+                // 1. Sthana Bala = Uchcha + Saptavargaja + Ojhayugma + Kendradi + Drekkana
                 const debDeg = (EXALT_DEG[pid] + 180) % 360;
                 let diffEx = Math.abs(lon - debDeg);
                 if (diffEx > 180) diffEx = 360 - diffEx;
-                const uchchaBala = (diffEx / 180) * 60;
-                const dignityBonus = isStrongInRashi(pid, rashiNum) ? 75 : (getBaseDignityColor(pid, rashiNum) === 'pureYellow' ? 50 : 30);
-                const sthana = uchchaBala + dignityBonus + 30;
+                const uchcha = (diffEx / 180) * 60;
+                const sapta = getSaptavargaja(pid, lon);
+                const isOddSign = rashiNum % 2 === 1;
+                const isFem = (pid === 'Moon' || pid === 'Venus');
+                const ojha = ((isFem && !isOddSign) || (!isFem && isOddSign)) ? 15 : 0;
+                const hFromAsc = ((rashiNum - lagnaRashi + 12) % 12) + 1;
+                const kendradi = [1, 4, 7, 10].includes(hFromAsc) ? 60 : ([2, 5, 8, 11].includes(hFromAsc) ? 30 : 15);
+                const drekPart = Math.floor(degInSign / 10); // 0, 1, 2
+                let drekkana = 0;
+                if (drekPart === 0 && ['Sun', 'Mars', 'Jupiter'].includes(pid)) drekkana = 15;
+                else if (drekPart === 1 && ['Mercury', 'Saturn'].includes(pid)) drekkana = 15;
+                else if (drekPart === 2 && ['Moon', 'Venus'].includes(pid)) drekkana = 15;
+                const sthana = uchcha + sapta + ojha + kendradi + drekkana;
 
-                let hNum = 1;
-                for (let h = 1; h <= 12; h++) {
-                    if (currentChart.rashis[h] === rashiNum) { hNum = h; break; }
-                }
-                const bestH = DIG_HOUSE[pid];
-                const weakH = ((bestH + 5) % 12) + 1;
-                let hDiff = Math.abs(hNum - weakH);
-                if (hDiff > 6) hDiff = 12 - hDiff;
-                const dig = (hDiff / 6) * 60;
+                // 2. Dig Bala (degree-based from Nadir/powerless point)
+                const nadirMap = {
+                    Sun: (ascLon + 90) % 360, Mars: (ascLon + 90) % 360,     // weak at 4th, strong at 10th
+                    Jupiter: (ascLon + 180) % 360, Mercury: (ascLon + 180) % 360, // weak at 7th, strong at 1st
+                    Moon: (ascLon + 270) % 360, Venus: (ascLon + 270) % 360,   // weak at 10th, strong at 4th
+                    Saturn: ascLon % 360                                       // weak at 1st, strong at 7th
+                };
+                let digDiff = Math.abs(lon - nadirMap[pid]);
+                if (digDiff > 180) digDiff = 360 - digDiff;
+                const dig = (digDiff / 180) * 60;
+
+                // 3. Kala Bala = Natonnata + Paksha + Tribhaga + Vara/Hora + Ayana
+                const distFromMidnight = Math.min(hourDec, 24 - hourDec); // 0 at midnight, 12 at noon
+                let natonnata = 30;
+                if (['Sun', 'Jupiter', 'Venus'].includes(pid)) natonnata = (distFromMidnight / 12) * 60;
+                else if (['Moon', 'Mars', 'Saturn'].includes(pid)) natonnata = ((12 - distFromMidnight) / 12) * 60;
+                else natonnata = 60; // Mercury always 60
 
                 let pakshaDiff = Math.abs(moonLon - sunLon);
                 if (pakshaDiff > 180) pakshaDiff = 360 - pakshaDiff;
-                const isBenefic = ['Moon', 'Jupiter', 'Venus'].includes(pid);
-                const pakshaBala = isBenefic ? (pakshaDiff / 180) * 60 : ((180 - pakshaDiff) / 180) * 60;
-                const dayNightBala = (['Sun', 'Jupiter', 'Venus'].includes(pid) ? isDay : !isDay) ? 45 : 20;
-                const kala = pakshaBala + dayNightBala + 25;
+                const isNaturalBenefic = ['Moon', 'Jupiter', 'Venus'].includes(pid);
+                let paksha = isNaturalBenefic ? (pakshaDiff / 180) * 60 : ((180 - pakshaDiff) / 180) * 60;
+                if (pid === 'Moon') paksha *= 2;
 
-                const pObj = (currentChart.planets[hNum] || []).find(x => x.id === pid);
-                const chesta = (pObj && pObj.isRetrograde) ? 55 : (pid === 'Sun' || pid === 'Moon' ? 40 : 28);
+                let tribhaga = 0;
+                if (isDay) {
+                    const part = Math.floor((hourDec - 6) / 4);
+                    if ((part === 0 && pid === 'Mercury') || (part === 1 && pid === 'Sun') || (part === 2 && pid === 'Saturn')) tribhaga = 60;
+                } else {
+                    const nHr = (hourDec >= 18 ? hourDec - 18 : hourDec + 6);
+                    const part = Math.floor(nHr / 4);
+                    if ((part === 0 && pid === 'Moon') || (part === 1 && pid === 'Venus') || (part === 2 && pid === 'Mars')) tribhaga = 60;
+                }
+                if (pid === 'Jupiter') tribhaga = 60;
+
+                const varaBala = (pid === varaLord) ? 45 : 0;
+                const horaBala = (pid === horaLord) ? 60 : 0;
+                // Ayana Bala (declination-based)
+                const tropSun = (sunLon + 24) % 360;
+                const decl = 23.44 * Math.sin((tropSun * Math.PI) / 180);
+                let ayana = 30;
+                if (['Sun', 'Mars', 'Jupiter', 'Venus'].includes(pid)) ayana = 30 + (decl / 23.44) * 30;
+                else if (['Moon', 'Saturn'].includes(pid)) ayana = 30 - (decl / 23.44) * 30;
+                else ayana = 30 + Math.abs(decl / 23.44) * 15;
+                if (pid === 'Sun') ayana *= 2;
+
+                const kala = natonnata + paksha + tribhaga + varaBala + horaBala + ayana;
+
+                // 4. Chesta Bala
+                const pObj = (currentChart.planets[hFromAsc] || []).find(x => x.id === pid);
+                let chesta = 30;
+                if (pid === 'Sun') chesta = ayana / 2;
+                else if (pid === 'Moon') chesta = paksha / 2;
+                else if (pObj && pObj.isRetrograde) chesta = 60;
+                else {
+                    let sDist = Math.abs(lon - sunLon);
+                    if (sDist > 180) sDist = 360 - sDist;
+                    chesta = 15 + (sDist / 180) * 35;
+                }
+
+                // 5. Naisargika Bala
                 const naisargika = NAISARGIKA[pid];
-                const drik = 18;
+
+                // 6. Drik Bala (Aspect strength from other planets)
+                let drik = 0;
+                sevenIds.forEach(otherId => {
+                    if (otherId === pid) return;
+                    const oLon = lons[otherId] || 0;
+                    const diff = ((lon - oLon + 360) % 360);
+                    let aspect = 0;
+                    if (diff >= 150 && diff <= 210) aspect = 60 * (1 - Math.abs(diff - 180) / 30);
+                    else if (otherId === 'Mars' && ((diff >= 75 && diff <= 105) || (diff >= 210 && diff <= 240))) aspect = 45;
+                    else if (otherId === 'Jupiter' && ((diff >= 105 && diff <= 135) || (diff >= 225 && diff <= 255))) aspect = 45;
+                    else if (otherId === 'Saturn' && ((diff >= 45 && diff <= 75) || (diff >= 255 && diff <= 285))) aspect = 45;
+                    if (['Jupiter', 'Venus', 'Mercury', 'Moon'].includes(otherId)) drik += aspect * 0.25;
+                    else drik -= aspect * 0.25;
+                });
 
                 const totalVirupas = sthana + dig + kala + chesta + naisargika + drik;
                 const totalRupas = totalVirupas / 60;
@@ -3061,12 +3303,11 @@
                 return { pid, sthana, dig, kala, chesta, naisargika, drik, totalVirupas, totalRupas, req, strong };
             });
 
-            // Sort strongest (#1) to weakest (#7)
             rows.sort((a, b) => b.totalRupas - a.totalRupas);
 
             const headers = currentLang === 'hi'
-                ? ['रैंक', 'ग्रह', 'स्थान', 'दिग्', 'काल', 'चेष्टा', 'नैसर्गिक', 'कुल (रूप)', 'स्थिति']
-                : ['Rank', 'Planet', 'Sthana', 'Dig', 'Kala', 'Chesta', 'Naisargika', 'Total (Rupas)', 'Status'];
+                ? ['रैंक', 'ग्रह', 'स्थान', 'दिग्', 'काल', 'चेष्टा', 'नैसर्गिक', 'दृग्', 'कुल (रूप)', 'स्थिति']
+                : ['Rank', 'Planet', 'Sthana', 'Dig', 'Kala', 'Chesta', 'Naisargika', 'Drik', 'Total (Rupas)', 'Status'];
 
             let html = `<table class="w-full text-xs text-left border-collapse">
                 <thead><tr class="border-b border-slate-200 text-slate-500">`;
@@ -3088,6 +3329,7 @@
                     <td class="py-2.5 px-2">${r.kala.toFixed(0)}</td>
                     <td class="py-2.5 px-2">${r.chesta.toFixed(0)}</td>
                     <td class="py-2.5 px-2">${r.naisargika.toFixed(1)}</td>
+                    <td class="py-2.5 px-2">${r.drik.toFixed(0)}</td>
                     <td class="py-2.5 px-2 font-bold text-indigo-700">${r.totalRupas.toFixed(2)} <span class="text-[10px] text-slate-400">(${r.req})</span></td>
                     <td class="py-2.5 px-2">${statusBadge}</td>
                 </tr>`;
@@ -3095,7 +3337,7 @@
             html += `</tbody></table>`;
             container.innerHTML = html;
 
-            // Bhava Bala (House Strength Ranked #1 to #12)
+            // Bhava Bala (Authentic Parashari: Bhavadhipati + Rashi-nature Bhava Digbala + Drishti Bala)
             if (bhavaContainer) {
                 const bhavaRows = [];
                 for (let h = 1; h <= 12; h++) {
@@ -3103,24 +3345,43 @@
                     const rObj = RASHIS.find(x => x.num === rNum);
                     const lordId = rObj ? rObj.lord : 'Mars';
                     const bhavadhipati = planetStrengthMap[lordId] || 300;
-                    // Bhava Digbala based on house category (Nara/Jalachara/Chatushpada/Keeta)
-                    const bhavaDig = [1, 4, 7, 10].includes(h) ? 60 : ([2, 5, 8, 11].includes(h) ? 45 : 30);
-                    // Bhava Drishti Bala (benefic planets in/aspecting house)
-                    let drishti = 25;
-                    for (let oh = 1; oh <= 12; oh++) {
-                        (currentChart.planets[oh] || []).forEach(p => {
-                            const diff = ((h - oh + 12) % 12) + 1;
-                            const aspects7 = diff === 7;
-                            const aspectsJup = p.id === 'Jupiter' && (diff === 5 || diff === 9);
-                            if (aspects7 || aspectsJup || oh === h) {
-                                if (['Jupiter', 'Venus', 'Mercury', 'Moon'].includes(p.id)) drishti += 18;
-                                else drishti -= 6;
-                            }
-                        });
-                    }
-                    const totalVirupas = Math.max(120, bhavadhipati + bhavaDig + drishti);
+
+                    // Rashi-nature Bhava Digbala (Nara=3,6,7,9,11 -> H1=60; Chatushpada=1,2,5,10 -> H10=60; Jalachara=4,12 -> H4=60; Keeta=8 -> H7=60)
+                    let bestH = 1;
+                    if ([3, 6, 7, 9, 11].includes(rNum)) bestH = 1;
+                    else if ([1, 2, 5, 10].includes(rNum)) bestH = 10;
+                    else if ([4, 12].includes(rNum)) bestH = 4;
+                    else if (rNum === 8) bestH = 7;
+                    let hd = Math.abs(h - bestH);
+                    if (hd > 6) hd = 12 - hd;
+                    const bhavaDig = ((6 - hd) / 6) * 60;
+
+                    // Bhava Drishti + Occupant strength
+                    let drishti = 0;
+                    sevenIds.forEach(pid => {
+                        const pLon = lons[pid] || 0;
+                        const pR = Math.floor(pLon / 30) + 1;
+                        let pH = 1;
+                        for (let hh2 = 1; hh2 <= 12; hh2++) {
+                            if (currentChart.rashis[hh2] === pR) { pH = hh2; break; }
+                        }
+                        const diff = ((h - pH + 12) % 12) + 1;
+                        const aspects7 = diff === 7;
+                        const aspectsJup = pid === 'Jupiter' && (diff === 5 || diff === 9);
+                        const aspectsMars = pid === 'Mars' && (diff === 4 || diff === 8);
+                        const aspectsSat = pid === 'Saturn' && (diff === 3 || diff === 10);
+                        if (pH === h) {
+                            drishti += ['Jupiter', 'Venus', 'Mercury', 'Moon'].includes(pid) ? 40 : 25;
+                        } else if (aspects7 || aspectsJup || aspectsMars || aspectsSat) {
+                            drishti += ['Jupiter', 'Venus', 'Mercury', 'Moon'].includes(pid) ? 30 : -15;
+                        }
+                    });
+                    // Kendras get natural prominence bonus
+                    const kendraBonus = [1, 4, 7, 10].includes(h) ? 30 : ([2, 5, 8, 11].includes(h) ? 15 : 0);
+
+                    const totalVirupas = Math.max(120, bhavadhipati + bhavaDig + drishti + kendraBonus);
                     const totalRupas = totalVirupas / 60;
-                    bhavaRows.push({ h, rObj, lordId, bhavadhipati, bhavaDig, drishti, totalVirupas, totalRupas });
+                    bhavaRows.push({ h, rObj, lordId, totalVirupas, totalRupas });
                 }
                 bhavaRows.sort((a, b) => b.totalRupas - a.totalRupas);
 
@@ -3626,10 +3887,27 @@
                 const p = getH(pName, off);
                 return norm360(norm360(Math.atan2(p.y - earth.y, p.x - earth.x) * rad2deg) - ayanamsa);
             }
-            const Lm = norm360(218.3164477 + 13.17639648 * d);
-            const Mm = norm360(134.9633964 + 13.06499295 * d) * deg2rad;
-            const D  = norm360(297.8501921 + 12.19074912 * d) * deg2rad;
-            const moonLon = norm360((Lm + 6.288774 * Math.sin(Mm) + 1.274027 * Math.sin(2 * D - Mm) + 0.658314 * Math.sin(2 * D)) - ayanamsa);
+            const Lm = norm360(218.3164477 + 481267.88123421 * T - 0.0015786 * T * T);
+            const D  = norm360(297.8501921 + 445267.1114034 * T - 0.0018819 * T * T) * deg2rad;
+            const Ms = norm360(357.5291092 + 35999.0502909 * T - 0.0001536 * T * T) * deg2rad;
+            const Mm = norm360(134.9633964 + 477198.8675055 * T + 0.0087414 * T * T) * deg2rad;
+            const F  = norm360(93.2720950  + 483202.0175233 * T - 0.0036539 * T * T) * deg2rad;
+            const E_corr = 1 - 0.002516 * T;
+            const moonCorr =
+                6.288774 * Math.sin(Mm)
+                + 1.274027 * Math.sin(2 * D - Mm)
+                + 0.658314 * Math.sin(2 * D)
+                + 0.213618 * Math.sin(2 * Mm)
+                - 0.185116 * E_corr * Math.sin(Ms)
+                - 0.114332 * Math.sin(2 * F)
+                + 0.058793 * Math.sin(2 * D - 2 * Mm)
+                + 0.057066 * E_corr * Math.sin(2 * D - Ms - Mm)
+                + 0.053322 * Math.sin(2 * D + Mm)
+                + 0.045758 * E_corr * Math.sin(2 * D - Ms)
+                - 0.040923 * E_corr * Math.sin(Ms - Mm)
+                - 0.034720 * Math.sin(D)
+                - 0.030383 * E_corr * Math.sin(Ms + Mm);
+            const moonLon = norm360((Lm + moonCorr) - ayanamsa);
             const rahuLon = norm360(norm360(125.04452 - 0.0529537648 * d) - ayanamsa);
             const ketuLon = norm360(rahuLon + 180.0);
 
@@ -3744,13 +4022,16 @@
             const mkChartObj = { rashis, planets };
             recalculateAllAutoColors(mkChartObj);
 
-            // Muntha calculation: Fixed for the entire year (birthday to birthday, does NOT change monthly!)
+            // Muntha calculation: Both Muntha Rashi AND Muntha House stay FIXED from Yearly chart for all 12 months!
             const natalLagnaRashi = currentChart.rashis[1] || 1;
             const munthaRashi = ((natalLagnaRashi - 1 + yearsElapsed) % 12) + 1;
-            let munthaHouse = 1;
-            for (let h = 1; h <= 12; h++) {
-                if (rashis[h] === munthaRashi) { munthaHouse = h; break; }
+            let yearlyLagnaRashi = lagnaRashi;
+            if (mkMode === 'monthly') {
+                const yearlyReturnJD = findSolarReturnJD(birthJD, natalSunLon, yearsElapsed * 365.2425);
+                const yearlyRes = computeSiderealChartAtJD(yearlyReturnJD, lat, lon);
+                yearlyLagnaRashi = Math.floor(yearlyRes.asc / 30) + 1;
             }
+            const munthaHouse = ((munthaRashi - yearlyLagnaRashi + 12) % 12) + 1;
             const munthaRashiObj = RASHIS.find(x => x.num === munthaRashi);
 
             const munthaBanner = document.getElementById('mk-muntha-banner');
@@ -4926,6 +5207,10 @@
                         <span class="font-bold text-slate-700">भद्रा स्थिति</span>
                         <span>${snap.isBhadra ? '<span class="text-rose-700 font-bold">भद्रा सक्रिय है (विष्टि करण)</span>' : '<span class="text-emerald-700 font-bold">भद्रा नहीं है</span>'}</span>
                     </div>
+                    <div class="p-3.5 rounded-2xl bg-indigo-50/60 border border-indigo-200 flex flex-wrap items-center justify-between gap-2">
+                        <span class="font-bold text-indigo-900">सोमवती अमावस्या (${y})</span>
+                        <span id="pan-somvati-summary" class="text-indigo-950 font-semibold"></span>
+                    </div>
                 </div>
             `;
 
@@ -5052,6 +5337,7 @@
                         : '<span class="text-amber-700 font-bold">मध्यम/सामान्य दिन:</span> आज तिथि-नक्षत्र या भद्रा/पंचक के कारण बड़े मांगलिक कार्यों (विवाह, गृह प्रवेश) से पूर्व अभिजित मुहूर्त या शुभ चौघड़िया का चयन करें।'}</div>
                 </div>
             `;
+            renderSomvatiAmavasyaSummary(y);
             renderPanchangFestivals(y);
         }
 
@@ -5314,6 +5600,511 @@
                     <span class="font-extrabold ${pts >= 28 ? 'text-emerald-700' : (pts >= 25 ? 'text-blue-700' : 'text-rose-700')}">${pts} ${currentLang === 'hi' ? 'बिंदु' : 'Pts'}</span>
                 `;
                 pListEl.appendChild(row);
+            }
+        }
+
+        // ==================== जैमिनी चर दशा (Chara Dasha) ====================
+        function renderCharaDasha() {
+            const infoEl = document.getElementById('chara-info');
+            const listEl = document.getElementById('chara-list');
+            if (!listEl) return;
+
+            const lons = getChartLongitudes();
+            const lagnaRashi = currentChart.rashis[1] || 1;
+            const birthDate = getChartStartDate();
+            const now = new Date();
+
+            // Jaimini Chara Dasha direction: 9th sign from Lagna -> odd = direct (+1), even = reverse (-1)
+            const r9 = ((lagnaRashi - 1 + 8) % 12) + 1;
+            const isDirect = [1, 3, 5, 7, 9, 11].includes(r9);
+
+            const rashiOrder = [];
+            for (let i = 0; i < 12; i++) {
+                const r = isDirect
+                    ? ((lagnaRashi - 1 + i) % 12) + 1
+                    : ((lagnaRashi - 1 - i + 12) % 12) + 1;
+                rashiOrder.push(r);
+            }
+
+            // Determine sign lord (dual lordship for Scorpio=Mars/Ketu, Aquarius=Saturn/Rahu -> choose stronger/first)
+            const getCharaLordRashi = (rNum) => {
+                const lord = RASHIS.find(x => x.num === rNum).lord;
+                return Math.floor((lons[lord] || 0) / 30) + 1;
+            };
+
+            const getCharaYears = (rNum) => {
+                const lordR = getCharaLordRashi(rNum);
+                if (lordR === rNum) return 12;
+                const isOddSign = [1, 3, 5, 7, 9, 11].includes(rNum);
+                let count = isOddSign
+                    ? ((lordR - rNum + 12) % 12)
+                    : ((rNum - lordR + 12) % 12);
+                return Math.max(1, Math.min(12, count));
+            };
+
+            if (infoEl) {
+                const lObj = RASHIS.find(x => x.num === lagnaRashi);
+                infoEl.textContent = currentLang === 'hi'
+                    ? `चर दशा क्रम: ${lObj.hindi} लग्न से ${isDirect ? 'सीधा (सव)' : 'उल्टा (अपसव)'} क्रम — प्रत्येक राशि महादशा व अंतर्दशा`
+                    : `Chara Dasha: ${isDirect ? 'Direct' : 'Reverse'} from ${lObj.enName} — Rashi Mahadasha & Antardasha`;
+            }
+
+            listEl.innerHTML = '';
+            let cursor = birthDate;
+
+            for (let cycle = 0; cycle < 2; cycle++) {
+                rashiOrder.forEach(rNum => {
+                    const yrs = getCharaYears(rNum);
+                    const end = addYearsToDate(cursor, yrs);
+                    const isCurr = now >= cursor && now <= end;
+                    const rObj = RASHIS.find(x => x.num === rNum);
+
+                    const card = document.createElement('div');
+                    card.className = `rounded-xl border p-3 ${isCurr ? 'bg-emerald-50/80 border-emerald-300 shadow-sm' : 'bg-slate-50/70 border-slate-200'}`;
+
+                    const header = document.createElement('div');
+                    header.className = 'flex items-center justify-between text-sm font-bold text-slate-900 mb-2 pb-1.5 border-b border-slate-200/70';
+                    header.innerHTML = `
+                        <span>${currentLang === 'hi' ? rObj.hindi : rObj.enName} (${yrs} ${currentLang === 'hi' ? 'वर्ष' : 'Yrs'})</span>
+                        <span class="text-xs font-semibold text-slate-600">${formatDateIN(cursor)} → ${formatDateIN(end)}</span>
+                    `;
+                    card.appendChild(header);
+
+                    const subGrid = document.createElement('div');
+                    subGrid.className = 'grid grid-cols-2 sm:grid-cols-3 gap-1.5 text-[11px]';
+                    const subSpanMs = (end.getTime() - cursor.getTime()) / 12;
+                    for (let j = 0; j < 12; j++) {
+                        const subR = isDirect
+                            ? ((rNum - 1 + j) % 12) + 1
+                            : ((rNum - 1 - j + 12) % 12) + 1;
+                        const subRObj = RASHIS.find(x => x.num === subR);
+                        const sMs = cursor.getTime() + j * subSpanMs;
+                        const eMs = sMs + subSpanMs;
+                        const isSubCurr = now.getTime() >= sMs && now.getTime() <= eMs;
+                        const subRow = document.createElement('div');
+                        subRow.className = `flex items-center justify-between px-2 py-1 rounded-lg ${isSubCurr ? 'bg-emerald-200/70 font-bold text-emerald-950' : 'bg-white text-slate-700'}`;
+                        subRow.innerHTML = `
+                            <span class="font-semibold">${currentLang === 'hi' ? subRObj.hindi : subRObj.enName}</span>
+                            <span class="text-[10px]">${formatDateIN(new Date(sMs))}</span>
+                        `;
+                        subGrid.appendChild(subRow);
+                    }
+                    card.appendChild(subGrid);
+                    listEl.appendChild(card);
+                    cursor = end;
+                });
+            }
+        }
+
+        // ==================== सोमवती अमावस्या गणना ====================
+        function renderSomvatiAmavasyaSummary(year) {
+            const el = document.getElementById('pan-somvati-summary');
+            if (!el) return;
+            const dates = [];
+            for (let d = 0; d < 366; d++) {
+                const dtMorn = new Date(year, 0, 1 + d, 6, 30, 0); // Sunrise (Udaya Tithi)
+                if (dtMorn.getFullYear() !== year) break;
+                if (dtMorn.getDay() !== 1) continue; // Monday only
+                const sM = getPanchangSnapshot(dtMorn);
+                if (sM.tithiIdx === 29) {
+                    dates.push(formatDateIN(dtMorn));
+                }
+            }
+            if (dates.length === 0) {
+                el.innerHTML = currentLang === 'hi'
+                    ? `<span class="text-slate-600">वर्ष ${year} में कोई सोमवती अमावस्या नहीं है (0 बार)</span>`
+                    : `No Somvati Amavasya in ${year} (0 times)`;
+            } else {
+                el.innerHTML = currentLang === 'hi'
+                    ? `<span class="text-emerald-700 font-bold">${dates.length} बार पड़ेगी:</span> ${dates.join(', ')}`
+                    : `${dates.length} time(s): ${dates.join(', ')}`;
+            }
+        }
+
+        // ==================== ग्रह चक्र (3D लाइव कुंडली) ====================
+        let gcAnimId = null;
+        let gcSimTimeMs = Date.now();
+        let gcLastFrameMs = performance.now();
+        let gcLagnaRashi = 1; // Default Mesha (1)
+        let gcSpeedMode = 'live';
+        let gcSpinAngle = 0;
+
+        let gcTheme = 'dark'; // 'dark' (Black) or 'light' (White)
+
+        function setGcTheme(theme) {
+            gcTheme = theme;
+            const dBtn = document.getElementById('gc-theme-dark');
+            const lBtn = document.getElementById('gc-theme-light');
+            const wrap = document.getElementById('gc-canvas-wrap');
+            if (theme === 'dark') {
+                if (dBtn) dBtn.className = 'px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-900 text-white';
+                if (lBtn) lBtn.className = 'px-2.5 py-1 rounded-lg text-xs font-bold text-slate-700';
+                if (wrap) wrap.className = 'w-full max-w-[660px] mx-auto bg-slate-950 rounded-2xl border-2 border-indigo-500/40 shadow-xl p-2 relative';
+            } else {
+                if (lBtn) lBtn.className = 'px-2.5 py-1 rounded-lg text-xs font-bold bg-white text-slate-900 shadow-sm';
+                if (dBtn) dBtn.className = 'px-2.5 py-1 rounded-lg text-xs font-bold text-slate-600';
+                if (wrap) wrap.className = 'w-full max-w-[660px] mx-auto bg-white rounded-2xl border-2 border-slate-800 shadow-xl p-2 relative';
+            }
+        }
+
+        const GC_PLANET_STYLE = {
+            Sun:     { r: 33, glow: 'rgba(251, 191, 36, 0.85)' },
+            Moon:    { r: 25, glow: 'rgba(203, 213, 225, 0.65)' },
+            Mars:    { r: 26, glow: 'rgba(239, 68, 68, 0.65)' },
+            Mercury: { r: 23, glow: 'rgba(148, 163, 184, 0.55)' },
+            Jupiter: { r: 32, glow: 'rgba(245, 158, 11, 0.6)' },
+            Venus:   { r: 26, glow: 'rgba(253, 224, 71, 0.6)' },
+            Saturn:  { r: 27, glow: 'rgba(217, 179, 130, 0.55)', ring: true },
+            Rahu:    { r: 26, blackHole: true },
+            Ketu:    { r: 24, ketuDark: true }
+        };
+
+        // Procedural high-detail realistic 2D texture maps for 3D spherical rotation
+        const GC_TEXTURES = {};
+        function buildPlanetTexture(pid) {
+            if (GC_TEXTURES[pid]) return GC_TEXTURES[pid];
+            const c = document.createElement('canvas');
+            c.width = 256; c.height = 128;
+            const ctx = c.getContext('2d');
+
+            if (pid === 'Sun') {
+                const g = ctx.createLinearGradient(0, 0, 256, 128);
+                g.addColorStop(0, '#f59e0b'); g.addColorStop(0.5, '#fbbf24'); g.addColorStop(1, '#ea580c');
+                ctx.fillStyle = g; ctx.fillRect(0, 0, 256, 128);
+                for (let i = 0; i < 180; i++) {
+                    ctx.fillStyle = i % 2 === 0 ? 'rgba(254, 240, 138, 0.45)' : 'rgba(194, 65, 12, 0.4)';
+                    ctx.beginPath();
+                    ctx.arc((i * 47) % 256, (i * 29) % 128, 3 + (i % 6), 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            } else if (pid === 'Moon') {
+                // Greyish-silver realistic craters & maria so clearly visible on BOTH White & Black!
+                ctx.fillStyle = '#9ca3af'; ctx.fillRect(0, 0, 256, 128);
+                const maria = [[45,45,28],[110,60,34],[180,40,26],[210,85,22],[75,90,20]];
+                maria.forEach(([mx,my,mr]) => {
+                    ctx.fillStyle = 'rgba(75, 85, 99, 0.55)';
+                    ctx.beginPath(); ctx.arc(mx, my, mr, 0, Math.PI * 2); ctx.fill();
+                });
+                for (let i = 0; i < 45; i++) {
+                    const cx = (i * 53) % 256, cy = (i * 31) % 128, cr = 2 + (i % 5);
+                    ctx.fillStyle = 'rgba(229, 231, 235, 0.65)';
+                    ctx.beginPath(); ctx.arc(cx, cy, cr, 0, Math.PI * 2); ctx.fill();
+                    ctx.strokeStyle = 'rgba(55, 65, 81, 0.6)'; ctx.lineWidth = 1;
+                    ctx.stroke();
+                }
+            } else if (pid === 'Mars') {
+                ctx.fillStyle = '#c2410c'; ctx.fillRect(0, 0, 256, 128);
+                ctx.fillStyle = 'rgba(124, 45, 18, 0.55)';
+                ctx.fillRect(20, 48, 90, 14); ctx.fillRect(140, 62, 85, 18);
+                ctx.fillStyle = 'rgba(251, 146, 60, 0.45)';
+                for (let i = 0; i < 30; i++) {
+                    ctx.beginPath(); ctx.arc((i * 41) % 256, (i * 23) % 128, 4 + (i % 6), 0, Math.PI * 2); ctx.fill();
+                }
+                // Polar ice cap
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                ctx.fillRect(0, 0, 256, 7); ctx.fillRect(0, 121, 256, 7);
+            } else if (pid === 'Mercury') {
+                ctx.fillStyle = '#78716c'; ctx.fillRect(0, 0, 256, 128);
+                for (let i = 0; i < 55; i++) {
+                    ctx.fillStyle = i % 2 === 0 ? 'rgba(168, 162, 158, 0.5)' : 'rgba(68, 64, 60, 0.55)';
+                    ctx.beginPath(); ctx.arc((i * 37) % 256, (i * 19) % 128, 2 + (i % 5), 0, Math.PI * 2); ctx.fill();
+                }
+            } else if (pid === 'Jupiter') {
+                const bands = ['#e7d3b5','#b45309','#f5ebe0','#92400e','#d6b88d','#78350f','#ebd9c0','#a16207'];
+                bands.forEach((col, i) => {
+                    ctx.fillStyle = col;
+                    ctx.fillRect(0, i * 16, 256, 16);
+                });
+                // Great Red Spot
+                ctx.fillStyle = '#dc2626';
+                ctx.beginPath(); ctx.ellipse(140, 82, 18, 10, 0, 0, Math.PI * 2); ctx.fill();
+                ctx.strokeStyle = '#fef3c7'; ctx.lineWidth = 2; ctx.stroke();
+            } else if (pid === 'Venus') {
+                const vBands = ['#fde68a','#eab308','#fef08a','#ca8a04','#fcd34d'];
+                vBands.forEach((col, i) => {
+                    ctx.fillStyle = col;
+                    ctx.fillRect(0, i * 26, 256, 26);
+                });
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
+                for (let i = 0; i < 12; i++) {
+                    ctx.beginPath(); ctx.ellipse((i * 43) % 256, (i * 29) % 128, 28, 6, 0.2, 0, Math.PI * 2); ctx.fill();
+                }
+            } else if (pid === 'Saturn') {
+                const sBands = ['#fef3c7','#d6b88d','#fde68a','#b89968','#fef08a','#c4a472'];
+                sBands.forEach((col, i) => {
+                    ctx.fillStyle = col;
+                    ctx.fillRect(0, i * 22, 256, 22);
+                });
+            }
+            // Mirror left half onto right half in a 512px seamless loop texture so wraparound has zero seam
+            const seamless = document.createElement('canvas');
+            seamless.width = 512; seamless.height = 128;
+            const sctx = seamless.getContext('2d');
+            sctx.drawImage(c, 0, 0);
+            sctx.save();
+            sctx.translate(512, 0);
+            sctx.scale(-1, 1);
+            sctx.drawImage(c, 0, 0);
+            sctx.restore();
+            GC_TEXTURES[pid] = seamless;
+            return seamless;
+        }
+
+        function openGrahaChakraView() {
+            const sel = document.getElementById('gc-lagna-select');
+            if (sel && sel.options.length === 0) {
+                RASHIS.forEach(r => {
+                    const opt = document.createElement('option');
+                    opt.value = r.num;
+                    opt.textContent = `${r.num}. ${currentLang === 'hi' ? r.hindi : r.enName}`;
+                    sel.appendChild(opt);
+                });
+            }
+            if (sel) sel.value = String(gcLagnaRashi);
+            setGcTheme(gcTheme);
+            setGrahaChakraLiveNow();
+            showView('graha-chakra');
+            startGrahaChakraLoop();
+        }
+
+        function closeGrahaChakraView() {
+            if (gcAnimId) { cancelAnimationFrame(gcAnimId); gcAnimId = null; }
+            showView('home');
+        }
+
+        function setGrahaChakraLiveNow() {
+            gcSimTimeMs = Date.now();
+            const d = new Date(gcSimTimeMs);
+            const pad = (n) => String(n).padStart(2, '0');
+            const localIso = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+            const inp = document.getElementById('gc-datetime-input');
+            if (inp) inp.value = localIso;
+        }
+
+        function setGrahaChakraCustomTime(val) {
+            if (!val) return;
+            const parsed = new Date(val);
+            if (!isNaN(parsed.getTime())) gcSimTimeMs = parsed.getTime();
+        }
+
+        function startGrahaChakraLoop() {
+            if (gcAnimId) cancelAnimationFrame(gcAnimId);
+            gcLastFrameMs = performance.now();
+            const tick = (nowMs) => {
+                if (document.getElementById('view-graha-chakra').classList.contains('hidden')) {
+                    gcAnimId = null;
+                    return;
+                }
+                const dtSec = Math.min(0.1, (nowMs - gcLastFrameMs) / 1000);
+                gcLastFrameMs = nowMs;
+                gcSpinAngle += dtSec * 1.4;
+
+                if (gcSpeedMode === 'live') gcSimTimeMs += dtSec * 1000;
+                else if (gcSpeedMode === 'hour') gcSimTimeMs += dtSec * 3600 * 1000;
+                else if (gcSpeedMode === 'day') gcSimTimeMs += dtSec * 86400 * 1000;
+                else if (gcSpeedMode === 'month') gcSimTimeMs += dtSec * 15 * 86400 * 1000;
+
+                drawGrahaChakraFrame();
+                gcAnimId = requestAnimationFrame(tick);
+            };
+            gcAnimId = requestAnimationFrame(tick);
+        }
+
+        function draw3DPlanetSphere(ctx, x, y, pid, isCombust, isRetro, spin) {
+            const st = GC_PLANET_STYLE[pid] || GC_PLANET_STYLE.Sun;
+            const r = st.r;
+
+            ctx.save();
+            if (st.blackHole) {
+                // Rahu Black Hole with glowing Red Event Horizon
+                const ringG = ctx.createRadialGradient(x, y, r * 0.72, x, y, r * 1.5);
+                ringG.addColorStop(0, '#000000');
+                ringG.addColorStop(0.55, '#ef4444');
+                ringG.addColorStop(0.78, '#dc2626');
+                ringG.addColorStop(1, 'rgba(220, 38, 38, 0)');
+                ctx.fillStyle = ringG;
+                ctx.beginPath(); ctx.arc(x, y, r * 1.5, 0, Math.PI * 2); ctx.fill();
+
+                ctx.fillStyle = '#000000';
+                ctx.beginPath(); ctx.arc(x, y, r * 0.85, 0, Math.PI * 2); ctx.fill();
+
+                ctx.strokeStyle = 'rgba(254, 202, 202, 0.9)';
+                ctx.lineWidth = 2;
+                ctx.beginPath(); ctx.arc(x, y, r * 0.95, spin, spin + 1.5); ctx.stroke();
+                ctx.beginPath(); ctx.arc(x, y, r * 0.95, spin + Math.PI, spin + Math.PI + 1.3); ctx.stroke();
+            } else if (st.ketuDark) {
+                // Ketu Dark Black-Hole Sphere with glowing Yellow Event Horizon (matching Rahu's Red horizon)
+                const kRing = ctx.createRadialGradient(x, y, r * 0.72, x, y, r * 1.5);
+                kRing.addColorStop(0, '#000000');
+                kRing.addColorStop(0.55, '#facc15');
+                kRing.addColorStop(0.78, '#eab308');
+                kRing.addColorStop(1, 'rgba(234, 179, 8, 0)');
+                ctx.fillStyle = kRing;
+                ctx.beginPath(); ctx.arc(x, y, r * 1.5, 0, Math.PI * 2); ctx.fill();
+
+                ctx.fillStyle = '#000000';
+                ctx.beginPath(); ctx.arc(x, y, r * 0.85, 0, Math.PI * 2); ctx.fill();
+
+                ctx.strokeStyle = 'rgba(254, 240, 138, 0.92)';
+                ctx.lineWidth = 2;
+                ctx.beginPath(); ctx.arc(x, y, r * 0.95, -spin, -spin + 1.5); ctx.stroke();
+                ctx.beginPath(); ctx.arc(x, y, r * 0.95, -spin + Math.PI, -spin + Math.PI + 1.3); ctx.stroke();
+            } else {
+                // Glow aura (dims completely if combust!)
+                if (!isCombust) {
+                    const aura = ctx.createRadialGradient(x, y, r * 0.6, x, y, r * 1.65);
+                    aura.addColorStop(0, st.glow);
+                    aura.addColorStop(1, 'rgba(0,0,0,0)');
+                    ctx.fillStyle = aura;
+                    ctx.beginPath(); ctx.arc(x, y, r * 1.65, 0, Math.PI * 2); ctx.fill();
+                }
+
+                // Draw rotating realistic planetary texture clipped to sphere
+                const tex = buildPlanetTexture(pid);
+                ctx.save();
+                ctx.globalAlpha = isCombust ? 0.42 : 1.0;
+                ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.clip();
+
+                const tileW = r * 4;
+                const scrollX = ((spin * 24) % tileW + tileW) % tileW;
+                ctx.drawImage(tex, x - r - scrollX, y - r, tileW, r * 2);
+                ctx.drawImage(tex, x - r - scrollX + tileW, y - r, tileW, r * 2);
+
+                // 3D Spherical Shading (limb darkening + specular highlight)
+                const shade = ctx.createRadialGradient(x - r * 0.35, y - r * 0.35, r * 0.1, x, y, r);
+                shade.addColorStop(0, 'rgba(255, 255, 255, 0.28)');
+                shade.addColorStop(0.55, 'rgba(0, 0, 0, 0)');
+                shade.addColorStop(1, 'rgba(0, 0, 0, 0.62)');
+                ctx.fillStyle = shade;
+                ctx.fillRect(x - r, y - r, r * 2, r * 2);
+                ctx.restore();
+
+                // Subtle border for crispness on White theme (especially Moon)
+                if (gcTheme === 'light') {
+                    ctx.strokeStyle = 'rgba(51, 65, 85, 0.45)';
+                    ctx.lineWidth = 1.2;
+                    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.stroke();
+                }
+
+                // Saturn 3D tilted multi-layer rings
+                if (st.ring) {
+                    ctx.strokeStyle = isCombust ? 'rgba(148,163,184,0.4)' : 'rgba(217, 179, 130, 0.9)';
+                    ctx.lineWidth = 4;
+                    ctx.beginPath(); ctx.ellipse(x, y, r * 1.8, r * 0.46, -0.32, 0, Math.PI * 2); ctx.stroke();
+                    ctx.strokeStyle = isCombust ? 'rgba(100,116,139,0.3)' : 'rgba(254, 243, 199, 0.65)';
+                    ctx.lineWidth = 1.6;
+                    ctx.beginPath(); ctx.ellipse(x, y, r * 1.5, r * 0.36, -0.32, 0, Math.PI * 2); ctx.stroke();
+                }
+            }
+            ctx.restore();
+
+            // Planet Name & Status Tag below sphere
+            const pMeta = PLANETS.find(p => p.id === pid);
+            const lbl = (currentLang === 'hi' ? pMeta.hindi : pMeta.en) + (isRetro ? (currentLang === 'hi' ? ' (व)' : ' (R)') : '') + (isCombust ? (currentLang === 'hi' ? ' (अ)' : ' (C)') : '');
+            ctx.fillStyle = gcTheme === 'dark' ? (isCombust ? '#94a3b8' : '#f8fafc') : (isCombust ? '#64748b' : '#0f172a');
+            ctx.font = 'bold 16px "Noto Sans Devanagari", Inter, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(lbl, x, y + r + 18);
+        }
+
+        function drawGrahaChakraFrame() {
+            const canvas = document.getElementById('graha-chakra-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const simDate = new Date(gcSimTimeMs);
+
+            const subEl = document.getElementById('gc-time-subtitle');
+            if (subEl) subEl.textContent = `${formatDateIN(simDate)} • ${formatClockTime(simDate)}`;
+
+            const jd = dateToJD(simDate);
+            const res = computeSiderealChartAtJD(jd, 26.5645, 78.7873);
+
+            // Background & Lines based on White / Black theme
+            ctx.fillStyle = gcTheme === 'dark' ? '#020617' : '#ffffff';
+            ctx.fillRect(0, 0, 900, 900);
+
+            ctx.strokeStyle = gcTheme === 'dark' ? 'rgba(129, 140, 248, 0.55)' : '#334155';
+            ctx.lineWidth = 2.5;
+            ctx.strokeRect(12, 12, 876, 876);
+            const line = (x1, y1, x2, y2) => { ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke(); };
+            line(12, 12, 888, 888);
+            line(888, 12, 12, 888);
+            line(450, 12, 12, 450);
+            line(12, 450, 450, 888);
+            line(450, 888, 888, 450);
+            line(888, 450, 450, 12);
+
+            const rashiPts = {
+                1:[450,390], 2:[230,185], 3:[185,230], 4:[390,450],
+                5:[185,670], 6:[230,715], 7:[450,510], 8:[670,715],
+                9:[715,670], 10:[510,450], 11:[715,230], 12:[670,185]
+            };
+            const rashis = {};
+            for (let h = 1; h <= 12; h++) {
+                rashis[h] = ((gcLagnaRashi - 1 + (h - 1)) % 12) + 1;
+                const [rx, ry] = rashiPts[h];
+                ctx.fillStyle = gcTheme === 'dark' ? '#94a3b8' : '#64748b';
+                ctx.font = 'bold 22px Inter, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(String(rashis[h]), rx, ry);
+            }
+
+            // Strict Anti-Clockwise (Vamavarta) continuous tracks across all 12 houses: 1 -> 2 -> ... -> 12 -> 1
+            const TRACKS = {
+                1:  { x1: 550, y1: 225, x2: 350, y2: 225 },
+                2:  { x1: 325, y1: 68,  x2: 135, y2: 68  },
+                3:  { x1: 72,  y1: 135, x2: 72,  y2: 325 },
+                4:  { x1: 215, y1: 350, x2: 215, y2: 550 },
+                5:  { x1: 72,  y1: 575, x2: 72,  y2: 765 },
+                6:  { x1: 135, y1: 825, x2: 325, y2: 825 },
+                7:  { x1: 350, y1: 675, x2: 550, y2: 675 },
+                8:  { x1: 575, y1: 825, x2: 765, y2: 825 },
+                9:  { x1: 825, y1: 765, x2: 825, y2: 575 },
+                10: { x1: 685, y1: 550, x2: 685, y2: 350 },
+                11: { x1: 825, y1: 325, x2: 825, y2: 135 },
+                12: { x1: 765, y1: 68,  x2: 575, y2: 68  }
+            };
+
+            const houseBuckets = {};
+            for (let h = 1; h <= 12; h++) houseBuckets[h] = [];
+
+            PLANETS.forEach(p => {
+                const pLon = res.pLons[p.id];
+                const pRashi = Math.floor(pLon / 30) + 1;
+                const degInSign = pLon % 30;
+                const h = ((pRashi - gcLagnaRashi + 12) % 12) + 1;
+                const isRetro = (p.id === 'Rahu' || p.id === 'Ketu') ? true : !!res.retro[p.id];
+                const isCombust = !!res.combust[p.id];
+                houseBuckets[h].push({ id: p.id, pLon, degInSign, isRetro, isCombust });
+            });
+
+            for (let h = 1; h <= 12; h++) {
+                const list = houseBuckets[h];
+                const tr = TRACKS[h];
+                list.forEach((item, idx) => {
+                    const t = item.degInSign / 30;
+                    const jitter = (idx - (list.length - 1) / 2) * 44;
+                    const isVert = Math.abs(tr.x2 - tr.x1) < 20;
+                    const isHoriz = Math.abs(tr.y2 - tr.y1) < 20;
+                    const px = tr.x1 + (tr.x2 - tr.x1) * t + (isVert ? jitter : 0);
+                    const py = tr.y1 + (tr.y2 - tr.y1) * t + (isHoriz ? jitter : 0);
+                    draw3DPlanetSphere(ctx, px, py, item.id, item.isCombust, item.isRetro, gcSpinAngle);
+                });
+            }
+
+            const leg = document.getElementById('gc-legend-bar');
+            if (leg) {
+                leg.innerHTML = PLANETS.map(p => {
+                    const pLon = res.pLons[p.id];
+                    const rObj = RASHIS.find(x => x.num === Math.floor(pLon / 30) + 1);
+                    const isR = (p.id === 'Rahu' || p.id === 'Ketu') ? true : !!res.retro[p.id];
+                    const isC = !!res.combust[p.id];
+                    return `<div class="px-2.5 py-1.5 rounded-xl bg-white border border-slate-200 flex items-center justify-between">
+                        <span class="font-bold text-slate-900">${currentLang === 'hi' ? p.hindi : p.en}${isR ? ' (व)' : ''}${isC ? ' (अ)' : ''}</span>
+                        <span class="text-slate-600">${currentLang === 'hi' ? rObj.hindi : rObj.enName} ${(pLon % 30).toFixed(1)}°</span>
+                    </div>`;
+                }).join('');
             }
         }
     </script>
