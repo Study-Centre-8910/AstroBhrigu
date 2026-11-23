@@ -7742,6 +7742,28 @@
             if (pHouse.Jupiter === pHouse.Rahu || pHouse.Jupiter === pHouse.Ketu) doshas.push(hi ? 'गुरु-चांडाल योग (D1 में गुरु-राहु/केतु युति)' : 'Guru-Chandal Yoga (Jupiter-Rahu/Ketu in D1)');
             if (pHouse.Saturn === pHouse.Moon) doshas.push(hi ? 'विष योग (D1 में शनि-चंद्र युति)' : 'Vish Yoga (Saturn-Moon in D1)');
 
+            
+            PLANETS.forEach(p => {
+                const pid = p.id;
+                const rNum = pRashi[pid];
+                const dig = CHART_1_3_DIGNITY[pid];
+                let pObj = null;
+                for (let hh = 1; hh <= 12; hh++) {
+                    const found = ((currentChart.planets && currentChart.planets[hh]) || []).find(x => x.id === pid);
+                    if (found) { pObj = found; break; }
+                }
+                if (dig && dig.exalted.includes(rNum) && pObj && pObj.isRetrograde) {
+                    const exLord = RASHIS[rNum - 1]?.lord;
+                    const hasDoubleNB = (exLord && ([1,4,7,10].includes(pHouse[exLord]) || pHouse[exLord] === pHouse[pid])) ||
+                        Object.keys(CHART_1_3_DIGNITY).some(k => k !== pid && CHART_1_3_DIGNITY[k].debilitated.includes(rNum) && [1,4,7,10].includes(pHouse[k]));
+                    const nm = hi ? ({Sun:'सूर्य',Moon:'चंद्र',Mars:'मंगल',Mercury:'बुध',Jupiter:'गुरु',Venus:'शुक्र',Saturn:'शनि',Rahu:'राहु',Ketu:'केतु'}[pid]||pid) : pid;
+                    if (hasDoubleNB) {
+                        yogas.push(hi ? `${nm} उच्चभंग→नीचभंग योग (दशा में पुनः उच्च फल)` : `${nm} Uchha Bhanga -> Neechabhanga (Restored Exaltation)`);
+                    } else {
+                        doshas.push(hi ? `${nm} उच्चभंग योग (उच्च+वक्री — अपनी दशा में मिश्रित/अर्ध-संघर्ष फल)` : `${nm} Uchha Bhanga (Exalted+Retro — mixed results in Dasha)`);
+                    }
+                }
+            });
             return { lons, lagnaR, pHouse, pRashi, hLords, cMap, yogas, doshas };
         }
 
@@ -7873,6 +7895,8 @@
                 if (col === 'red') return Math.min(20, raw * 0.15);
                 if (col === 'orange') return Math.min(28, raw * 0.25);
                 if (col === 'pink') return Math.min(38, raw * 0.40);
+                const ub = getUchhaBhangaState(id);
+                if (ub === 'uchha_bhanga') return raw * 0.90;
                 return raw;
             };
             const l10 = ps(hLords[10]), l6 = ps(hLords[6]), l7 = ps(hLords[7]), l9 = ps(hLords[9]), l11 = ps(hLords[11]), l2 = ps(hLords[2]), l5 = ps(hLords[5]);
@@ -7907,6 +7931,16 @@
                 if (exaltPlanet && [1,4,7,10].includes(pHouse[exaltPlanet])) return true;
                 return false;
             };
+            const getUchhaBhangaState = (pid) => {
+                const rNum = pRashi[pid];
+                const dig = CHART_1_3_DIGNITY[pid];
+                const st = d1StateMap[pid] || {};
+                if (!dig || !dig.exalted.includes(rNum) || !st.isRetrograde) return 'none';
+                const exLord = RASHIS[rNum - 1]?.lord;
+                const hasDoubleNB = (exLord && ([1,4,7,10].includes(pHouse[exLord]) || pHouse[exLord] === pHouse[pid])) ||
+                    Object.keys(CHART_1_3_DIGNITY).some(k => k !== pid && CHART_1_3_DIGNITY[k].debilitated.includes(rNum) && [1,4,7,10].includes(pHouse[k]));
+                return hasDoubleNB ? 'double_bhanga_exalted' : 'uchha_bhanga';
+            };
             const evalCareerPlanetQuality = (primaryPids) => {
                 let adj = 0;
                 const notes = [];
@@ -7925,8 +7959,16 @@
                         adj -= 6.5 * weight;
                         notes.push(hi ? `${pLbl} नीचस्थ (बिना नीचभंग) — अतिरिक्त संघर्ष संभव` : `${pLbl} debilitated without Neechabhanga`);
                     } else if (hasNB) {
-                        // Neechabhanga: neutral (no bonus, no penalty)
-                        notes.push(hi ? `${pLbl} नीचभंग योग (लाभ संभव, पर महादशा में संघर्ष रह सकता है)` : `${pLbl} Neechabhanga (gains possible, struggle in Mahadasha)`);
+                        adj += 1.5 * weight;
+                        notes.push(hi ? `${pLbl} नीचभंग योग (हल्का सहारा व धन योग, पर अपनी दशा में संघर्ष संभव)` : `${pLbl} Neechabhanga (mild support, struggle in own Dasha)`);
+                    }
+                    const ubState = getUchhaBhangaState(pid);
+                    if (ubState === 'uchha_bhanga') {
+                        adj -= 3.5 * weight;
+                        notes.push(hi ? `${pLbl} उच्चभंग (उच्च+वक्री — ~90% सपोर्ट, अपनी दशा में मिश्रित/अर्ध-कठिन फल)` : `${pLbl} Uchha Bhanga (Exalted+Retro — ~90% support, mixed Dasha)`);
+                    } else if (ubState === 'double_bhanga_exalted') {
+                        adj += 2.5 * weight;
+                        notes.push(hi ? `${pLbl} उच्चभंग→नीचभंग (पुनः उच्च फल सक्रिय)` : `${pLbl} Uchha Bhanga + Neechabhanga (restored exalted strength)`);
                     }
 
                     if (!isCareerSupporter(pid)) {
