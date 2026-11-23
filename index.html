@@ -7882,6 +7882,30 @@
             const satGreenRetroRescue = !!(satObjD1.isRetrograde && satObjD1.retroColor === 'green' && satAsp10 && ([hLords[1], hLords[5], hLords[9], hLords[10]].includes('Saturn') || [10, 11].includes(pRashi[hLords[10]]) || pHouse.Saturn === 4));
             const rahuWithJupRescue = (pHouse.Rahu === pHouse.Jupiter && cMap.Rahu === 'red');
             const isCareerSupporter = id => ['green', 'pureYellow', 'blue'].includes(cMap[id]) || (id === 'Saturn' && satGreenRetroRescue);
+                        const lagnaLord = hLords[1];
+            const isNeechabhanga = (pid) => {
+                const rNum = pRashi[pid];
+                const dig = CHART_1_3_DIGNITY[pid];
+                if (!dig || !dig.debilitated.includes(rNum)) return false;
+                const debLord = RASHIS[rNum - 1]?.lord;
+                const st = d1StateMap[pid] || {};
+                if (st.isRetrograde) return true;
+                if (debLord && [1,4,7,10].includes(pHouse[debLord])) return true;
+                if (debLord && pHouse[debLord] === pHouse[pid]) return true;
+                const exaltPlanet = Object.keys(CHART_1_3_DIGNITY).find(k => CHART_1_3_DIGNITY[k].exalted.includes(rNum));
+                if (exaltPlanet && [1,4,7,10].includes(pHouse[exaltPlanet])) return true;
+                return false;
+            };
+            const getUchhaBhangaState = (pid) => {
+                const rNum = pRashi[pid];
+                const dig = CHART_1_3_DIGNITY[pid];
+                const st = d1StateMap[pid] || {};
+                if (!dig || !dig.exalted.includes(rNum) || !st.isRetrograde) return 'none';
+                const exLord = RASHIS[rNum - 1]?.lord;
+                const hasDoubleNB = (exLord && ([1,4,7,10].includes(pHouse[exLord]) || pHouse[exLord] === pHouse[pid])) ||
+                    Object.keys(CHART_1_3_DIGNITY).some(k => k !== pid && CHART_1_3_DIGNITY[k].debilitated.includes(rNum) && [1,4,7,10].includes(pHouse[k]));
+                return hasDoubleNB ? 'double_bhanga_exalted' : 'uchha_bhanga';
+            };
             const ps = id => {
                 const hol = getHolisticPlanetScore(id, lons, pHouse, pRashi, lagnaR, cMap, chalitInfo);
                 const raw = (dp(id) * 0.58) + (hol * 0.42);
@@ -7917,30 +7941,6 @@
                 return Math.min(7.5, b);
             };
             const pNameHi = { Sun:'सूर्य', Moon:'चंद्र', Mars:'मंगल', Mercury:'बुध', Jupiter:'गुरु', Venus:'शुक्र', Saturn:'शनि', Rahu:'राहु', Ketu:'केतु' };
-            const lagnaLord = hLords[1];
-            const isNeechabhanga = (pid) => {
-                const rNum = pRashi[pid];
-                const dig = CHART_1_3_DIGNITY[pid];
-                if (!dig || !dig.debilitated.includes(rNum)) return false;
-                const debLord = RASHIS[rNum - 1]?.lord;
-                const st = d1StateMap[pid] || {};
-                if (st.isRetrograde) return true;
-                if (debLord && [1,4,7,10].includes(pHouse[debLord])) return true;
-                if (debLord && pHouse[debLord] === pHouse[pid]) return true;
-                const exaltPlanet = Object.keys(CHART_1_3_DIGNITY).find(k => CHART_1_3_DIGNITY[k].exalted.includes(rNum));
-                if (exaltPlanet && [1,4,7,10].includes(pHouse[exaltPlanet])) return true;
-                return false;
-            };
-            const getUchhaBhangaState = (pid) => {
-                const rNum = pRashi[pid];
-                const dig = CHART_1_3_DIGNITY[pid];
-                const st = d1StateMap[pid] || {};
-                if (!dig || !dig.exalted.includes(rNum) || !st.isRetrograde) return 'none';
-                const exLord = RASHIS[rNum - 1]?.lord;
-                const hasDoubleNB = (exLord && ([1,4,7,10].includes(pHouse[exLord]) || pHouse[exLord] === pHouse[pid])) ||
-                    Object.keys(CHART_1_3_DIGNITY).some(k => k !== pid && CHART_1_3_DIGNITY[k].debilitated.includes(rNum) && [1,4,7,10].includes(pHouse[k]));
-                return hasDoubleNB ? 'double_bhanga_exalted' : 'uchha_bhanga';
-            };
             const evalCareerPlanetQuality = (primaryPids) => {
                 let adj = 0;
                 const notes = [];
