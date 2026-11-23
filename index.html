@@ -7989,14 +7989,27 @@
             // 2. Engineering / AI / Data Custom Rulebook Score (Saturn, Mercury, Rahu + Lagna Total Power)
             let engScore = ps('Saturn')*0.34 + ps('Mercury')*0.27 + ps('Rahu')*0.19 + l10*0.11 + lagnaTotalBala*0.09 + d10Bonus(['Saturn','Mercury','Rahu']);
             const engNotes = [];
+            const satInTrik = [6, 8, 12].includes(pHouse.Saturn);
+            const satOrangeRetro = !!(satObjD1.isRetrograde && ['orange', 'red'].includes(satObjD1.retroColor));
             if (satGreenRetroRescue) {
                 engScore += 18.0;
                 engNotes.push(hi ? 'दशम भाव पर पूर्ण दृष्टि व ग्रीन वक्री से शनि का प्रबल इंजीनियरिंग योग' : 'Green Retrograde Saturn aspecting H10 (Strong Engineering Yoga)');
-            } else if (isStrongCond('Saturn')) {
+            } else if (isStrongCond('Saturn') && !satInTrik) {
                 engScore += 9.5;
                 engNotes.push(hi ? (satRetro ? 'शनि का शुभ वक्री बल' : 'शनि की मजबूत कंडीशन') : 'Strong/Retrograde Saturn');
             } else if (cMap.Saturn === 'red') {
                 engScore -= 8.0;
+            }
+            if (satInTrik && !satGreenRetroRescue) {
+                engScore -= 7.5;
+                engNotes.push(hi ? 'शनि 6/8/12 भाव में होने से इंजीनियरिंग में संघर्ष संभव' : 'Saturn in 6/8/12 — struggle possible in Engineering');
+            }
+            if (satOrangeRetro && !satGreenRetroRescue) {
+                engScore -= 4.5;
+                engNotes.push(hi ? 'शनि का वक्री (Orange/Red) होने से अतिरिक्त परिश्रम' : 'Orange/Red Retrograde Saturn — extra effort needed');
+            }
+            if (cMap.Saturn === 'blue' && !satAsp10) {
+                engScore -= 4.0;
             }
             if ([hLords[1], hLords[5], hLords[9]].includes('Mercury') && isCareerSupporter('Mercury')) {
                 engScore += 6.0;
