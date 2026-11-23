@@ -7968,26 +7968,28 @@
             docNotes.push(fmtKaraks(['Sun','Jupiter','Mars','Moon']));
 
             // 2. Engineering / AI / Data Custom Rulebook Score (Saturn, Mercury, Rahu, Mars + Lagna Total Power)
-            let engScore = ps('Saturn')*0.30 + ps('Mercury')*0.24 + ps('Rahu')*0.16 + ps('Mars')*0.10 + l10*0.10 + lagnaTotalBala*0.10 + d10Bonus(['Saturn','Mercury','Rahu']);
+            let engScore = ps('Saturn')*0.34 + ps('Mercury')*0.27 + ps('Rahu')*0.19 + l10*0.11 + lagnaTotalBala*0.09 + d10Bonus(['Saturn','Mercury','Rahu']);
             const engNotes = [];
-            if (isStrongCond('Saturn') || cMap.Saturn === 'blue' || (satRetro && cMap.Saturn !== 'red')) {
+            if (isStrongCond('Saturn') || (satRetro && isStrongCond('Saturn'))) {
                 engScore += 9.5;
                 engNotes.push(hi ? (satRetro ? 'शनि का शुभ वक्री बल' : 'शनि की मजबूत कंडीशन') : 'Strong/Retrograde Saturn');
             } else if (cMap.Saturn === 'red') {
                 engScore -= 8.0;
             }
             const engQ = evalCareerPlanetQuality(['Saturn','Mercury']); engScore += engQ.adj; engQ.notes.forEach(n => engNotes.push(n));
-            engNotes.push(fmtKaraks(['Saturn','Mercury','Rahu','Mars']));
+            engNotes.push(fmtKaraks(['Saturn','Mercury','Rahu']));
 
+            const isDebSun = (pRashi.Sun === 7); const isDebSunNoNB = (isDebSun && !isNeechabhanga('Sun'));
             // 3. Politics Custom Rulebook Score (Sun, Saturn, Mercury, Rahu + Lagna Total Power)
             let polScore = ps('Saturn')*0.28 + ps('Sun')*0.28 + ps('Mercury')*0.18 + ps('Rahu')*0.08 + l10*0.09 + lagnaTotalBala*0.09 + d10Bonus(['Sun','Saturn','Rahu']);
             const polNotes = [];
-            if (isStrongCond('Sun') && isStrongCond('Saturn') && isStrongCond('Mercury')) {
+            if (isStrongCond('Sun') && !isDebSun && isStrongCond('Saturn') && isStrongCond('Mercury')) {
                 polScore += 15.2;
                 polNotes.push(hi ? 'सूर्य + शनि + बुध तीनों स्ट्रांग कंडीशन में' : 'Sun + Saturn + Mercury all strong');
-            } else if (isStrongCond('Saturn') && isStrongCond('Sun')) {
+            } else if (isStrongCond('Saturn') && isStrongCond('Sun') && !isDebSun) {
                 polScore += 6.5;
             }
+            if (isDebSun) { polScore -= 14.0; polNotes.push(hi ? 'सूर्य नीचस्थ (बिना नीचभंग) होने से राजनीति/प्रशासन में बाधा' : 'Debilitated Sun without Neechabhanga'); }
             const polQ = evalCareerPlanetQuality(['Sun','Saturn','Mercury']); polScore += polQ.adj; polQ.notes.forEach(n => polNotes.push(n));
             polNotes.push(fmtKaraks(['Sun','Saturn','Mercury','Rahu']));
 
@@ -8001,6 +8003,10 @@
             const lord10In9 = (pHouse[hLords[10]] === 9);
             const marsRuchakaOrAsp10 = ([1,4,7,10].includes(pHouse.Mars) && [1,8,10].includes(pRashi.Mars)) || (pHouse.Mars === 4);
 
+            const satConn10or11 = [10, 11].includes(pHouse.Saturn) || ((pHouse.Saturn - 1 + 9) % 12) + 1 === 10 || ((pHouse.Saturn - 1 + 2) % 12) + 1 === 10 || ((pHouse.Saturn - 1 + 6) % 12) + 1 === 10;
+            
+            const sunRealBad = isBadCond('Sun') || isDebSun;
+            const sunAndJupWeak = (sunRealBad || !isCareerSupporter('Sun')) && !isCareerSupporter('Jupiter');
             if (isStrongCond('Saturn') && isBadCond('Sun')) {
                 if (sunWithJup || moonStrongStable) {
                     iasScore += 5.5;
@@ -8010,15 +8016,22 @@
                     iasScore -= 11.5;
                     iasNotes.push(hi ? 'सूर्य कमजोर होने से अतिरिक्त संघर्ष संभव' : 'Sun weak — extra struggle possible');
                 }
-            } else if (isStrongCond('Saturn') && isOkCond('Sun')) {
+            } else if (isStrongCond('Saturn') && isOkCond('Sun') && !isDebSun) {
                 iasScore += 14.0;
                 iasNotes.push(hi ? 'मजबूत शनि + संतुलित सूर्य (IAS/IPS प्रबल योग)' : 'Strong Saturn + balanced Sun');
-            } else if (isStrongCond('Sun') && (isOkCond('Mars') || isStrongCond('Jupiter'))) {
+            } else if (isStrongCond('Sun') && !isDebSun && (isOkCond('Mars') || isStrongCond('Jupiter'))) {
                 iasScore += 10.5;
                 iasNotes.push(hi ? 'अच्छा सूर्य + मंगल/गुरु सहयोग' : 'Strong Sun + Mars/Jupiter support');
             } else if (isStrongCond('Saturn') && isOkCond('Jupiter') && isOkCond('Mercury') && isOkCond('Mars')) {
                 iasScore += 8.0;
                 iasNotes.push(hi ? 'शनि + गुरु-बुध-मंगल संतुलन' : 'Saturn + Jupiter/Mercury/Mars balance');
+            } else if (sunAndJupWeak) {
+                iasScore -= 10.5;
+                iasNotes.push(hi ? 'सूर्य व गुरु दोनों का सहयोग न होने से IAS/IPS में कठिन संघर्ष' : 'Both Sun & Jupiter non-supportive — hard struggle for IAS/IPS');
+            }
+            if (cMap.Saturn === 'blue' && !satConn10or11) {
+                iasScore -= 6.5;
+                iasNotes.push(hi ? 'शनि न्यूट्रल (Blue) व 10/11 से सीधा संबंध न होने से कम सक्रिय' : 'Neutral Saturn without H10/H11 link');
             }
 
             if (lord10In9) {
@@ -8037,8 +8050,10 @@
             iasNotes.push(fmtKaraks(['Sun','Saturn','Jupiter','Mars','Moon']));
 
             // 5. Classical Rules: Defence, CA/Finance, Teacher/Advisor, Lawyer/Judge (+ Karaka Planets & Lagna Total Power)
-            let defScore = ps('Mars')*0.30 + ps('Sun')*0.22 + ps('Saturn')*0.16 + ps('Rahu')*0.06 + l6*0.08 + l10*0.09 + lagnaTotalBala*0.09 + d10Bonus(['Mars','Sun','Saturn']);
-            if ([1,6,10].includes(pHouse.Mars) && isStrongCond('Mars')) defScore += 8.4;
+            let defScore = ps('Mars')*0.36 + ps('Sun')*0.17 + ps('Saturn')*0.15 + ps('Moon')*0.08 + l6*0.08 + l10*0.08 + lagnaTotalBala*0.08 + d10Bonus(['Mars','Sun','Saturn']);
+            if ([1,4,6,10].includes(pHouse.Mars) && isStrongCond('Mars')) defScore += 11.0;
+            if (pRashi.Mars === 10 && isStrongCond('Mars')) defScore += 5.5;
+            if (isStrongCond('Mars') && isStrongCond('Moon')) defScore += 4.5;
             const defQ = evalCareerPlanetQuality(['Mars','Sun']); defScore += defQ.adj;
 
             let caScore = ps('Mercury')*0.27 + ps('Jupiter')*0.24 + ps('Venus')*0.15 + l2*0.08 + l11*0.09 + l10*0.08 + lagnaTotalBala*0.09 + d10Bonus(['Mercury','Jupiter','Venus']);
@@ -8062,7 +8077,7 @@
                 { name: hi ? 'सरकारी सेवा व प्रशासन (IAS / IPS व उच्च पद)' : 'Govt Service & Admin (IAS / IPS)', score: iasScore, note: iasNotes.join(' • ') },
                 { name: hi ? 'लॉयर व जज (न्यायिक सेवा)' : 'Lawyer, Judge & Judiciary', score: lawScore, note: [...lawQ.notes, fmtKaraks(['Jupiter','Saturn','Mercury'])].join(' • ') },
                 { name: hi ? 'पॉलिटिक्स व जन-नेतृत्व' : 'Politics & Public Leadership', score: polScore, note: polNotes.join(' • ') }
-            ].sort((a,b) => b.score - a.score).slice(0, 7);
+            ].map(c => ({ ...c, score: Math.min(98.8, Math.max(15, c.score)) })).sort((a,b) => b.score - a.score).slice(0, 7);
 
             const getCat = rNum => (RASHIS[rNum - 1] ? RASHIS[rNum - 1].category : 'Dual');
             const getCatLbl = c => hi ? (c==='Movable'?'चर':c==='Fixed'?'स्थिर':'द्विस्वभाव') : c;
