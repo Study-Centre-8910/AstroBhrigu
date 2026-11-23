@@ -1859,6 +1859,7 @@
                 filtered.unshift(copy);
                 localStorage.setItem(getActiveHistoryKey(), JSON.stringify(filtered.slice(0, 60)));
                 updateHistoryBadge();
+                pushToCloudNow();
             } catch (e) {}
         }
         function updateHistoryBadge() {
@@ -1970,6 +1971,7 @@
             if (wrap && !wrap.contains(e.target)) closeCornerProfileMenu();
         });
         function logoutUserProfile() {
+            if (fbAuth && fbCurrentUser) { fbAuth.signOut().catch(()=>{}); fbCurrentUser = null; }
             localStorage.setItem(PROFILE_KEY, JSON.stringify({ mode: 'guest', name: 'Guest', email: '' }));
             refreshProfileUI();
             if (typeof openSavedCharts === 'function' && !document.getElementById('view-saved-charts')?.classList.contains('hidden')) {
@@ -2045,64 +2047,144 @@
             refreshProfileUI();
             showToast(currentLang === 'hi' ? 'गेस्ट अकाउंट सक्रिय है' : 'Switched to Guest Account');
         }
-        function buildProfileSyncPayload() {
-            return JSON.stringify({ v: 1, profile: getActiveProfile(), charts: getSavedCharts(), history: getHistoryCharts() });
-        }
-        function copyProfileSyncCode() {
-            const json = buildProfileSyncPayload();
-            const code = 'ABSYNC1:' + btoa(unescape(encodeURIComponent(json)));
-            const box = document.getElementById('profile-sync-paste');
-            if (box) box.value = code;
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(code).catch(() => {});
-            }
-            showToast(currentLang === 'hi' ? 'Sync Code कॉपी हो गया! दूसरे डिवाइस में पेस्ट करें।' : 'Sync Code copied!');
-        }
-        function applyImportedSyncData(data) {
-            if (!data || !Array.isArray(data.charts)) throw new Error('Invalid sync data');
-            if (data.profile && data.profile.mode === 'google' && data.profile.email) {
-                localStorage.setItem(PROFILE_KEY, JSON.stringify(data.profile));
-            }
-            const cur = getSavedCharts();
-            const merged = [...data.charts];
-            cur.forEach(c => { if (!merged.some(m => m.id === c.id)) merged.push(c); });
-            localStorage.setItem(getActiveStorageKey(), JSON.stringify(merged));
-            if (Array.isArray(data.history)) {
-                const curH = getHistoryCharts();
-                const mergedH = [...data.history];
-                curH.forEach(h => { if (!mergedH.some(m => m.historyId === h.historyId)) mergedH.push(h); });
-                localStorage.setItem(getActiveHistoryKey(), JSON.stringify(mergedH.slice(0, 60)));
-            }
-            refreshProfileUI();
-            showToast(currentLang === 'hi' ? `${data.charts.length} कुंडलियां सिंक हो गईं!` : `Synced ${data.charts.length} charts!`);
-        }
-        function importProfileSyncCode() {
-            try {
-                const raw = (document.getElementById('profile-sync-paste')?.value || '').trim();
-                if (!raw.startsWith('ABSYNC1:')) throw new Error('Invalid code');
-                const json = decodeURIComponent(escape(atob(raw.slice(8))));
-                applyImportedSyncData(JSON.parse(json));
-            } catch (e) {
-                showToast(currentLang === 'hi' ? 'अमान्य Sync Code है' : 'Invalid Sync Code');
-            }
-        }
-        function exportProfileBackupJSON() {
-            const blob = new Blob([buildProfileSyncPayload()], { type: 'application/json' });
-            const prof = getActiveProfile();
-            const fname = `AstroBhrigu_${(prof.email || 'Guest').replace(/[^a-zA-Z0-9_-]/g, '_')}.json`;
-            triggerSafeDownload(blob, fname, false);
-        }
-        function importProfileBackupJSON(e) {
-            const file = e.target.files && e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = () => {
-                try { applyImportedSyncData(JSON.parse(reader.result)); }
-                catch (err) { showToast(currentLang === 'hi' ? 'फ़ाइल पढ़ने में त्रुटि' : 'Invalid backup file'); }
-            };
-            reader.readAsText(file);
-        }
+        const FB_CONFIG_KEY = 'astropro_firebase_config_v1';
+        let fbApp = null, fbAuth = null, fbDb = null, fbCurrentUser = null;
 
+        function getSavedFirebaseConfig() {
+            try { return JSON.parse(localStorage.getItem(FB_CONFIG_KEY)) || null; } catch (e) { return null; }
+        }
+        function updateCloudStatusUI() {
+            const cfg = getSavedFirebaseConfig();
+            const box = document.getElementById('cloud-sync-status-box');
+            const ttl = document.getElementById('cloud-sync-status-title');
+            const dsc = document.getElementById('cloud-sync-status-desc');
+            const hi = currentLang === 'hi';
+            if (!box || !ttl || !dsc) return;
+            if (fbCurrentUser) {
+                box.className = 'p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-900 space-y-1';
+                ttl.textContent = hi ? `☁️ ऑटो-क्लाउड सिंक सक्रिय (${fbCurrentUser.email})` : `☁️ Cloud Auto-Sync Active (${fbCurrentUser.email})`;
+                dsc.textContent = hi ? 'आपकी सभी सेव कुंडलियां व हिस्ट्री इस Gmail अकाउंट से जुड़े हर डिवाइस पर अपने-आप सिंक हो रही हैं।' : 'Your saved charts & history automatically sync across all devices signed in with this Gmail.';
+            } else if (cfg && cfg.apiKey && cfg.projectId) {
+                box.className = 'p-3 rounded-xl bg-indigo-50 border border-indigo-200 text-xs text-indigo-900 space-y-1';
+                ttl.textContent = hi ? '☁️ क्लाउड सिंक तैयार है — Google से लॉगिन करें' : '☁️ Cloud Sync Ready — Sign in with Google';
+                dsc.textContent = hi ? 'नीचे "Continue with Google" दबाकर लॉगिन करते ही आपका पूरा डेटा अपने-आप आ जाएगा।' : 'Click "Continue with Google" below to automatically load and sync your charts.';
+            } else {
+                box.className = 'p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900 space-y-1';
+                ttl.textContent = hi ? 'स्थानीय मोड (इस डिवाइस पर सेव)' : 'Local Mode (Saved on this device)';
+                dsc.textContent = hi ? 'फ़ोन और लैपटॉप पर एक ही Gmail से ऑटो-सिंक चालू करने के लिए नीचे 1-बार अपना मुफ़्त Firebase क्लाउड जोड़ें।' : 'Add your free Firebase config once below to enable automatic Gmail cloud sync across phone & laptop.';
+            }
+        }
+        function loadScriptOnce(src) {
+            return new Promise((res, rej) => {
+                if (document.querySelector(`script[src="${src}"]`)) return res();
+                const s = document.createElement('script');
+                s.src = src; s.onload = res; s.onerror = rej;
+                document.head.appendChild(s);
+            });
+        }
+        async function initFirebaseIfConfigured() {
+            const cfg = getSavedFirebaseConfig();
+            if (!cfg || !cfg.apiKey || !cfg.projectId) { updateCloudStatusUI(); return false; }
+            try {
+                await loadScriptOnce('https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js');
+                await loadScriptOnce('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js');
+                await loadScriptOnce('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js');
+                if (!firebase.apps.length) fbApp = firebase.initializeApp(cfg);
+                else fbApp = firebase.app();
+                fbAuth = firebase.auth();
+                fbDb = firebase.firestore();
+                fbAuth.onAuthStateChanged(async (user) => {
+                    fbCurrentUser = user || null;
+                    if (user) {
+                        localStorage.setItem(PROFILE_KEY, JSON.stringify({ mode: 'google', name: user.displayName || user.email.split('@')[0], email: user.email, uid: user.uid }));
+                        await pullFromCloudAndMerge();
+                    }
+                    refreshProfileUI();
+                    updateCloudStatusUI();
+                });
+                return true;
+            } catch (err) {
+                console.warn('Firebase init error:', err);
+                updateCloudStatusUI();
+                return false;
+            }
+        }
+        async function pushToCloudNow() {
+            if (!fbDb || !fbCurrentUser) return;
+            try {
+                await fbDb.collection('astro_bhrigu_users').doc(fbCurrentUser.uid).set({
+                    email: fbCurrentUser.email,
+                    charts: getSavedCharts(),
+                    history: getHistoryCharts(),
+                    updatedAt: Date.now()
+                }, { merge: true });
+            } catch (e) { console.warn('Cloud push error:', e); }
+        }
+        async function pullFromCloudAndMerge() {
+            if (!fbDb || !fbCurrentUser) return;
+            try {
+                const doc = await fbDb.collection('astro_bhrigu_users').doc(fbCurrentUser.uid).get();
+                if (doc.exists) {
+                    const data = doc.data() || {};
+                    if (Array.isArray(data.charts)) {
+                        const local = getSavedCharts();
+                        const merged = [...data.charts];
+                        local.forEach(c => { if (!merged.some(m => m.id === c.id)) merged.push(c); });
+                        localStorage.setItem(getActiveStorageKey(), JSON.stringify(merged));
+                    }
+                    if (Array.isArray(data.history)) {
+                        const localH = getHistoryCharts();
+                        const mergedH = [...data.history];
+                        localH.forEach(h => { if (!mergedH.some(m => m.historyId === h.historyId)) mergedH.push(h); });
+                        localStorage.setItem(getActiveHistoryKey(), JSON.stringify(mergedH.slice(0, 60)));
+                    }
+                    refreshProfileUI();
+                    if (!document.getElementById('view-saved-charts')?.classList.contains('hidden')) openSavedCharts();
+                } else {
+                    await pushToCloudNow();
+                }
+            } catch (e) { console.warn('Cloud pull error:', e); }
+        }
+        async function triggerGoogleSignIn() {
+            const cfg = getSavedFirebaseConfig();
+            if (!cfg || !cfg.apiKey) {
+                const sb = document.getElementById('firebase-setup-body');
+                if (sb) sb.classList.remove('hidden');
+                showToast(currentLang === 'hi' ? 'ऑटो-सिंक के लिए नीचे 1-बार Firebase Config डालें या ईमेल से लॉगिन करें' : 'Add Firebase Config below once for auto-sync, or sign in with email');
+                return;
+            }
+            const ok = fbAuth ? true : await initFirebaseIfConfigured();
+            if (!ok || !fbAuth) {
+                showToast(currentLang === 'hi' ? 'Google Sign-In लोड नहीं हो सका' : 'Could not load Google Sign-In');
+                return;
+            }
+            try {
+                const provider = new firebase.auth.GoogleAuthProvider();
+                await fbAuth.signInWithPopup(provider);
+                showToast(currentLang === 'hi' ? 'Google से लॉगिन व सिंक हो गया!' : 'Signed in & synced with Google!');
+            } catch (e) {
+                showToast((currentLang === 'hi' ? 'Google लॉगिन त्रुटि: ' : 'Google Sign-In error: ') + (e.message || ''));
+            }
+        }
+        function saveFirebaseConfigFromUI() {
+            try {
+                const raw = (document.getElementById('firebase-config-input')?.value || '').trim();
+                const cfg = JSON.parse(raw);
+                if (!cfg.apiKey || !cfg.projectId) throw new Error('Missing apiKey or projectId');
+                localStorage.setItem(FB_CONFIG_KEY, JSON.stringify(cfg));
+                initFirebaseIfConfigured();
+                showToast(currentLang === 'hi' ? 'Firebase क्लाउड सिंक सेव हो गया! अब Continue with Google दबाएं।' : 'Firebase saved! Click Continue with Google.');
+            } catch (e) {
+                showToast(currentLang === 'hi' ? 'सही firebaseConfig JSON पेस्ट करें' : 'Please paste valid firebaseConfig JSON');
+            }
+        }
+        function clearFirebaseConfig() {
+            localStorage.removeItem(FB_CONFIG_KEY);
+            fbCurrentUser = null;
+            updateCloudStatusUI();
+            showToast(currentLang === 'hi' ? 'क्लाउड कॉन्फ़िग हटा दिया गया' : 'Cloud config cleared');
+        }
+        
         function getSavedCharts() {
             try { return JSON.parse(localStorage.getItem(getActiveStorageKey())) || []; } catch (e) { return []; }
         }
@@ -2116,7 +2198,7 @@
             else list.unshift(JSON.parse(JSON.stringify(currentChart)));
             try {
                 localStorage.setItem(getActiveStorageKey(), JSON.stringify(list));
-                refreshProfileUI(); updateSavedBadge();
+                initFirebaseIfConfigured(); refreshProfileUI(); updateSavedBadge();
                 showToast(currentLang === 'hi' ? 'कुंडली सुरक्षित कर ली गई है!' : 'Chart saved successfully!');
             } catch (e) {
                 showToast(currentLang === 'hi' ? 'कुंडली सेव करने में त्रुटि हुई' : 'Could not save chart to storage');
@@ -8356,30 +8438,38 @@
         }
     </script>
 
-    <!-- Profile & Sync Modal -->
+    <!-- Profile & Auto-Cloud Sync Modal -->
     <div id="profile-modal" class="hidden fixed inset-0 z-[9990] bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-5 sm:p-6 border border-slate-200 space-y-4 max-h-[90vh] overflow-y-auto">
             <div class="flex items-center justify-between border-b border-slate-100 pb-3">
                 <div class="flex items-center gap-2.5">
                     <div id="modal-profile-avatar" class="w-9 h-9 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center text-sm">G</div>
                     <div>
-                        <h3 class="text-base font-bold text-slate-900" data-lang-hi="यूज़र प्रोफ़ाइल व डेटा सिंक" data-lang-en="User Profile & Data Sync">यूज़र प्रोफ़ाइल व डेटा सिंक</h3>
+                        <h3 class="text-base font-bold text-slate-900" data-lang-hi="मेरा अकाउंट व प्रोफ़ाइल" data-lang-en="My Account & Profile">मेरा अकाउंट व प्रोफ़ाइल</h3>
                         <p id="modal-profile-sub" class="text-xs text-slate-500">Guest Account</p>
                     </div>
                 </div>
                 <button type="button" onclick="closeProfileModal()" class="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 text-sm font-bold">✕</button>
             </div>
 
+            <!-- Cloud Sync Status Banner -->
+            <div id="cloud-sync-status-box" class="p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900 space-y-1">
+                <div class="font-bold" id="cloud-sync-status-title" data-lang-hi="स्थानीय मोड (इस डिवाइस पर सेव)" data-lang-en="Local Mode (Saved on this device)">स्थानीय मोड (इस डिवाइस पर सेव)</div>
+                <div class="text-[11px] leading-relaxed" id="cloud-sync-status-desc" data-lang-hi="फ़ोन और लैपटॉप पर एक ही Gmail से ऑटो-सिंक चालू करने के लिए नीचे 1-बार अपना मुफ़्त Firebase क्लाउड जोड़ें।" data-lang-en="Add your free Firebase config once below to enable automatic Gmail cloud sync across phone & laptop.">फ़ोन और लैपटॉप पर एक ही Gmail से ऑटो-सिंक चालू करने के लिए नीचे 1-बार अपना मुफ़्त Firebase क्लाउड जोड़ें।</div>
+            </div>
+
+            <!-- Continue with Google / Gmail -->
             <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2.5">
-                <div class="flex items-center gap-2 text-xs font-bold text-slate-800">
-                    <span class="inline-flex w-5 h-5 rounded-full bg-white border border-slate-300 items-center justify-center font-extrabold text-[11px] text-red-500">G</span>
-                    <span data-lang-hi="Continue with Google / Gmail प्रोफ़ाइल" data-lang-en="Continue with Google / Gmail Profile">Continue with Google / Gmail प्रोफ़ाइल</span>
-                </div>
+                <button type="button" id="btn-google-oauth" onclick="triggerGoogleSignIn()" class="w-full flex items-center justify-center gap-2.5 py-2.5 px-4 rounded-xl bg-white hover:bg-slate-100 text-slate-800 border border-slate-300 text-xs sm:text-sm font-bold shadow-sm transition-colors">
+                    <span class="inline-flex w-5 h-5 rounded-full bg-red-500 text-white items-center justify-center font-extrabold text-[11px]">G</span>
+                    <span data-lang-hi="Continue with Google (ऑटो-सिंक)" data-lang-en="Continue with Google (Auto-Sync)">Continue with Google (ऑटो-सिंक)</span>
+                </button>
+                <div class="text-center text-[11px] text-slate-400" data-lang-hi="या ईमेल से स्थानीय प्रोफ़ाइल बनाएं" data-lang-en="or create a local profile with email">या ईमेल से स्थानीय प्रोफ़ाइल बनाएं</div>
                 <input type="text" id="profile-input-name" placeholder="आपका नाम (उदा. Rahul)" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs sm:text-sm outline-none focus:ring-2 focus:ring-indigo-500 bg-white"/>
                 <input type="email" id="profile-input-email" placeholder="example@gmail.com" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs sm:text-sm outline-none focus:ring-2 focus:ring-indigo-500 bg-white"/>
                 <div class="flex gap-2">
                     <button type="button" onclick="loginWithGoogleEmail()" class="flex-1 py-2 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-bold shadow-sm transition-colors">
-                        <span data-lang-hi="Gmail से लॉगिन करें" data-lang-en="Continue with Gmail">Gmail से लॉगिन करें</span>
+                        <span data-lang-hi="Gmail से लॉगिन करें" data-lang-en="Sign in with Gmail">Gmail से लॉगिन करें</span>
                     </button>
                     <button type="button" onclick="switchToGuestProfile()" class="py-2 px-3 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs font-semibold transition-colors">
                         <span data-lang-hi="गेस्ट मोड" data-lang-en="Guest">गेस्ट मोड</span>
@@ -8387,26 +8477,23 @@
                 </div>
             </div>
 
-            <div class="p-3.5 rounded-xl bg-indigo-50/70 border border-indigo-200 space-y-2.5">
-                <div class="text-xs font-bold text-indigo-950" data-lang-hi="फ़ोन ↔ लैपटॉप डेटा सिंक (सेव की गई कुंडलियां ट्रांसफर करें)" data-lang-en="Phone ↔ Laptop Sync (Transfer Saved Charts)">फ़ोन ↔ लैपटॉप डेटा सिंक (सेव की गई कुंडलियां ट्रांसफर करें)</div>
-                <p class="text-[11px] text-indigo-800/80 leading-relaxed" data-lang-hi="चूँकि यह ऑफ़लाइन HTML ऐप है, एक डिवाइस से दूसरे डिवाइस पर कुंडलियां ले जाने के लिए Sync Code कॉपी करके दूसरे डिवाइस में पेस्ट करें या बैकअप फ़ाइल इस्तेमाल करें।" data-lang-en="Since this is an offline HTML app, copy your Sync Code or export backup to transfer saved charts between phone and laptop.">चूँकि यह ऑफ़लाइन HTML ऐप है, एक डिवाइस से दूसरे डिवाइस पर कुंडलियां ले जाने के लिए Sync Code कॉपी करके दूसरे डिवाइस में पेस्ट करें या बैकअप फ़ाइल इस्तेमाल करें।</p>
-                <div class="flex flex-wrap gap-2">
-                    <button type="button" onclick="copyProfileSyncCode()" class="flex-1 py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-sm">
-                        <span data-lang-hi="Sync Code कॉपी करें" data-lang-en="Copy Sync Code">Sync Code कॉपी करें</span>
-                    </button>
-                    <button type="button" onclick="exportProfileBackupJSON()" class="py-2 px-3 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 text-xs font-semibold">
-                        <span data-lang-hi="फ़ाइल एक्सपोर्ट" data-lang-en="Export JSON">फ़ाइल एक्सपोर्ट</span>
-                    </button>
-                </div>
-                <textarea id="profile-sync-paste" rows="2" placeholder="यहाँ दूसरे डिवाइस का Sync Code पेस्ट करें..." class="w-full px-3 py-2 rounded-lg border border-indigo-200 text-xs outline-none focus:ring-2 focus:ring-indigo-500 bg-white"></textarea>
-                <div class="flex gap-2">
-                    <button type="button" onclick="importProfileSyncCode()" class="flex-1 py-2 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold">
-                        <span data-lang-hi="Sync Code से लोड करें" data-lang-en="Import Sync Code">Sync Code से लोड करें</span>
-                    </button>
-                    <label class="py-2 px-3 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 text-xs font-semibold cursor-pointer">
-                        <span data-lang-hi="फ़ाइल इम्पोर्ट" data-lang-en="Import File">फ़ाइल इम्पोर्ट</span>
-                        <input type="file" accept=".json" onchange="importProfileBackupJSON(event)" class="hidden"/>
-                    </label>
+            <!-- 1-Time Firebase Cloud Auto-Sync Setup (Collapsible) -->
+            <div class="border border-slate-200 rounded-xl overflow-hidden">
+                <button type="button" onclick="document.getElementById('firebase-setup-body').classList.toggle('hidden')" class="w-full flex items-center justify-between px-3.5 py-2.5 bg-indigo-50/70 text-xs font-bold text-indigo-950 hover:bg-indigo-100/70 transition-colors">
+                    <span data-lang-hi="☁️ ऑटो-क्लाउड सिंक सेटअप (Firebase • केवल 1 बार)" data-lang-en="☁️ Auto-Cloud Sync Setup (Firebase • One-time)">☁️ ऑटो-क्लाउड सिंक सेटअप (Firebase • केवल 1 बार)</span>
+                    <span>▾</span>
+                </button>
+                <div id="firebase-setup-body" class="hidden p-3.5 bg-white space-y-2 text-xs">
+                    <p class="text-[11px] text-slate-600 leading-relaxed" data-lang-hi="Firebase Console में मुफ़्त प्रोजेक्ट बनाकर Authentication (Google) और Firestore चालू करें, फिर अपना firebaseConfig JSON यहाँ पेस्ट करें। इसके बाद फ़ोन व लैपटॉप दोनों में सेम Gmail से लॉगिन करते ही सारा डेटा अपने-आप सिंक होगा।" data-lang-en="Enable Google Auth & Firestore in a free Firebase project and paste your firebaseConfig JSON below for automatic sync across devices.">Firebase Console में मुफ़्त प्रोजेक्ट बनाकर Authentication (Google) और Firestore चालू करें, फिर अपना firebaseConfig JSON यहाँ पेस्ट करें। इसके बाद फ़ोन व लैपटॉप दोनों में सेम Gmail से लॉगिन करते ही सारा डेटा अपने-आप सिंक होगा।</p>
+                    <textarea id="firebase-config-input" rows="3" placeholder='{"apiKey":"...","authDomain":"...","projectId":"..."}' class="w-full px-2.5 py-2 rounded-lg border border-slate-300 text-[11px] font-mono outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+                    <div class="flex gap-2">
+                        <button type="button" onclick="saveFirebaseConfigFromUI()" class="flex-1 py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold">
+                            <span data-lang-hi="क्लाउड सिंक चालू करें" data-lang-en="Enable Cloud Sync">क्लाउड सिंक चालू करें</span>
+                        </button>
+                        <button type="button" onclick="clearFirebaseConfig()" class="py-2 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold">
+                            <span data-lang-hi="हटाएं" data-lang-en="Clear">हटाएं</span>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
