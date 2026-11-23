@@ -2749,16 +2749,22 @@
                     const py = startY + row * dy;
                     const ck = p.manualColor || p.autoColor || p.color || (fallbackColorMap && fallbackColorMap[p.id]);
                     const pCol = resolveHex(ck);
-                    let text = getPlanetDisplayName(p.id);
+                    const pName = getPlanetDisplayName(p.id);
+                    const segs = [{ txt: pName, col: pCol }];
                     if (showDeg) {
-                        let tags = '';
-                        if (p.isCombust) tags += currentLang === 'hi' ? '(अ)' : '(C)';
-                        if (p.isRetrograde) tags += currentLang === 'hi' ? '(व)' : '(R)';
-                        text += tags;
+                        if (p.isCombust) segs.push({ txt: currentLang === 'hi' ? '(अ)' : '(C)', col: resolveHex(p.combustColor || ck) });
+                        if (p.isRetrograde) segs.push({ txt: currentLang === 'hi' ? '(व)' : '(R)', col: resolveHex(p.retroColor || ck) });
                     }
                     ctx.font = `bold ${count > 4 ? 19 : 22}px "Noto Sans Devanagari", Inter, sans-serif`;
-                    ctx.fillStyle = pCol;
-                    ctx.fillText(text, px, py);
+                    const totalW = segs.reduce((s, sg) => s + ctx.measureText(sg.txt).width, 0);
+                    let curX = px - totalW / 2;
+                    ctx.textAlign = 'left';
+                    segs.forEach(sg => {
+                        ctx.fillStyle = sg.col;
+                        ctx.fillText(sg.txt, curX, py);
+                        curX += ctx.measureText(sg.txt).width;
+                    });
+                    ctx.textAlign = 'center';
                 });
             }
             ctx.restore();
@@ -2943,7 +2949,7 @@
             const hi = currentLang === 'hi';
             try {
                 const W = 1240, H = 1754;
-                const OUT_SCALE = 0.80; // crisp 992x1403 JPEG per page (~5x lighter on mobile RAM)
+                const OUT_SCALE = 0.80;
                 const pageDataUrls = [];
                 const finishPage = (p) => {
                     const outC = document.createElement('canvas');
@@ -2956,7 +2962,7 @@
                     outC.width = 0; outC.height = 0;
                 };
 
-                const makePage = (title, pageNum, totalPages = 6) => {
+                const makePage = (title, pageNum, totalPages = 5) => {
                     const c = document.createElement('canvas');
                     c.width = W; c.height = H;
                     const ctx = c.getContext('2d');
@@ -3005,8 +3011,6 @@
                 try { renderShadbalaView(); } catch(e) {}
                 try { renderMainAnalysisPanel(); } catch(e) {}
                 try { renderMainFaladeshPanel(); } catch(e) {}
-                try { renderNakshatraReportView(); } catch(e) {}
-                try { renderLifestyleReport(); } catch(e) {}
 
                 const lons = getChartLongitudes();
                 const { pHouse, pRashi, cMap, lagnaR, hLords, yogas, doshas } = evaluateD1YogasAndDoshas();
@@ -3018,8 +3022,8 @@
                 const rNamesHi = ['मेष','वृषभ','मिथुन','कर्क','सिंह','कन्या','तुला','वृश्चिक','धनु','मकर','कुंभ','मीन'];
                 const pNameHi = { Sun:'सूर्य', Moon:'चंद्र', Mars:'मंगल', Mercury:'बुध', Jupiter:'गुरु', Venus:'शुक्र', Saturn:'शनि', Rahu:'राहु', Ketu:'केतु' };
 
-                // Page 1
-                const p1 = makePage(hi ? 'मुख्य लग्न कुंडली व ग्रह बल' : 'Main Lagna Chart & Planet Power', 1);
+                // PAGE 1: D1 Lagna Chart + Summary + Planet Degrees & Power
+                const p1 = makePage(hi ? 'मुख्य लग्न कुंडली व ग्रह बल' : 'Main Lagna Chart & Planet Power', 1, 5);
                 drawNorthIndianChartOnCanvas(p1.ctx, 50, 145, 720, currentChart.rashis, currentChart.planets, hi ? 'लग्न कुंडली (D1)' : 'Lagna Chart (D1)', true, cMap);
                 p1.ctx.fillStyle = '#f8fafc'; p1.ctx.fillRect(800, 145, 390, 720);
                 p1.ctx.strokeStyle = '#e2e8f0'; p1.ctx.strokeRect(800, 145, 390, 720);
@@ -3071,8 +3075,8 @@
                 });
                 finishPage(p1);
 
-                // Page 2
-                const p2 = makePage(hi ? 'चलित व संपूर्ण षोडश वर्ग कुंडलियां' : 'Chalit & All 16 Shodashvarga Charts', 2);
+                // PAGE 2: Chalit + All 16 Shodashvarga Charts
+                const p2 = makePage(hi ? 'चलित व संपूर्ण षोडश वर्ग कुंडलियां' : 'Chalit & All 16 Shodashvarga Charts', 2, 5);
                 const chalitObj = buildChalitChartObj();
                 const buildVargaChartObj = (div) => {
                     const vLagnaR = computeVargaRashi(lons.Asc || 0, div);
@@ -3082,7 +3086,11 @@
                         const pr = computeVargaRashi(lons[p.id] || 0, div);
                         const ph = ((pr - vLagnaR + 12) % 12) + 1;
                         const st = d1StateMap[p.id] || {};
-                        pObj[ph].push({ id: p.id, color: cMap[p.id] || st.autoColor, isRetrograde: st.isRetrograde, isCombust: st.isCombust });
+                        pObj[ph].push({
+                            id: p.id, color: cMap[p.id] || st.autoColor,
+                            isRetrograde: st.isRetrograde, retroColor: st.retroColor,
+                            isCombust: st.isCombust, combustColor: st.combustColor
+                        });
                     });
                     return { rashis: rObj, planets: pObj };
                 };
@@ -3111,8 +3119,8 @@
                 });
                 finishPage(p2);
 
-                // Page 3
-                const p3 = makePage(hi ? 'षड्बल व भाव बल' : 'Shadbala & Bhava Bala', 3);
+                // PAGE 3: Shadbala & Bhavabala
+                const p3 = makePage(hi ? 'षड्बल व भाव बल' : 'Shadbala & Bhava Bala', 3, 5);
                 drawSectionTitle(p3.ctx, hi ? 'षड्बल गणना (7 ग्रह रैंक व बल)' : 'Shadbala Calculation (7 Planets)', 50, 140);
                 const shadData = computeShadbalaDetailed(lons);
                 p3.ctx.fillStyle = '#f1f5f9'; p3.ctx.fillRect(50, 165, 1140, 40);
@@ -3158,8 +3166,8 @@
                 });
                 finishPage(p3);
 
-                // Page 4
-                const p4 = makePage(hi ? 'कुंडली विवरण व करियर उपयुक्तता' : 'Kundli Analysis & Career Graph', 4);
+                // PAGE 4: Kundli Analysis (Yogas, Doshas, Job vs Biz & Career Graph)
+                const p4 = makePage(hi ? 'कुंडली विवरण व करियर उपयुक्तता' : 'Kundli Analysis & Career Graph', 4, 5);
                 let y4 = 140;
                 drawSectionTitle(p4.ctx, hi ? `प्रमुख शुभ योग (${yogas.length}) व दोष (${doshas.length})` : `Major Yogas (${yogas.length}) & Doshas (${doshas.length})`, 50, y4);
                 y4 += 36;
@@ -3205,21 +3213,22 @@
                 }
                 finishPage(p4);
 
-                // Page 5
-                const p5 = makePage(hi ? 'फलादेश (रत्न, मंत्र, दान) व उपग्रह चक्र' : 'Faladesh & Upagraha Chakra', 5);
+                // PAGE 5 (Compact Combined): Faladesh + 11 Upagraha Chakra + Complete Nakshatra Report
+                const p5 = makePage(hi ? 'फलादेश, उपग्रह चक्र व संपूर्ण नक्षत्र रिपोर्ट' : 'Faladesh, Upagraha & Nakshatra Report', 5, 5);
                 let y5 = 140;
                 drawSectionTitle(p5.ctx, hi ? 'फलादेश — साढ़ेसाती, रत्न, बीज मंत्र व दान' : 'Faladesh — Sade Sati, Gemstones, Mantras & Charities', 50, y5);
-                y5 += 38;
+                y5 += 34;
                 const falEl = document.getElementById('main-faladesh-content');
                 if (falEl) {
                     const rawText = (falEl.textContent || '').replace(/\s+/g, ' ').trim();
                     const chunks5 = rawText ? wrapTextLines(p5.ctx, rawText, 1120) : [];
-                    p5.ctx.fillStyle = '#334155'; p5.ctx.font = '500 16px "Noto Sans Devanagari", Inter, sans-serif';
-                    chunks5.slice(0, 28).forEach(wl => { if (y5 <= 1060) { p5.ctx.fillText(wl, 56, y5); y5 += 28; } });
+                    p5.ctx.fillStyle = '#334155'; p5.ctx.font = '500 15px "Noto Sans Devanagari", Inter, sans-serif';
+                    chunks5.slice(0, 18).forEach(wl => { if (y5 <= 680) { p5.ctx.fillText(wl, 56, y5); y5 += 24; } });
                 }
-                y5 = Math.max(y5 + 24, 1100);
+
+                y5 = Math.max(y5 + 22, 700);
                 drawSectionTitle(p5.ctx, hi ? 'विशेष कुंडलियां — 11 उपग्रह चक्र' : 'Special Charts — 11 Upagrahas', 50, y5);
-                y5 += 36;
+                y5 += 32;
                 const sunLon = lons.Sun || 0;
                 const [by, bm, bd] = (currentChart.dob || '2000-01-01').split('-').map(Number);
                 const dow = new Date(by, bm - 1, bd).getDay();
@@ -3235,7 +3244,7 @@
                 ];
                 upas.forEach((u, idx) => {
                     const col = idx % 3, row = Math.floor(idx / 3);
-                    const ux = 56 + col * 380, uy = y5 + row * 48;
+                    const ux = 56 + col * 380, uy = y5 + row * 46;
                     const rIdx = Math.floor(u.l / 30);
                     const hNum = ((rIdx + 1 - lagnaR + 12) % 12) + 1;
                     p5.ctx.fillStyle = '#f8fafc'; p5.ctx.fillRect(ux, uy, 360, 38);
@@ -3243,34 +3252,33 @@
                     p5.ctx.fillStyle = '#1e293b'; p5.ctx.font = 'bold 16px "Noto Sans Devanagari", Inter, sans-serif';
                     p5.ctx.fillText(`${u.n}: H${hNum} • ${hi ? rNamesHi[rIdx] : RASHIS[rIdx].en} (${(u.l % 30).toFixed(1)}°)`, ux + 14, uy + 25);
                 });
-                finishPage(p5);
 
-                // Page 6
-                const p6 = makePage(hi ? 'संपूर्ण नक्षत्र रिपोर्ट व जीवनशैली रिपोर्ट' : 'Nakshatra & Lifestyle Reports', 6);
-                let y6 = 140;
-                drawSectionTitle(p6.ctx, hi ? 'संपूर्ण नक्षत्र रिपोर्ट' : 'Complete Nakshatra Report', 50, y6);
-                y6 += 36;
-                const nakEl = document.getElementById('nakshatra-report-content');
-                if (nakEl) {
-                    const nakRows = Array.from(nakEl.querySelectorAll('tbody tr')).map(tr => Array.from(tr.querySelectorAll('td')).map(td => (td.textContent || '').trim()));
-                    nakRows.slice(0, 10).forEach((cells, idx) => {
-                        if (idx % 2 === 1) { p6.ctx.fillStyle = '#f8fafc'; p6.ctx.fillRect(50, y6 - 20, 1140, 34); }
-                        p6.ctx.fillStyle = '#1e293b'; p6.ctx.font = '600 15px "Noto Sans Devanagari", Inter, sans-serif';
-                        p6.ctx.fillText(cells.slice(0, 5).join('   |   '), 60, y6);
-                        y6 += 34;
-                    });
-                }
-                y6 += 28;
-                drawSectionTitle(p6.ctx, hi ? 'जीवनशैली व व्यक्तित्व रिपोर्ट' : 'Lifestyle & Personality Report', 50, y6);
-                y6 += 36;
-                const lifeEl = document.getElementById('lifestyle-report-content');
-                if (lifeEl) {
-                    const rawLife = (lifeEl.textContent || '').replace(/\s+/g, ' ').trim();
-                    const lifeLines = rawLife ? wrapTextLines(p6.ctx, rawLife, 1120) : [];
-                    p6.ctx.fillStyle = '#334155'; p6.ctx.font = '500 15px "Noto Sans Devanagari", Inter, sans-serif';
-                    lifeLines.slice(0, 35).forEach(wl => { if (y6 <= 1680) { p6.ctx.fillText(wl, 56, y6); y6 += 26; } });
-                }
-                finishPage(p6);
+                // Complete Nakshatra Report directly from computed longitudes on same Page 5
+                let yn = y5 + 215;
+                drawSectionTitle(p5.ctx, hi ? 'संपूर्ण नक्षत्र रिपोर्ट (लग्न व 9 ग्रह)' : 'Complete Nakshatra Report (Asc & 9 Planets)', 50, yn);
+                yn += 26;
+                p5.ctx.fillStyle = '#f1f5f9'; p5.ctx.fillRect(50, yn, 1140, 36);
+                const nCols = [65, 250, 480, 740, 960];
+                const nHdr = hi ? ['ग्रह / लग्न', 'राशि (अंश)', 'नक्षत्र', 'पद', 'नक्षत्र स्वामी'] : ['Body', 'Sign (Deg)', 'Nakshatra', 'Pada', 'Lord'];
+                p5.ctx.fillStyle = '#334155'; p5.ctx.font = 'bold 16px "Noto Sans Devanagari", Inter, sans-serif';
+                nHdr.forEach((h, i) => p5.ctx.fillText(h, nCols[i], yn + 24));
+                const nakEntries = [{ id: 'Asc', lbl: hi ? 'लग्न (Asc)' : 'Lagna (Asc)', lon: lons.Asc || 0 }]
+                    .concat(PLANETS.map(p => ({ id: p.id, lbl: getPlanetDisplayName(p.id), lon: lons[p.id] || 0 })));
+                nakEntries.forEach((ne, idx) => {
+                    const ry = yn + 38 + idx * 42;
+                    if (idx % 2 === 1) { p5.ctx.fillStyle = '#f8fafc'; p5.ctx.fillRect(50, ry, 1140, 42); }
+                    const rIdx = Math.floor((ne.lon % 360) / 30);
+                    const deg = (ne.lon % 30).toFixed(2);
+                    const nak = typeof getNakshatraFromLon === 'function' ? getNakshatraFromLon(ne.lon) : { name: '-', pada: 1, lord: '-' };
+                    p5.ctx.fillStyle = '#1e293b'; p5.ctx.font = 'bold 16px "Noto Sans Devanagari", Inter, sans-serif';
+                    p5.ctx.fillText(ne.lbl, nCols[0], ry + 27);
+                    p5.ctx.font = '500 16px "Noto Sans Devanagari", Inter, sans-serif';
+                    p5.ctx.fillText(`${hi ? rNamesHi[rIdx] : RASHIS[rIdx].en} (${deg}°)`, nCols[1], ry + 27);
+                    p5.ctx.fillText(`${nak.name || '-'}`, nCols[2], ry + 27);
+                    p5.ctx.fillText(`${hi ? 'पद' : 'Pada'} ${nak.pada || 1}`, nCols[3], ry + 27);
+                    p5.ctx.fillText(`${nak.lord || '-'}`, nCols[4], ry + 27);
+                });
+                finishPage(p5);
 
                 const pdfBlob = buildPDFFromJPEGDataURLs(pageDataUrls);
                 const cleanName = (currentChart.clientName || 'Kundli').replace(/[^a-zA-Z0-9ऀ-ॿ_-]/g, '_');
