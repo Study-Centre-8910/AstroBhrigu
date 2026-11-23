@@ -7751,12 +7751,25 @@ ${xrefPos}
             }
             polNotes.push(fmtKaraks(['Sun','Saturn','Mercury','Rahu']));
 
-            // 4. Govt Job IAS / IPS Custom Rulebook Score (Saturn, Sun, Jupiter, Mars + Lagna Total Power)
-            let iasScore = ps('Saturn')*0.23 + ps('Sun')*0.24 + ps('Jupiter')*0.16 + ps('Mars')*0.13 + l9*0.07 + l10*0.08 + lagnaTotalBala*0.09 + d10Bonus(['Sun','Saturn','Jupiter']);
+            // 4. Govt Job IAS / IPS Custom Rulebook Score (Saturn, Sun, Jupiter, Mars, Moon + 10th/9th/Peak Degree/Ruchaka rules)
+            let iasScore = ps('Saturn')*0.21 + ps('Sun')*0.21 + ps('Jupiter')*0.15 + ps('Mars')*0.13 + ps('Moon')*0.08 + l9*0.06 + l10*0.08 + lagnaTotalBala*0.08 + d10Bonus(['Sun','Saturn','Jupiter','Mars']);
             const iasNotes = [];
+            const sunWithJup = (pHouse.Sun === pHouse.Jupiter);
+            const moonStrongStable = isStrongCond('Moon') || [2, 4].includes(pRashi.Moon);
+            const satDeg = (((lons.Saturn || 0) % 30) + 30) % 30;
+            const satPeakDeg = (satDeg >= 13.5 && satDeg <= 16.5);
+            const lord10In9 = (pHouse[hLords[10]] === 9);
+            const marsRuchakaOrAsp10 = ([1,4,7,10].includes(pHouse.Mars) && [1,8,10].includes(pRashi.Mars)) || (pHouse.Mars === 4);
+
             if (isStrongCond('Saturn') && isBadCond('Sun')) {
-                iasScore -= 11.5;
-                iasNotes.push(hi ? 'सूर्य कमजोर होने से अतिरिक्त संघर्ष संभव' : 'Sun weak — extra struggle possible');
+                if (sunWithJup || moonStrongStable) {
+                    iasScore += 5.5;
+                    if (sunWithJup) iasNotes.push(hi ? 'सूर्य-राहु के साथ गुरु की उपस्थिति से ग्रहण प्रभाव घटा व सूर्य को सहारा' : 'Jupiter with Sun-Rahu reduces eclipse impact');
+                    if (moonStrongStable) iasNotes.push(hi ? 'बलवान/स्थिर चंद्रमा सूर्य की कमी को संभालने में सक्षम' : 'Strong Moon compensates for Sun weakness');
+                } else {
+                    iasScore -= 11.5;
+                    iasNotes.push(hi ? 'सूर्य कमजोर होने से अतिरिक्त संघर्ष संभव' : 'Sun weak — extra struggle possible');
+                }
             } else if (isStrongCond('Saturn') && isOkCond('Sun')) {
                 iasScore += 14.0;
                 iasNotes.push(hi ? 'मजबूत शनि + संतुलित सूर्य (IAS/IPS प्रबल योग)' : 'Strong Saturn + balanced Sun');
@@ -7767,7 +7780,20 @@ ${xrefPos}
                 iasScore += 8.0;
                 iasNotes.push(hi ? 'शनि + गुरु-बुध-मंगल संतुलन' : 'Saturn + Jupiter/Mercury/Mars balance');
             }
-            iasNotes.push(fmtKaraks(['Sun','Saturn','Jupiter','Mars']));
+
+            if (lord10In9) {
+                iasScore += 4.5;
+                iasNotes.push(hi ? 'दशमेश भाग्य भाव (H9) में' : '10th Lord in H9 Fortune');
+            }
+            if (marsRuchakaOrAsp10 && isStrongCond('Mars')) {
+                iasScore += 4.0;
+                iasNotes.push(hi ? 'बलवान मंगल/रुचक योग से दशम भाव को बल' : 'Strong Mars/Ruchaka support to H10');
+            }
+            if (satPeakDeg && isStrongCond('Saturn')) {
+                iasScore += 3.5;
+                iasNotes.push(hi ? 'शनि पीक डिग्री (14°-16°) में प्रबल' : 'Saturn in peak degree (14°-16°)');
+            }
+            iasNotes.push(fmtKaraks(['Sun','Saturn','Jupiter','Mars','Moon']));
 
             // 5. Classical Rules: Defence, CA/Finance, Teacher/Advisor, Lawyer/Judge (+ Karaka Planets & Lagna Total Power)
             let defScore = ps('Mars')*0.30 + ps('Sun')*0.22 + ps('Saturn')*0.16 + ps('Rahu')*0.06 + l6*0.08 + l10*0.09 + lagnaTotalBala*0.09 + d10Bonus(['Mars','Sun','Saturn']);
