@@ -2696,7 +2696,7 @@
                     const row = Math.floor(idx / cols);
                     const px = cols === 2 ? (cx + (col === 0 ? -52 : 52)) : cx;
                     const py = startY + row * dy;
-                    const pal = COLOR_PALETTE[p.color || 'gray'] || COLOR_PALETTE.gray;
+                    const pal = COLOR_PALETTE[p.color] || null; const pCol = p.color === 'pureYellow' ? '#b45309' : (pal ? pal.hex : '#334155');
                     let text = getPlanetDisplayName(p.id);
                     if (showDeg) {
                         let tags = '';
@@ -2705,7 +2705,7 @@
                         text += tags;
                     }
                     ctx.font = `bold ${count > 4 ? 19 : 22}px "Noto Sans Devanagari", Inter, sans-serif`;
-                    ctx.fillStyle = pal.stroke;
+                    ctx.fillStyle = pCol;
                     ctx.fillText(text, px, py);
                 });
             }
@@ -2784,10 +2784,10 @@
                 const nak = typeof getNakshatraFromLon === 'function' ? getNakshatraFromLon(lon) : { name: '-', pada: 1 };
                 const genScore = Math.round(getHolisticPlanetScore(pid, lons, pHouse, pRashi, lagnaR, cMap, chalitInfo));
                 const deepScore = deepPowers[pid] !== undefined ? deepPowers[pid] : genScore;
-                const pal = COLOR_PALETTE[cMap[pid] || st.color || 'gray'] || COLOR_PALETTE.gray;
+                const ck = cMap[pid] || st.color; const pal = COLOR_PALETTE[ck] || null; const pCol = ck === 'pureYellow' ? '#b45309' : (pal ? pal.hex : '#334155');
 
                 ctx.font = 'bold 18px "Noto Sans Devanagari", Inter, sans-serif';
-                ctx.fillStyle = pal.stroke;
+                ctx.fillStyle = pCol;
                 ctx.fillText(getPlanetDisplayName(pid) + (st.isRetrograde ? (hi ? ' (व)' : ' (R)') : '') + (st.isCombust ? (hi ? ' (अ)' : ' (C)') : ''), colsX[0], ry + 30);
                 ctx.fillStyle = '#1e293b';
                 ctx.font = '500 17px "Noto Sans Devanagari", Inter, sans-serif';
@@ -2810,7 +2810,9 @@
             const cleanName = (currentChart.clientName || 'Kundli').replace(/[^a-zA-Z0-9ऀ-ॿ_-]/g, '_');
             link.download = `${cleanName}_Kundli.png`;
             link.href = canvas.toDataURL('image/png');
+            document.body.appendChild(link);
             link.click();
+            document.body.removeChild(link);
             if (typeof showToast === 'function') showToast(hi ? 'कुंडली PNG डाउनलोड हो गई है!' : 'Chart PNG downloaded!');
         }
 
@@ -3007,9 +3009,9 @@ ${xrefPos}
                 const nak = typeof getNakshatraFromLon === 'function' ? getNakshatraFromLon(lon) : { name: '-', pada: 1 };
                 const gen = Math.round(getHolisticPlanetScore(pid, lons, pHouse, pRashi, lagnaR, cMap, chalitInfo));
                 const dpVal = deepPowers[pid] !== undefined ? deepPowers[pid] : gen;
-                const pal = COLOR_PALETTE[cMap[pid] || st.color || 'gray'] || COLOR_PALETTE.gray;
+                const ck = cMap[pid] || st.color; const pal = COLOR_PALETTE[ck] || null; const pCol = ck === 'pureYellow' ? '#b45309' : (pal ? pal.hex : '#334155');
                 p1.ctx.font = 'bold 18px "Noto Sans Devanagari", Inter, sans-serif';
-                p1.ctx.fillStyle = pal.stroke;
+                p1.ctx.fillStyle = pCol;
                 p1.ctx.fillText(getPlanetDisplayName(pid) + (st.isRetrograde ? (hi ? ' (व)' : ' (R)') : '') + (st.isCombust ? (hi ? ' (अ)' : ' (C)') : ''), p1Cols[0], ry + 34);
                 p1.ctx.fillStyle = '#1e293b';
                 p1.ctx.font = '500 17px "Noto Sans Devanagari", Inter, sans-serif';
@@ -3248,7 +3250,9 @@ ${xrefPos}
             const cleanName = (currentChart.clientName || 'Kundli').replace(/[^a-zA-Z0-9ऀ-ॿ_-]/g, '_');
             link.download = `${cleanName}_Full_Kundli.pdf`;
             link.href = url;
+            document.body.appendChild(link);
             link.click();
+            document.body.removeChild(link);
             setTimeout(() => URL.revokeObjectURL(url), 5000);
             if (typeof showToast === 'function') showToast(hi ? 'संपूर्ण कुंडली PDF डाउनलोड हो गई है!' : 'Full Kundli PDF downloaded!');
         }
