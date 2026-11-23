@@ -3173,27 +3173,27 @@
                 y4 += 36;
                 p4.ctx.font = '500 16px "Noto Sans Devanagari", Inter, sans-serif';
                 const allYD = [
-                    ...yogas.slice(0, 8).map(t => ({ txt: '✓ ' + t, col: '#065f46' })),
-                    ...doshas.slice(0, 6).map(t => ({ txt: '⚠ ' + t, col: '#991b1b' }))
+                    ...yogas.slice(0, 6).map(t => ({ txt: '✓ ' + t, col: '#065f46' })),
+                    ...doshas.slice(0, 4).map(t => ({ txt: '⚠ ' + t, col: '#991b1b' }))
                 ];
                 allYD.forEach(item => {
                     p4.ctx.fillStyle = item.col;
-                    wrapTextLines(p4.ctx, item.txt, 1120).slice(0, 2).forEach(ln => { p4.ctx.fillText(ln, 56, y4); y4 += 25; });
+                    wrapTextLines(p4.ctx, item.txt, 1120).slice(0, 2).forEach(ln => { if (y4 < 560) { p4.ctx.fillText(ln, 56, y4); y4 += 23; } });
                 });
                 y4 += 18;
                 drawSectionTitle(p4.ctx, hi ? 'नौकरी बनाम बिजनेस व करियर क्षेत्र ग्राफ' : 'Job vs Business & Career Suitability', 50, y4);
                 y4 += 38;
                 const analysisEl = document.getElementById('main-analysis-content');
                 if (analysisEl) {
-                    const careerBars = Array.from(analysisEl.querySelectorAll('.flex.justify-between.font-bold.mb-1'));
+                    const careerBars = Array.from(analysisEl.querySelectorAll('[data-career-bar]'));
                     careerBars.forEach(bar => {
                         if (y4 > 1640) return;
                         const spans = bar.querySelectorAll('span');
                         if (spans.length < 2) return;
                         const label = (spans[0].textContent || '').trim();
-                        const pctStr = (spans[1].textContent || '').trim();
+                        const pctStr = (spans[1].textContent || '').replace(/[▾▴]/g, '').trim();
                         const pct = parseFloat(pctStr) || 50;
-                        const noteEl = bar.parentElement && bar.parentElement.querySelector('.text-\\[11px\\]');
+                        const noteEl = bar.parentElement && bar.parentElement.querySelector('.career-detail-box');
                         const note = noteEl ? (noteEl.textContent || '').trim() : '';
                         p4.ctx.fillStyle = '#0f172a';
                         p4.ctx.font = 'bold 17px "Noto Sans Devanagari", Inter, sans-serif';
@@ -7933,11 +7933,12 @@
 
                 <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2.5 text-xs">
                     <div class="font-bold text-sm text-slate-900">${hi ? 'करियर क्षेत्र उपयुक्तता (पूर्ण D1 + चलित + D9 + D10 + अष्टकवर्ग + ग्रह बल)' : 'Career Field Suitability (Full D1 + Chalit + D9 + D10 + Ashtakavarga)'}</div>
+                    <div class="text-[11px] text-slate-400 mb-1">${hi ? 'किसी भी क्षेत्र पर क्लिक करके उसके मुख्य ग्रह व गणना पैरामीटर देखें' : 'Click any career bar to view contributing planets & calculation parameters'}</div>
                     ${careers.map((c,i)=>`
-                        <div>
-                            <div class="flex justify-between font-bold mb-1"><span>${i===0?'⭐ ':''}#${i+1} ${c.name}</span><span class="text-indigo-700">${Math.min(99.4, Math.max(15, c.score)).toFixed(1)}%</span></div>
+                        <div onclick="const d=this.querySelector('.career-detail-box'); const a=this.querySelector('.career-arrow'); if(d){d.classList.toggle('hidden'); if(a) a.textContent=d.classList.contains('hidden')?'▾':'▴';}" class="p-2.5 rounded-xl bg-white border border-slate-200/80 hover:border-indigo-300 cursor-pointer transition-colors">
+                            <div data-career-bar="1" class="flex justify-between items-center font-bold mb-1.5"><span>${i===0?'⭐ ':''}#${i+1} ${c.name}</span><span class="inline-flex items-center gap-1 text-indigo-700">${Math.min(99.4, Math.max(15, c.score)).toFixed(1)}% <span class="career-arrow text-slate-400 text-xs">▾</span></span></div>
                             <div class="w-full h-2.5 bg-slate-200 rounded-full overflow-hidden"><div class="h-full ${i===0?'bg-emerald-600':'bg-indigo-500'} rounded-full" style="width:${Math.min(100, Math.max(15, c.score)).toFixed(1)}%"></div></div>
-                            ${c.note ? `<div class="text-[11px] text-emerald-800 font-medium mt-0.5">${c.note}</div>` : ''}
+                            ${c.note ? `<div class="career-detail-box hidden mt-2 pt-2 border-t border-slate-100 text-[11px] text-emerald-900 font-medium leading-relaxed">${c.note}</div>` : ''}
                         </div>
                     `).join('')}
                 </div>
