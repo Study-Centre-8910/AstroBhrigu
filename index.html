@@ -7867,6 +7867,55 @@
                 return Math.min(7.5, b);
             };
             const pNameHi = { Sun:'सूर्य', Moon:'चंद्र', Mars:'मंगल', Mercury:'बुध', Jupiter:'गुरु', Venus:'शुक्र', Saturn:'शनि', Rahu:'राहु', Ketu:'केतु' };
+            const lagnaLord = hLords[1];
+            const isNeechabhanga = (pid) => {
+                const rNum = pRashi[pid];
+                const dig = CHART_1_3_DIGNITY[pid];
+                if (!dig || !dig.debilitated.includes(rNum)) return false;
+                const debLord = RASHIS[rNum - 1]?.lord;
+                const st = d1StateMap[pid] || {};
+                if (st.isRetrograde) return true;
+                if (debLord && [1,4,7,10].includes(pHouse[debLord])) return true;
+                if (debLord && pHouse[debLord] === pHouse[pid]) return true;
+                const exaltPlanet = Object.keys(CHART_1_3_DIGNITY).find(k => CHART_1_3_DIGNITY[k].exalted.includes(rNum));
+                if (exaltPlanet && [1,4,7,10].includes(pHouse[exaltPlanet])) return true;
+                return false;
+            };
+            const evalCareerPlanetQuality = (primaryPids) => {
+                let adj = 0;
+                const notes = [];
+                primaryPids.forEach((pid, idx) => {
+                    const weight = idx === 0 ? 1.0 : 0.7;
+                    const rNum = pRashi[pid];
+                    const dig = CHART_1_3_DIGNITY[pid];
+                    const isDeb = dig && dig.debilitated.includes(rNum);
+                    const hasNB = isDeb && isNeechabhanga(pid);
+                    const isLagnaTrikona = [hLords[1], hLords[5], hLords[9]].includes(pid);
+                    const isPureTrikOrMarak = !isLagnaTrikona && ([hLords[6], hLords[8], hLords[12]].includes(pid) || [hLords[2], hLords[7]].includes(pid));
+                    const isLagnaFriend = isLagnaTrikona || [hLords[4], hLords[10]].includes(pid) || (pid === 'Jupiter' && ![6,8,12].includes(pHouse.Jupiter));
+                    const pLbl = hi ? (pNameHi[pid] || pid) : pid;
+
+                    if (isDeb && !hasNB) {
+                        adj -= 6.5 * weight;
+                        notes.push(hi ? `${pLbl} नीचस्थ (बिना नीचभंग) — अतिरिक्त संघर्ष संभव` : `${pLbl} debilitated without Neechabhanga`);
+                    } else if (hasNB) {
+                        // Neechabhanga: neutral (no bonus, no penalty)
+                        notes.push(hi ? `${pLbl} नीचभंग योग (लाभ संभव, पर महादशा में संघर्ष रह सकता है)` : `${pLbl} Neechabhanga (gains possible, struggle in Mahadasha)`);
+                    }
+
+                    if (isLagnaTrikona) {
+                        adj += 3.2 * weight;
+                    } else if (isPureTrikOrMarak && isBadCond(pid)) {
+                        adj -= 4.5 * weight;
+                        notes.push(hi ? `${pLbl} इस लग्न के लिए अकारक/मारक स्थिति में` : `${pLbl} non-beneficial/marak for this Lagna`);
+                    } else if (isPureTrikOrMarak) {
+                        adj -= 2.2 * weight;
+                    } else if (isLagnaFriend && isOkCond(pid)) {
+                        adj += 1.5 * weight;
+                    }
+                });
+                return { adj: Math.max(-12, Math.min(9, adj)), notes };
+            };
             const fmtKaraks = (pids) => {
                 const list = pids.map(id => `${hi ? (pNameHi[id] || id) : id} ${dp(id)}%`).join(', ');
                 return hi
@@ -7905,6 +7954,7 @@
                 if (pHouse[hLords[docHouses[i]]] === pHouse[hLords[docHouses[j]]] || pHouse[hLords[docHouses[i]]] === docHouses[j]) docConn++;
             }
             if (docConn > 0) docScore += Math.min(9.0, docConn * 3.1);
+            const docQ = evalCareerPlanetQuality(['Sun','Jupiter','Mars']); docScore += docQ.adj; docQ.notes.forEach(n => docNotes.push(n));
             docNotes.push(fmtKaraks(['Sun','Jupiter','Mars','Moon']));
 
             // 2. Engineering / AI / Data Custom Rulebook Score (Saturn, Mercury, Rahu, Mars + Lagna Total Power)
@@ -7916,6 +7966,7 @@
             } else if (cMap.Saturn === 'red') {
                 engScore -= 8.0;
             }
+            const engQ = evalCareerPlanetQuality(['Saturn','Mercury']); engScore += engQ.adj; engQ.notes.forEach(n => engNotes.push(n));
             engNotes.push(fmtKaraks(['Saturn','Mercury','Rahu','Mars']));
 
             // 3. Politics Custom Rulebook Score (Sun, Saturn, Mercury, Rahu + Lagna Total Power)
@@ -7927,6 +7978,7 @@
             } else if (isStrongCond('Saturn') && isStrongCond('Sun')) {
                 polScore += 6.5;
             }
+            const polQ = evalCareerPlanetQuality(['Sun','Saturn','Mercury']); polScore += polQ.adj; polQ.notes.forEach(n => polNotes.push(n));
             polNotes.push(fmtKaraks(['Sun','Saturn','Mercury','Rahu']));
 
             // 4. Govt Job IAS / IPS Custom Rulebook Score (Saturn, Sun, Jupiter, Mars, Moon + 10th/9th/Peak Degree/Ruchaka rules)
@@ -7971,29 +8023,34 @@
                 iasScore += 3.5;
                 iasNotes.push(hi ? 'शनि पीक डिग्री (14°-16°) में प्रबल' : 'Saturn in peak degree (14°-16°)');
             }
+            const iasQ = evalCareerPlanetQuality(['Sun','Saturn','Jupiter']); iasScore += iasQ.adj; iasQ.notes.forEach(n => iasNotes.push(n));
             iasNotes.push(fmtKaraks(['Sun','Saturn','Jupiter','Mars','Moon']));
 
             // 5. Classical Rules: Defence, CA/Finance, Teacher/Advisor, Lawyer/Judge (+ Karaka Planets & Lagna Total Power)
             let defScore = ps('Mars')*0.30 + ps('Sun')*0.22 + ps('Saturn')*0.16 + ps('Rahu')*0.06 + l6*0.08 + l10*0.09 + lagnaTotalBala*0.09 + d10Bonus(['Mars','Sun','Saturn']);
             if ([1,6,10].includes(pHouse.Mars) && isStrongCond('Mars')) defScore += 8.4;
+            const defQ = evalCareerPlanetQuality(['Mars','Sun']); defScore += defQ.adj;
 
             let caScore = ps('Mercury')*0.27 + ps('Jupiter')*0.24 + ps('Venus')*0.15 + l2*0.08 + l11*0.09 + l10*0.08 + lagnaTotalBala*0.09 + d10Bonus(['Mercury','Jupiter','Venus']);
             if (pHouse[hLords[2]] === pHouse[hLords[7]] || pHouse[hLords[2]] === 11) caScore += 5.2;
+            const caQ = evalCareerPlanetQuality(['Mercury','Jupiter','Venus']); caScore += caQ.adj;
 
             let teachScore = ps('Jupiter')*0.32 + ps('Mercury')*0.20 + ps('Moon')*0.14 + ps('Sun')*0.06 + l5*0.06 + l9*0.07 + l10*0.06 + lagnaTotalBala*0.09 + d10Bonus(['Jupiter','Mercury']);
             if ([1,5,9,10].includes(pHouse.Jupiter) && isStrongCond('Jupiter')) teachScore += 6.5;
+            const teachQ = evalCareerPlanetQuality(['Jupiter','Mercury']); teachScore += teachQ.adj;
 
             let lawScore = ps('Jupiter')*0.25 + ps('Saturn')*0.25 + ps('Mercury')*0.16 + ps('Venus')*0.06 + l9*0.10 + l6*0.09 + lagnaTotalBala*0.09 + d10Bonus(['Jupiter','Saturn','Mercury']);
             if (pHouse.Saturn === 9 || ((pHouse.Saturn - 1 + 9)%12)+1 === 10 || pHouse.Saturn === 10) lawScore += 6.2;
+            const lawQ = evalCareerPlanetQuality(['Jupiter','Saturn','Mercury']); lawScore += lawQ.adj;
 
             const careers = [
                 { name: hi ? 'मेडिकल साइंस व स्वास्थ्य सेवा' : 'Medical Science & Healthcare', score: docScore, note: docNotes.join(' • ') },
                 { name: hi ? 'इंजीनियरिंग, AI व डेटा एनालिस्ट' : 'Engineering, AI & Data Analyst', score: engScore, note: engNotes.join(' • ') },
-                { name: hi ? 'आर्मी, पुलिस व रक्षा सेवा' : 'Army, Police & Defence', score: defScore, note: fmtKaraks(['Mars','Sun','Saturn']) },
-                { name: hi ? 'CA, बैंकिंग व वित्त' : 'CA, Banking & Finance', score: caScore, note: fmtKaraks(['Mercury','Jupiter','Venus']) },
-                { name: hi ? 'शिक्षक व एडवाइजर' : 'Teacher & Advisor', score: teachScore, note: fmtKaraks(['Jupiter','Mercury','Moon']) },
+                { name: hi ? 'आर्मी, पुलिस व रक्षा सेवा' : 'Army, Police & Defence', score: defScore, note: [...defQ.notes, fmtKaraks(['Mars','Sun','Saturn'])].join(' • ') },
+                { name: hi ? 'CA, बैंकिंग व वित्त' : 'CA, Banking & Finance', score: caScore, note: [...caQ.notes, fmtKaraks(['Mercury','Jupiter','Venus'])].join(' • ') },
+                { name: hi ? 'शिक्षक व एडवाइजर' : 'Teacher & Advisor', score: teachScore, note: [...teachQ.notes, fmtKaraks(['Jupiter','Mercury','Moon'])].join(' • ') },
                 { name: hi ? 'सरकारी सेवा व प्रशासन (IAS / IPS व उच्च पद)' : 'Govt Service & Admin (IAS / IPS)', score: iasScore, note: iasNotes.join(' • ') },
-                { name: hi ? 'लॉयर व जज (न्यायिक सेवा)' : 'Lawyer, Judge & Judiciary', score: lawScore, note: fmtKaraks(['Jupiter','Saturn','Mercury']) },
+                { name: hi ? 'लॉयर व जज (न्यायिक सेवा)' : 'Lawyer, Judge & Judiciary', score: lawScore, note: [...lawQ.notes, fmtKaraks(['Jupiter','Saturn','Mercury'])].join(' • ') },
                 { name: hi ? 'पॉलिटिक्स व जन-नेतृत्व' : 'Politics & Public Leadership', score: polScore, note: polNotes.join(' • ') }
             ].sort((a,b) => b.score - a.score).slice(0, 7);
 
