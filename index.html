@@ -476,11 +476,31 @@
                         <i data-lucide="save" class="w-4 h-4"></i>
                         <span data-lang-en="Save" data-lang-hi="सेव करें">सेव करें</span>
                     </button>
-                    <button type="button" onclick="downloadChartPNG()" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-semibold shadow-sm transition-colors">
-                        <i data-lucide="download" class="w-4 h-4"></i>
-                        <span class="hidden sm:inline" data-lang-en="Download PNG" data-lang-hi="PNG डाउनलोड">PNG डाउनलोड</span>
-                        <span class="sm:hidden">PNG</span>
-                    </button>
+                    <div class="relative inline-flex" id="download-menu-wrap">
+                        <button type="button" onclick="downloadChartPNG()" class="inline-flex items-center gap-1.5 pl-3.5 pr-2.5 py-2 rounded-l-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-semibold shadow-sm transition-colors border-r border-emerald-500">
+                            <i data-lucide="download" class="w-4 h-4"></i>
+                            <span class="hidden sm:inline" data-lang-en="Download PNG" data-lang-hi="PNG डाउनलोड">PNG डाउनलोड</span>
+                        </button>
+                        <button type="button" onclick="toggleDownloadMenu(event)" title="Download Options" class="inline-flex items-center px-2 py-2 rounded-r-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-semibold shadow-sm transition-colors">
+                            <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                        </button>
+                        <div id="download-dropdown-menu" class="hidden absolute right-0 top-full mt-1.5 w-60 rounded-xl bg-white border border-slate-200 shadow-xl py-1.5 z-50 text-left">
+                            <button type="button" onclick="closeDownloadMenu(); downloadChartPNG()" class="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-800 transition-colors">
+                                <i data-lucide="image" class="w-4 h-4 text-emerald-600 shrink-0"></i>
+                                <div>
+                                    <div data-lang-hi="PNG इमेज डाउनलोड" data-lang-en="Download PNG Image">PNG इमेज डाउनलोड</div>
+                                    <div class="text-[10px] font-normal text-slate-400" data-lang-hi="मुख्य कुंडली, अंश व ग्रह बल" data-lang-en="Main chart, degrees & planet power">मुख्य कुंडली, अंश व ग्रह बल</div>
+                                </div>
+                            </button>
+                            <button type="button" onclick="closeDownloadMenu(); downloadFullKundliPDF()" class="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-slate-700 hover:bg-indigo-50 hover:text-indigo-800 transition-colors border-t border-slate-100">
+                                <i data-lucide="file-text" class="w-4 h-4 text-indigo-600 shrink-0"></i>
+                                <div>
+                                    <div data-lang-hi="पूर्ण कुंडली डाउनलोड (PDF)" data-lang-en="Download Full Kundli (PDF)">पूर्ण कुंडली डाउनलोड (PDF)</div>
+                                    <div class="text-[10px] font-normal text-slate-400" data-lang-hi="षोडश वर्ग, षड्बल, विवरण, फलादेश व रिपोर्ट" data-lang-en="Vargas, Shadbala, Analysis & Reports">षोडश वर्ग, षड्बल, विवरण, फलादेश व रिपोर्ट</div>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </header>
@@ -490,7 +510,7 @@
             <button type="button" onclick="toggleWorkspaceSidebar(true)" id="btn-open-sidebar" class="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-white border border-slate-200 shadow-sm hover:bg-slate-100 text-slate-800 transition-colors" aria-label="Menu">
                 <i data-lucide="menu" class="w-5 h-5"></i>
             </button>
-            <span id="ws-active-section-pill" class="text-xs font-semibold px-3 py-1 rounded-full bg-slate-100 text-slate-700 border border-slate-200" data-lang-en="Lagna Chart (D1)" data-lang-hi="लग्न कुंडली (D1)">लग्न कुंडली (D1)</span>
+            <div class="flex items-center gap-2"><button type="button" id="btn-lock-astrologer" onclick="logoutAstrologerMode()" class="hidden text-xs text-amber-700 hover:text-amber-950 underline font-semibold" data-lang-en="Lock" data-lang-hi="लॉक करें">लॉक करें</button><button type="button" onclick="onSectionPillClick()" id="ws-active-section-pill" class="text-xs font-semibold px-3 py-1 rounded-full bg-slate-100 hover:bg-amber-50 text-slate-800 border border-slate-300 transition-colors cursor-pointer" title="D1 / D1+D9 / D1+चलित / D1+D9+चलित बदलें" data-lang-en="Lagna Chart (D1)" data-lang-hi="लग्न कुंडली (D1)">लग्न कुंडली (D1) ▾</button></div>
         </div>
 
         <!-- साइडबार ड्रॉअर (थ्री-लाइन्स मेनू) -->
@@ -516,7 +536,7 @@
                 </button>
                 <button type="button" onclick="switchWorkspacePanel('shadbala')" id="nav-ws-shadbala" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-100 border border-transparent transition-colors text-left">
                     <i data-lucide="bar-chart-3" class="w-4 h-4 text-emerald-600 shrink-0"></i>
-                    <span data-lang-en="Graha Bala" data-lang-hi="ग्रह बल">ग्रह बल</span>
+                    <span data-lang-en="Shadbala" data-lang-hi="षड्बल">षड्बल</span>
                 </button>
                 <button type="button" onclick="switchWorkspacePanel('varga')" id="nav-ws-varga" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-100 border border-transparent transition-colors text-left">
                     <i data-lucide="layers" class="w-4 h-4 text-purple-600 shrink-0"></i>
@@ -525,6 +545,14 @@
                 <button type="button" onclick="switchWorkspacePanel('person')" id="nav-ws-person" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-100 border border-transparent transition-colors text-left">
                     <i data-lucide="user-check" class="w-4 h-4 text-sky-600 shrink-0"></i>
                     <span data-lang-en="Person Details" data-lang-hi="व्यक्ति विवरण">व्यक्ति विवरण</span>
+                </button>
+                <button type="button" onclick="switchWorkspacePanel('analysis')" id="nav-ws-analysis" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-100 border border-transparent transition-colors text-left">
+                    <i data-lucide="scan-search" class="w-4 h-4 text-fuchsia-600 shrink-0"></i>
+                    <span data-lang-en="Analysis" data-lang-hi="कुंडली विवरण">कुंडली विवरण</span>
+                </button>
+                <button type="button" onclick="switchWorkspacePanel('faladesh')" id="nav-ws-faladesh" class="w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-100 border border-transparent transition-colors text-left">
+                    <i data-lucide="scroll-text" class="w-4 h-4 text-amber-600 shrink-0"></i>
+                    <span data-lang-en="Faladesh & Remedies" data-lang-hi="फलादेश">फलादेश</span>
                 </button>
                 <!-- विशेष कुंडलियां (Advanced Charts) सब-मेनू -->
                 <div>
@@ -540,6 +568,7 @@
                         <button type="button" onclick="openAdvancedChartMode('chalit')" class="w-full text-left px-3 py-2 rounded-lg text-xs font-semibold text-slate-600 hover:bg-rose-50 hover:text-rose-800" data-lang-en="Chalit Kundli" data-lang-hi="चलित कुंडली">चलित कुंडली</button>
                         <button type="button" onclick="openAdvancedChartMode('gochar')" class="w-full text-left px-3 py-2 rounded-lg text-xs font-semibold text-slate-600 hover:bg-rose-50 hover:text-rose-800" data-lang-en="Gochar (Transit)" data-lang-hi="गोचर">गोचर</button>
                         <button type="button" onclick="openAdvancedChartMode('ashtak')" class="w-full text-left px-3 py-2 rounded-lg text-xs font-semibold text-slate-600 hover:bg-rose-50 hover:text-rose-800" data-lang-en="Ashtakavarga" data-lang-hi="अष्टक वर्ग">अष्टक वर्ग</button>
+                        <button type="button" onclick="openAdvancedChartMode('upagraha')" class="w-full text-left px-3 py-2 rounded-lg text-xs font-semibold text-slate-600 hover:bg-rose-50 hover:text-rose-800" data-lang-en="Upagraha Chart" data-lang-hi="उपग्रह चक्र">उपग्रह चक्र</button>
                     </div>
                 </div>
 
@@ -567,19 +596,10 @@
         <main class="flex-1 flex flex-col items-center p-3 sm:p-5 max-w-5xl mx-auto w-full">
             <!-- पैनल 1: लग्न कुंडली -->
             <div id="ws-panel-chart" class="w-full flex flex-col items-center">
-            <div id="ws-mode-banner" class="w-full max-w-[540px] mb-3 px-3.5 py-2 rounded-xl bg-emerald-50 border border-emerald-200/80 text-emerald-900 text-xs flex items-center justify-between gap-2">
-                <div class="flex items-center gap-2">
-                    <i data-lucide="check-circle" class="w-4 h-4 text-emerald-600 shrink-0"></i>
-                    <span id="ws-banner-text"><strong>वैदिक कुंडली तैयार:</strong> जन्म विवरण से स्वतः गणना की गई है।</span>
-                </div>
-                <div class="flex items-center gap-2 shrink-0">
-                    <button type="button" id="btn-lock-astrologer" onclick="logoutAstrologerMode()" class="hidden text-amber-700 hover:text-amber-950 underline font-semibold" data-lang-en="Lock" data-lang-hi="लॉक करें">लॉक करें</button>
-                    <button type="button" onclick="showView('new-chart')" class="text-emerald-700 hover:text-emerald-950 underline font-medium" data-lang-en="New" data-lang-hi="नई">नई</button>
-                </div>
-            </div>
 
-            <!-- उत्तर भारतीय डायमंड चार्ट SVG -->
-            <div class="w-full max-w-[540px] aspect-square bg-white rounded-2xl shadow-md border-2 border-slate-800 p-1.5 sm:p-2 relative">
+            <div id="d1-charts-flex-wrap" class="w-full flex flex-wrap items-start justify-center gap-4 mt-1">
+            <!-- उत्तर भारतीय डायमंड चार्ट SVG (D1) -->
+            <div class="w-full max-w-[480px] aspect-square bg-white rounded-2xl shadow-md border-2 border-slate-800 p-1.5 sm:p-2 relative">
                 <svg id="kundli-svg" viewBox="0 0 600 600" class="w-full h-full select-none">
                     <rect x="0" y="0" width="600" height="600" fill="#ffffff" />
 
@@ -619,11 +639,29 @@
                 </svg>
             </div>
 
+            <!-- द्वितीय तुलना चार्ट (D9 या चलित) -->
+            <div id="d1-secondary-chart-box" class="hidden w-full max-w-[480px] aspect-square bg-white rounded-2xl shadow-md border-2 border-indigo-800 p-1.5 sm:p-2 relative flex-col">
+                <div id="d1-secondary-title" class="text-center text-xs font-bold text-indigo-900 py-0.5">—</div>
+                <svg id="kundli-secondary-svg" viewBox="0 0 600 600" class="w-full h-full select-none"></svg>
+            </div>
+            <!-- तृतीय तुलना चार्ट (चलित जब D1+D9+चलित सक्रिय हो) -->
+            <div id="d1-tertiary-chart-box" class="hidden w-full max-w-[480px] aspect-square bg-white rounded-2xl shadow-md border-2 border-teal-800 p-1.5 sm:p-2 relative flex-col">
+                <div id="d1-tertiary-title" class="text-center text-xs font-bold text-teal-900 py-0.5">—</div>
+                <svg id="kundli-tertiary-svg" viewBox="0 0 600 600" class="w-full h-full select-none"></svg>
+            </div>
+            </div> <!-- /d1-charts-flex-wrap -->
+
             <!-- लग्न कुंडली के नीचे ग्रहों की डिग्रियां -->
             <div class="w-full max-w-[540px] mt-4 bg-white rounded-2xl border border-slate-200 shadow-sm p-3.5 sm:p-4">
-                <div class="flex items-center justify-between mb-2.5">
-                    <h3 class="text-xs sm:text-sm font-bold text-slate-900" data-lang-en="Planetary Degrees (At Birth)" data-lang-hi="ग्रहों के अंश (जन्म के समय डिग्री)">ग्रहों के अंश (जन्म के समय डिग्री)</h3>
-                    <span id="d1-lagna-deg-badge" class="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200"></span>
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-2.5">
+                    <h3 class="text-xs sm:text-sm font-bold text-slate-900" data-lang-en="Graha Bala & Degrees" data-lang-hi="ग्रह बल व अंश">ग्रह बल व अंश</h3>
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                        <div class="inline-flex rounded-lg bg-slate-100 p-0.5 border border-slate-200 text-[10px] font-bold">
+                            <button type="button" onclick="setGrahaBalaMode('samanya')" id="gb-mode-samanya" class="px-2 py-1 rounded-md bg-white text-slate-900 shadow-xs" data-lang-en="General" data-lang-hi="सामान्य गणना">सामान्य गणना</button>
+                            <button type="button" onclick="setGrahaBalaMode('gahan')" id="gb-mode-gahan" class="px-2 py-1 rounded-md text-slate-600 hover:text-slate-900" data-lang-en="Deep Analysis" data-lang-hi="गहन गणना">गहन गणना</button>
+                        </div>
+                        <span id="d1-lagna-deg-badge" class="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200"></span>
+                    </div>
                 </div>
                 <div id="d1-degrees-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-xs"></div>
             </div>
@@ -725,6 +763,7 @@
                             <button type="button" onclick="setMahakundliMode('chalit')" id="mk-mode-chalit" class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600" data-lang-en="Chalit Kundli" data-lang-hi="चलित कुंडली">चलित कुंडली</button>
                             <button type="button" onclick="setMahakundliMode('gochar')" id="mk-mode-gochar" class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600" data-lang-en="Gochar (Transit)" data-lang-hi="गोचर">गोचर</button>
                             <button type="button" onclick="setMahakundliMode('ashtak')" id="mk-mode-ashtak" class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600" data-lang-en="Ashtakavarga" data-lang-hi="अष्टक वर्ग">अष्टक वर्ग</button>
+                            <button type="button" onclick="setMahakundliMode('upagraha')" id="mk-mode-upagraha" class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600" data-lang-en="Upagraha" data-lang-hi="उपग्रह चक्र">उपग्रह चक्र</button>
                         </div>
                     </div>
 
@@ -781,6 +820,32 @@
                         </div>
                         <div id="lifestyle-report-card" class="p-4 sm:p-5 rounded-2xl bg-slate-50 border border-slate-200 text-sm text-slate-800 leading-relaxed space-y-3"></div>
                     </div>
+                </div>
+            </div>
+
+            <!-- पैनल 8: कुंडली विवरण (Analysis — संपूर्ण योग, दोष व सटीक करियर गाइड) -->
+            <div id="ws-panel-analysis" class="hidden w-full max-w-4xl flex-col gap-4">
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-5">
+                    <div class="flex flex-wrap items-center justify-between gap-2 pb-3 mb-4 border-b border-slate-100">
+                        <div>
+                            <h2 class="text-base sm:text-lg font-bold text-slate-900" data-lang-en="Kundli Analysis (Yogas, Doshas & Career)" data-lang-hi="कुंडली विवरण (संपूर्ण योग, दोष व करियर गाइड)">कुंडली विवरण (संपूर्ण योग, दोष व करियर गाइड)</h2>
+                            <p class="text-xs text-slate-500" data-lang-en="All major classical Vedic Yogas, Doshas with cancellations, and high-precision Career fit" data-lang-hi="सभी प्रमुख शास्त्रीय योग, दोष (परिहार सहित) और उच्च सटीकता करियर विश्लेषण">सभी प्रमुख शास्त्रीय योग, दोष (परिहार सहित) और उच्च सटीकता करियर विश्लेषण</p>
+                        </div>
+                    </div>
+                    <div id="main-analysis-content" class="space-y-4"></div>
+                </div>
+            </div>
+
+            <!-- पैनल 9: फलादेश (साढ़ेसाती + रत्न और उपाय) -->
+            <div id="ws-panel-faladesh" class="hidden w-full max-w-4xl flex-col gap-4">
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-5">
+                    <div class="flex flex-wrap items-center justify-between gap-2 pb-3 mb-4 border-b border-slate-100">
+                        <div>
+                            <h2 class="text-base sm:text-lg font-bold text-slate-900" data-lang-en="Faladesh (Sade Sati, Gemstones & Remedies)" data-lang-hi="फलादेश (साढ़ेसाती, रत्न व उपाय)">फलादेश (साढ़ेसाती, रत्न व उपाय)</h2>
+                            <p class="text-xs text-slate-500" data-lang-en="Detailed Saturn Sade Sati / Dhaiya explanation alongside Gemstone & Mantra Remedies" data-lang-hi="साढ़ेसाती व ढैया का विस्तृत विवरण तथा रत्न व सरल वैदिक उपाय">साढ़ेसाती व ढैया का विस्तृत विवरण तथा रत्न व सरल वैदिक उपाय</p>
+                        </div>
+                    </div>
+                    <div id="main-faladesh-content" class="space-y-4"></div>
                 </div>
             </div>
         </main>
@@ -1006,6 +1071,11 @@
                     <h4 class="font-bold text-slate-900 mb-1" data-lang-en="3. Planet State Tags" data-lang-hi="3. ग्रह अवस्था चिह्न">3. ग्रह अवस्था चिह्न</h4>
                     <p data-lang-en="(C) or (अ) indicates Combust (near Sun); (R) or (व) indicates Retrograde motion." data-lang-hi="(अ) अस्त अवस्था और (व) वक्री गति को दर्शाता है। राहु व केतु सदैव वक्री रहते हैं।"><strong>(अ)</strong> अस्त अवस्था और <strong>(व)</strong> वक्री गति को दर्शाता है। राहु व केतु सदैव वक्री रहते हैं।</p>
                 </div>
+                <div class="p-3 rounded-xl bg-amber-50/70 border border-amber-200 space-y-1.5">
+                    <h4 class="font-bold text-amber-950" data-lang-en="4. Graha Bala: General vs Deep Analysis" data-lang-hi="4. ग्रह बल: सामान्य गणना बनाम गहन गणना">4. ग्रह बल: सामान्य गणना बनाम गहन गणना</h4>
+                    <p data-lang-en="General Calculation: Combines D1 (65%) + Chalit (35%) color grades, degree strength (6-24°), house placement, sign dignity, D9/Vargottama, D10 & Ashtakavarga." data-lang-hi="सामान्य गणना: D1 (65%) + चलित (35%) के रंग-ग्रेड, अंश बल (6°-24°), भाव स्थिति, उच्च-नीच मर्यादा, D9/वर्गोत्तम, D10 व अष्टकवर्ग के आधार पर 0-100% बल निकालती है।"><strong>सामान्य गणना:</strong> D1 (65%) + चलित (35%) के रंग-ग्रेड, अंश बल (6°–24°), भाव स्थिति, उच्च-नीच मर्यादा, D9/वर्गोत्तम, D10 व अष्टकवर्ग के आधार पर 0–100% बल निकालती है।</p>
+                    <p data-lang-en="Deep Analysis (7 Steps + 7 Laws): Sign Dignity (0-20), Karaka/Akaraka House (+15/+5/-5), Degree (10/15), Conjunction (15/10/5), Awastha (15/10/5), Retro/Combust (+10/-10/0), Shadbala Rank (20/15/10), plus 7 Laws (100% cap, Sun/Moon Eclipse ÷2 unless Own/Mool, Sun +10 on combustion, Rahu/Ketu exemptions, Jupiter+Rahu/Ketu -10/-5, Moon-Jupiter-Mars +10, Rahu/Ketu conjunction -10 except Sun/Moon/Venus)." data-lang-hi="गहन गणना (7 चरण + 7 लॉ): (1) राशि बल (उच्च/मूल 20, स्व 15, मित्र/सम 10, शत्रु 5, नीच 0), (2) कारक/अकारक भाव (+15/+5/-5), (3) अंश (6°-24°=15, अन्य=10), (4) युति (मित्र 15, अकेला/सम/मिश्रित 10, शत्रु 5), (5) अवस्था (जाग्रत 15, स्वप्न 10, सुषुप्त 5), (6) वक्री/अस्त (+10/-10/0), (7) षड्बल रैंक (1-3=20, 4-5=15, 6-7=10) — तथा 7 विशेष लॉ (100% कैप, सूर्य-चंद्र ग्रहण ÷2, अस्त करने पर सूर्य +10, राहु-केतु अपवाद, गुरु+राहु/केतु युति, अक्षीण चंद्र-गुरु-मंगल +10 व अन्य ग्रह राहु/केतु युति -10)।"><strong>गहन गणना (7 चरण + 7 लॉ):</strong> (1) राशि बल (उच्च/मूल 20, स्व 15, मित्र/सम 10, शत्रु 5, नीच 0), (2) कारक/अकारक भाव (+15/+5/-5), (3) अंश (6°–24°=15, अन्य=10), (4) युति (मित्र 15, अकेला/सम/मिश्रित 10, शत्रु 5), (5) अवस्था (जाग्रत 15, स्वप्न 10, सुषुप्त 5), (6) वक्री/अस्त (+10/-10/0), (7) षड्बल रैंक (1–3=20, 4–5=15, 6–7=10) — और 7 विशेष लॉ (100% कैप, सूर्य/चंद्र ग्रहण ÷2, अस्त करने पर सूर्य +10, राहु-केतु अपवाद, गुरु+राहु/केतु -10/-5, अक्षीण चंद्र-गुरु-मंगल +10, व राहु/केतु युति -10)।</p>
+                </div>
             </div>
             <div class="mt-5 pt-3 border-t border-slate-100 flex justify-end">
                 <button type="button" onclick="closeModals()" class="px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-semibold" data-lang-en="Close" data-lang-hi="बंद करें">बंद करें</button>
@@ -1112,6 +1182,7 @@
                 if (pInp && pInp.value) renderPanchangForDate(pInp.value);
             }
             if (!document.getElementById('view-workspace').classList.contains('hidden')) {
+                if (activeWsPanel === 'chart') renderFullChart();
                 switchWorkspacePanel(activeWsPanel, true);
             }
         }
@@ -1267,8 +1338,8 @@
 
         function updateAstrologerModeUI() {
             const homeBadge = document.getElementById('astrologer-mode-badge');
-            const banner = document.getElementById('ws-mode-banner');
-            const bannerText = document.getElementById('ws-banner-text');
+            const banner = null;
+            const bannerText = null;
             const lockBtn = document.getElementById('btn-lock-astrologer');
 
             if (isAstrologerUnlocked) {
@@ -2556,150 +2627,630 @@
         }
 
         // Pure Canvas 2D PNG Export (reliable across all browsers, no SVG foreignObject taint/font issues)
-        function downloadChartPNG() {
-            const canvas = document.createElement('canvas');
-            const W = 1200;
-            const H = 1320;
-            canvas.width = W;
-            canvas.height = H;
-            const ctx = canvas.getContext('2d');
+        function toggleDownloadMenu(e) {
+            if (e) e.stopPropagation();
+            const menu = document.getElementById('download-dropdown-menu');
+            if (menu) menu.classList.toggle('hidden');
+        }
+        function closeDownloadMenu() {
+            const menu = document.getElementById('download-dropdown-menu');
+            if (menu) menu.classList.add('hidden');
+        }
+        document.addEventListener('click', (e) => {
+            const wrap = document.getElementById('download-menu-wrap');
+            if (wrap && !wrap.contains(e.target)) closeDownloadMenu();
+        });
 
-            // Background
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(0, 0, W, H);
-
-            // Header Info
-            ctx.fillStyle = '#0f172a';
-            ctx.font = 'bold 34px "Noto Sans Devanagari", Inter, sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillText(currentChart.clientName || 'Vedic Chart', W / 2, 52);
-
-            const metaText = [currentChart.dob, currentChart.tob, currentChart.pob].filter(Boolean).join('  •  ');
-            ctx.fillStyle = '#64748b';
-            ctx.font = '600 20px Inter, "Noto Sans Devanagari", sans-serif';
-            ctx.fillText(metaText || 'Astro Bhrigu', W / 2, 86);
-
-            // Chart Box (1100x1100 centered at x=50, y=120)
-            const ox = 50, oy = 120, size = 1100;
+        function drawNorthIndianChartOnCanvas(ctx, ox, oy, size, rashisObj, planetsObj, title, showDeg = true) {
             const scale = size / 600;
-
             ctx.save();
             ctx.translate(ox, oy);
             ctx.scale(scale, scale);
 
-            // Draw outer border & inner lines
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(0, 0, 600, 600);
             ctx.strokeStyle = '#334155';
             ctx.lineWidth = 2;
-
-            const drawLine = (x1, y1, x2, y2) => {
-                ctx.beginPath();
-                ctx.moveTo(x1, y1);
-                ctx.lineTo(x2, y2);
-                ctx.stroke();
-            };
-
-            // Diagonals
+            const drawLine = (x1, y1, x2, y2) => { ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke(); };
             drawLine(0, 0, 600, 600);
             drawLine(600, 0, 0, 600);
-            // Diamond
             drawLine(300, 0, 0, 300);
             drawLine(0, 300, 300, 600);
             drawLine(300, 600, 600, 300);
             drawLine(600, 300, 300, 0);
-
-            // Outer thick border
             ctx.strokeStyle = '#1e293b';
             ctx.lineWidth = 3;
             ctx.strokeRect(1, 1, 598, 598);
 
-            // Rashi Numbers
             const rashiCoords = {
                 1: [300, 255], 2: [150, 118], 3: [115, 150], 4: [255, 300],
                 5: [115, 450], 6: [150, 482], 7: [300, 345], 8: [450, 482],
                 9: [485, 450], 10: [345, 300], 11: [485, 150], 12: [450, 118]
             };
             ctx.fillStyle = '#64748b';
-            ctx.font = 'bold 18px Inter, sans-serif';
+            ctx.font = 'bold 20px Inter, sans-serif';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             for (let h = 1; h <= 12; h++) {
-                const rVal = currentChart.rashis[h];
-                if (rVal) {
-                    const [rx, ry] = rashiCoords[h];
-                    ctx.fillText(String(rVal), rx, ry);
-                }
+                const [rx, ry] = rashiCoords[h];
+                ctx.fillText(String((rashisObj && rashisObj[h]) || h), rx, ry);
             }
 
-            // Planets in each house
-            const combustLabel = currentLang === 'hi' ? '(अ)' : '(C)';
-            const retroLabel = currentLang === 'hi' ? '(व)' : '(R)';
-
+            const pCenters = {
+                1: [300, 145], 2: [150, 56], 3: [55, 150], 4: [145, 300],
+                5: [55, 450], 6: [150, 544], 7: [300, 455], 8: [450, 544],
+                9: [545, 450], 10: [455, 300], 11: [545, 150], 12: [450, 56]
+            };
             for (let h = 1; h <= 12; h++) {
-                const pList = currentChart.planets[h] || [];
-                if (pList.length === 0) continue;
+                const plist = (planetsObj && planetsObj[h]) || [];
+                const [cx, cy] = pCenters[h];
+                const count = plist.length;
+                if (count === 0) continue;
+                const cols = count > 3 ? 2 : 1;
+                const rows = Math.ceil(count / cols);
+                const dy = count > 4 ? 26 : 30;
+                const startY = cy - ((rows - 1) * dy) / 2;
 
-                const box = HOUSE_PLANET_BOXES[h];
-                const cx = box.x + box.w / 2;
-                const cy = box.y + box.h / 2;
-                const cols = pList.length > 3 ? 2 : 1;
-                const rows = Math.ceil(pList.length / cols);
-                const lineH = 22;
-                const startY = cy - ((rows - 1) * lineH) / 2;
-
-                pList.forEach((pObj, idx) => {
-                    const pMeta = PLANETS.find(x => x.id === pObj.id);
-                    if (!pMeta) return;
-
-                    const row = Math.floor(idx / cols);
+                plist.forEach((p, idx) => {
                     const col = idx % cols;
-                    const px = cols === 1 ? cx : (col === 0 ? cx - box.w * 0.22 : cx + box.w * 0.22);
-                    const py = startY + row * lineH;
-
-                    const activeColorKey = pObj.manualColor || pObj.autoColor || 'blue';
-                    const hex = (COLOR_PALETTE[activeColorKey] || COLOR_PALETTE.blue).hex;
-                    const nameStr = currentLang === 'hi' ? pMeta.hindi : pMeta.en;
-
-                    const parts = [{ text: nameStr, color: hex, font: '800 16px "Noto Sans Devanagari", Inter, sans-serif' }];
-                    if (pObj.isCombust) {
-                        parts.push({ text: combustLabel, color: (CONDITION_COLORS[pObj.combustColor] || CONDITION_COLORS.red).hex, font: '800 11px "Noto Sans Devanagari", Inter, sans-serif' });
+                    const row = Math.floor(idx / cols);
+                    const px = cols === 2 ? (cx + (col === 0 ? -52 : 52)) : cx;
+                    const py = startY + row * dy;
+                    const pal = COLOR_PALETTE[p.color || 'gray'] || COLOR_PALETTE.gray;
+                    let text = getPlanetDisplayName(p.id);
+                    if (showDeg) {
+                        let tags = '';
+                        if (p.isCombust) tags += currentLang === 'hi' ? '(अ)' : '(C)';
+                        if (p.isRetrograde) tags += currentLang === 'hi' ? '(व)' : '(R)';
+                        text += tags;
                     }
-                    if (pObj.isRetrograde) {
-                        parts.push({ text: retroLabel, color: (CONDITION_COLORS[pObj.retroColor] || CONDITION_COLORS.pureYellow).hex, font: '800 11px "Noto Sans Devanagari", Inter, sans-serif' });
+                    ctx.font = `bold ${count > 4 ? 19 : 22}px "Noto Sans Devanagari", Inter, sans-serif`;
+                    ctx.fillStyle = pal.stroke;
+                    ctx.fillText(text, px, py);
+                });
+            }
+            ctx.restore();
+
+            if (title) {
+                ctx.fillStyle = '#1e293b';
+                ctx.font = `bold ${Math.max(14, Math.round(size * 0.042))}px "Noto Sans Devanagari", Inter, sans-serif`;
+                ctx.textAlign = 'center';
+                ctx.fillText(title, ox + size / 2, oy - 10);
+            }
+        }
+
+        function downloadChartPNG() {
+            const canvas = document.createElement('canvas');
+            const W = 1200;
+            const H = 1720;
+            canvas.width = W;
+            canvas.height = H;
+            const ctx = canvas.getContext('2d');
+            const hi = currentLang === 'hi';
+
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, W, H);
+
+            ctx.fillStyle = '#0f172a';
+            ctx.font = 'bold 34px "Noto Sans Devanagari", Inter, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(currentChart.clientName || (hi ? 'वैदिक लग्न कुंडली' : 'Vedic Lagna Chart'), W / 2, 52);
+
+            const metaText = [currentChart.dob, currentChart.tob, currentChart.pob].filter(Boolean).join('  •  ');
+            ctx.fillStyle = '#64748b';
+            ctx.font = '600 20px Inter, "Noto Sans Devanagari", sans-serif';
+            ctx.fillText(metaText || 'Astro Bhrigu', W / 2, 86);
+
+            drawNorthIndianChartOnCanvas(ctx, 110, 118, 980, currentChart.rashis, currentChart.planets, '', true);
+
+            const lons = getChartLongitudes();
+            const d1StateMap = {};
+            for (let h = 1; h <= 12; h++) ((currentChart.planets && currentChart.planets[h]) || []).forEach(p => { d1StateMap[p.id] = p; });
+            const { pHouse, pRashi, cMap, lagnaR } = evaluateD1YogasAndDoshas();
+            const deepPowers = computeDeepGrahaBalaPowers(lons, d1StateMap);
+            const avgPower = (Object.values(deepPowers).reduce((a, b) => a + b, 0) / 9).toFixed(1);
+            const chalitInfo = computeChalitHouseAndD1RashiMap();
+
+            const ty = 1135;
+            ctx.fillStyle = '#0f172a';
+            ctx.font = 'bold 22px "Noto Sans Devanagari", Inter, sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillText(
+                hi ? `ग्रह अंश, अवस्था व बल (लग्न कुल बल: ${avgPower}%)` : `Planet Degrees, State & Power (Lagna Total: ${avgPower}%)`,
+                60, ty
+            );
+
+            ctx.fillStyle = '#f1f5f9';
+            ctx.fillRect(60, ty + 16, 1080, 38);
+            ctx.fillStyle = '#334155';
+            ctx.font = 'bold 17px "Noto Sans Devanagari", Inter, sans-serif';
+            const colsX = [75, 220, 390, 560, 740, 910, 1030];
+            const hdrs = hi
+                ? ['ग्रह', 'भाव / राशि', 'अंश (Deg)', 'नक्षत्र (पद)', 'अवस्था', 'सामान्य बल', 'गहन बल']
+                : ['Planet', 'House / Sign', 'Degree', 'Nakshatra (Pada)', 'State', 'General %', 'Deep %'];
+            hdrs.forEach((h, i) => ctx.fillText(h, colsX[i], ty + 41));
+
+            const rNamesHi = ['मेष','वृषभ','मिथुन','कर्क','सिंह','कन्या','तुला','वृश्चिक','धनु','मकर','कुंभ','मीन'];
+            PLANETS.forEach((p, idx) => {
+                const ry = ty + 54 + idx * 48;
+                if (idx % 2 === 1) { ctx.fillStyle = '#f8fafc'; ctx.fillRect(60, ry, 1080, 48); }
+                const pid = p.id;
+                const lon = lons[pid] || 0;
+                const deg = ((lon % 30) + 30) % 30;
+                const rNum = pRashi[pid] || (Math.floor(lon / 30) + 1);
+                const hNum = pHouse[pid] || 1;
+                const st = d1StateMap[pid] || {};
+                const aw = getPlanetAwastha(pid, lon);
+                const nak = typeof getNakshatraFromLon === 'function' ? getNakshatraFromLon(lon) : { name: '-', pada: 1 };
+                const genScore = Math.round(getHolisticPlanetScore(pid, lons, pHouse, pRashi, lagnaR, cMap, chalitInfo));
+                const deepScore = deepPowers[pid] !== undefined ? deepPowers[pid] : genScore;
+                const pal = COLOR_PALETTE[cMap[pid] || st.color || 'gray'] || COLOR_PALETTE.gray;
+
+                ctx.font = 'bold 18px "Noto Sans Devanagari", Inter, sans-serif';
+                ctx.fillStyle = pal.stroke;
+                ctx.fillText(getPlanetDisplayName(pid) + (st.isRetrograde ? (hi ? ' (व)' : ' (R)') : '') + (st.isCombust ? (hi ? ' (अ)' : ' (C)') : ''), colsX[0], ry + 30);
+                ctx.fillStyle = '#1e293b';
+                ctx.font = '500 17px "Noto Sans Devanagari", Inter, sans-serif';
+                ctx.fillText(`H${hNum} • ${hi ? rNamesHi[rNum - 1] : RASHIS[rNum - 1].en}`, colsX[1], ry + 30);
+                ctx.fillText(`${deg.toFixed(2)}°`, colsX[2], ry + 30);
+                ctx.fillText(`${nak.name || '-'} (${nak.pada || 1})`, colsX[3], ry + 30);
+                ctx.fillText(hi ? aw.hi : aw.en, colsX[4], ry + 30);
+                ctx.fillText(`${genScore}%`, colsX[5], ry + 30);
+                ctx.font = 'bold 18px Inter, sans-serif';
+                ctx.fillStyle = deepScore >= 75 ? '#059669' : (deepScore >= 50 ? '#2563eb' : '#dc2626');
+                ctx.fillText(`${deepScore}%`, colsX[6], ry + 30);
+            });
+
+            ctx.fillStyle = '#94a3b8';
+            ctx.font = '500 15px Inter, "Noto Sans Devanagari", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('Generated by Astro Bhrigu • Vedic Astrology & Jyotish Samhita', W / 2, H - 24);
+
+            const link = document.createElement('a');
+            const cleanName = (currentChart.clientName || 'Kundli').replace(/[^a-zA-Z0-9ऀ-ॿ_-]/g, '_');
+            link.download = `${cleanName}_Kundli.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            if (typeof showToast === 'function') showToast(hi ? 'कुंडली PNG डाउनलोड हो गई है!' : 'Chart PNG downloaded!');
+        }
+
+        function buildPDFFromJPEGDataURLs(dataUrls, widthPt = 595.28, heightPt = 841.89) {
+            const encoder = new TextEncoder();
+            const chunks = [];
+            let byteLen = 0;
+            const pushBytes = (u8) => { chunks.push(u8); byteLen += u8.length; };
+            const pushStr = (s) => pushBytes(encoder.encode(s));
+
+            pushStr('%PDF-1.4\n');
+            pushBytes(new Uint8Array([0x25, 0xE2, 0xE3, 0xCF, 0xD3, 0x0A]));
+            const offsets = [0];
+            const pageCount = dataUrls.length;
+            const beginObj = (id) => { offsets[id] = byteLen; pushStr(`${id} 0 obj
+`); };
+            const endObj = () => { pushStr('\nendobj\n'); };
+
+            beginObj(1);
+            pushStr('<< /Type /Catalog /Pages 2 0 R >>');
+            endObj();
+
+            const kids = [];
+            for (let i = 0; i < pageCount; i++) kids.push(`${3 + i * 3} 0 R`);
+            beginObj(2);
+            pushStr(`<< /Type /Pages /Count ${pageCount} /Kids [ ${kids.join(' ')} ] >>`);
+            endObj();
+
+            for (let i = 0; i < pageCount; i++) {
+                const pageId = 3 + i * 3;
+                const contId = 4 + i * 3;
+                const imgId = 5 + i * 3;
+
+                const b64 = dataUrls[i].split(',')[1];
+                const binStr = atob(b64);
+                const imgBytes = new Uint8Array(binStr.length);
+                for (let k = 0; k < binStr.length; k++) imgBytes[k] = binStr.charCodeAt(k);
+
+                let imgW = 1240, imgH = 1754;
+                for (let p = 2; p < imgBytes.length - 9; p++) {
+                    if (imgBytes[p] === 0xFF && (imgBytes[p + 1] === 0xC0 || imgBytes[p + 1] === 0xC2)) {
+                        imgH = (imgBytes[p + 5] << 8) | imgBytes[p + 6];
+                        imgW = (imgBytes[p + 7] << 8) | imgBytes[p + 8];
+                        break;
                     }
+                }
 
-                    let totalW = 0;
-                    parts.forEach(pt => {
-                        ctx.font = pt.font;
-                        totalW += ctx.measureText(pt.text).width;
-                    });
+                beginObj(pageId);
+                pushStr(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${widthPt.toFixed(2)} ${heightPt.toFixed(2)}] /Resources << /XObject << /Im${i} ${imgId} 0 R >> >> /Contents ${contId} 0 R >>`);
+                endObj();
 
-                    let curX = px - totalW / 2;
-                    ctx.textAlign = 'left';
-                    ctx.textBaseline = 'middle';
-                    parts.forEach(pt => {
-                        ctx.font = pt.font;
-                        ctx.fillStyle = pt.color;
-                        ctx.fillText(pt.text, curX, py);
-                        curX += ctx.measureText(pt.text).width;
-                    });
+                const contentStream = `q
+${widthPt.toFixed(2)} 0 0 ${heightPt.toFixed(2)} 0 0 cm
+/Im${i} Do
+Q
+`;
+                beginObj(contId);
+                pushStr(`<< /Length ${contentStream.length} >>
+stream
+${contentStream}endstream`);
+                endObj();
+
+                beginObj(imgId);
+                pushStr(`<< /Type /XObject /Subtype /Image /Width ${imgW} /Height ${imgH} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${imgBytes.length} >>
+stream
+`);
+                pushBytes(imgBytes);
+                pushStr('\nendstream');
+                endObj();
+            }
+
+            const xrefPos = byteLen;
+            const totalObjs = 3 + pageCount * 3;
+            pushStr(`xref
+0 ${totalObjs}
+0000000000 65535 f 
+`);
+            for (let id = 1; id < totalObjs; id++) {
+                pushStr(String(offsets[id]).padStart(10, '0') + ' 00000 n \n');
+            }
+            pushStr(`trailer
+<< /Size ${totalObjs} /Root 1 0 R >>
+startxref
+${xrefPos}
+%%EOF`);
+            return new Blob(chunks, { type: 'application/pdf' });
+        }
+
+        function downloadFullKundliPDF() {
+            const hi = currentLang === 'hi';
+            const W = 1240, H = 1754;
+            const makePage = (title, pageNum, totalPages = 6) => {
+                const c = document.createElement('canvas');
+                c.width = W; c.height = H;
+                const ctx = c.getContext('2d');
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, W, H);
+                ctx.fillStyle = '#1e1b4b';
+                ctx.fillRect(0, 0, W, 92);
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 28px "Noto Sans Devanagari", Inter, sans-serif';
+                ctx.textAlign = 'left';
+                ctx.fillText(`Astro Bhrigu • ${currentChart.clientName || (hi ? 'पूर्ण कुंडली रिपोर्ट' : 'Full Kundli Report')}`, 48, 42);
+                ctx.fillStyle = '#c7d2fe';
+                ctx.font = '500 17px "Noto Sans Devanagari", Inter, sans-serif';
+                const meta = [currentChart.dob, currentChart.tob, currentChart.pob].filter(Boolean).join('  |  ');
+                ctx.fillText(meta + (title ? `   —   ${title}` : ''), 48, 72);
+                ctx.fillStyle = '#94a3b8';
+                ctx.font = '500 15px "Noto Sans Devanagari", Inter, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(`${hi ? 'पृष्ठ' : 'Page'} ${pageNum} / ${totalPages}  •  Astro Bhrigu`, W / 2, H - 28);
+                return { c, ctx };
+            };
+
+            const wrapTextLines = (ctx, text, maxW) => {
+                const words = String(text || '').split(/\s+/);
+                const lines = [];
+                let cur = '';
+                words.forEach(w => {
+                    const test = cur ? cur + ' ' + w : w;
+                    if (ctx.measureText(test).width > maxW && cur) { lines.push(cur); cur = w; }
+                    else cur = test;
+                });
+                if (cur) lines.push(cur);
+                return lines;
+            };
+
+            const drawSectionTitle = (ctx, text, x, y, color = '#1e1b4b') => {
+                ctx.fillStyle = color;
+                ctx.font = 'bold 22px "Noto Sans Devanagari", Inter, sans-serif';
+                ctx.textAlign = 'left';
+                ctx.fillText(text, x, y);
+                ctx.strokeStyle = '#cbd5e1';
+                ctx.lineWidth = 1.5;
+                ctx.beginPath(); ctx.moveTo(x, y + 10); ctx.lineTo(W - 48, y + 10); ctx.stroke();
+            };
+
+            try { renderShadbalaView(); } catch(e) {}
+            try { renderMainAnalysisPanel(); } catch(e) {}
+            try { renderMainFaladeshPanel(); } catch(e) {}
+            try { renderNakshatraReportView(); } catch(e) {}
+            try { renderLifestyleReport(); } catch(e) {}
+
+            const lons = getChartLongitudes();
+            const { pHouse, pRashi, cMap, lagnaR, hLords, yogas, doshas } = evaluateD1YogasAndDoshas();
+            const d1StateMap = {};
+            for (let h = 1; h <= 12; h++) ((currentChart.planets && currentChart.planets[h]) || []).forEach(p => { d1StateMap[p.id] = p; });
+            const deepPowers = computeDeepGrahaBalaPowers(lons, d1StateMap);
+            const avgPower = (Object.values(deepPowers).reduce((a, b) => a + b, 0) / 9).toFixed(1);
+            const chalitInfo = computeChalitHouseAndD1RashiMap();
+            const rNamesHi = ['मेष','वृषभ','मिथुन','कर्क','सिंह','कन्या','तुला','वृश्चिक','धनु','मकर','कुंभ','मीन'];
+            const pNameHi = { Sun:'सूर्य', Moon:'चंद्र', Mars:'मंगल', Mercury:'बुध', Jupiter:'गुरु', Venus:'शुक्र', Saturn:'शनि', Rahu:'राहु', Ketu:'केतु' };
+
+            const p1 = makePage(hi ? 'मुख्य लग्न कुंडली व ग्रह बल' : 'Main Lagna Chart & Planet Power', 1);
+            drawNorthIndianChartOnCanvas(p1.ctx, 50, 145, 720, currentChart.rashis, currentChart.planets, hi ? 'लग्न कुंडली (D1)' : 'Lagna Chart (D1)', true);
+
+            p1.ctx.fillStyle = '#f8fafc';
+            p1.ctx.fillRect(800, 145, 390, 720);
+            p1.ctx.strokeStyle = '#e2e8f0';
+            p1.ctx.strokeRect(800, 145, 390, 720);
+            p1.ctx.fillStyle = '#1e1b4b';
+            p1.ctx.font = 'bold 21px "Noto Sans Devanagari", Inter, sans-serif';
+            p1.ctx.textAlign = 'left';
+            p1.ctx.fillText(hi ? 'मुख्य कुंडली सारांश' : 'Chart Summary', 822, 185);
+            const ascDeg = ((lons.Asc || 0) % 30).toFixed(2);
+            const moonNak = typeof getNakshatraFromLon === 'function' ? getNakshatraFromLon(lons.Moon || 0) : { name: '-', pada: 1 };
+            const tithiIdx = Math.floor((((lons.Moon || 0) - (lons.Sun || 0) + 360) % 360) / 12);
+            const summaryLines = [
+                `${hi ? 'लग्न' : 'Ascendant'}: ${hi ? rNamesHi[lagnaR - 1] : RASHIS[lagnaR - 1].en} (${ascDeg}°)`,
+                `${hi ? 'लग्नेश' : 'Lagnesh'}: ${hi ? (pNameHi[hLords[1]] || hLords[1]) : hLords[1]}`,
+                `${hi ? 'चंद्र राशि' : 'Moon Sign'}: ${hi ? rNamesHi[(pRashi.Moon || 1) - 1] : RASHIS[(pRashi.Moon || 1) - 1].en}`,
+                `${hi ? 'जन्म नक्षत्र' : 'Birth Nakshatra'}: ${moonNak.name || '-'} (${hi ? 'पद' : 'Pada'} ${moonNak.pada || 1})`,
+                `${hi ? 'तिथि सूचकांक' : 'Tithi Index'}: ${tithiIdx + 1}/30 (${tithiIdx < 15 ? (hi ? 'शुक्ल पक्ष' : 'Shukla') : (hi ? 'कृष्ण पक्ष' : 'Krishna')})`,
+                `${hi ? 'लग्न कुल बल (गहन)' : 'Lagna Total Power'}: ${avgPower}%`
+            ];
+            p1.ctx.font = '600 18px "Noto Sans Devanagari", Inter, sans-serif';
+            p1.ctx.fillStyle = '#334155';
+            summaryLines.forEach((ln, idx) => p1.ctx.fillText(ln, 822, 232 + idx * 42));
+
+            drawSectionTitle(p1.ctx, hi ? 'ग्रह स्थिति, अंश व बल (सामान्य व गहन गणना)' : 'Planetary Positions, Degrees & Strength', 50, 915);
+            p1.ctx.fillStyle = '#f1f5f9';
+            p1.ctx.fillRect(50, 940, 1140, 40);
+            const p1Cols = [65, 225, 420, 560, 760, 920, 1060];
+            const p1Hdr = hi ? ['ग्रह', 'भाव / राशि', 'अंश', 'नक्षत्र (पद)', 'अवस्था', 'सामान्य %', 'गहन %'] : ['Planet', 'House / Sign', 'Degree', 'Nakshatra', 'State', 'General', 'Deep'];
+            p1.ctx.fillStyle = '#334155';
+            p1.ctx.font = 'bold 17px "Noto Sans Devanagari", Inter, sans-serif';
+            p1Hdr.forEach((h, i) => p1.ctx.fillText(h, p1Cols[i], 966));
+            PLANETS.forEach((p, idx) => {
+                const ry = 982 + idx * 54;
+                if (idx % 2 === 1) { p1.ctx.fillStyle = '#f8fafc'; p1.ctx.fillRect(50, ry, 1140, 54); }
+                const pid = p.id, lon = lons[pid] || 0, deg = ((lon % 30) + 30) % 30;
+                const rNum = pRashi[pid] || (Math.floor(lon / 30) + 1), hNum = pHouse[pid] || 1;
+                const st = d1StateMap[pid] || {}, aw = getPlanetAwastha(pid, lon);
+                const nak = typeof getNakshatraFromLon === 'function' ? getNakshatraFromLon(lon) : { name: '-', pada: 1 };
+                const gen = Math.round(getHolisticPlanetScore(pid, lons, pHouse, pRashi, lagnaR, cMap, chalitInfo));
+                const dpVal = deepPowers[pid] !== undefined ? deepPowers[pid] : gen;
+                const pal = COLOR_PALETTE[cMap[pid] || st.color || 'gray'] || COLOR_PALETTE.gray;
+                p1.ctx.font = 'bold 18px "Noto Sans Devanagari", Inter, sans-serif';
+                p1.ctx.fillStyle = pal.stroke;
+                p1.ctx.fillText(getPlanetDisplayName(pid) + (st.isRetrograde ? (hi ? ' (व)' : ' (R)') : '') + (st.isCombust ? (hi ? ' (अ)' : ' (C)') : ''), p1Cols[0], ry + 34);
+                p1.ctx.fillStyle = '#1e293b';
+                p1.ctx.font = '500 17px "Noto Sans Devanagari", Inter, sans-serif';
+                p1.ctx.fillText(`H${hNum} • ${hi ? rNamesHi[rNum - 1] : RASHIS[rNum - 1].en}`, p1Cols[1], ry + 34);
+                p1.ctx.fillText(`${deg.toFixed(2)}°`, p1Cols[2], ry + 34);
+                p1.ctx.fillText(`${nak.name || '-'} (${nak.pada || 1})`, p1Cols[3], ry + 34);
+                p1.ctx.fillText(hi ? aw.hi : aw.en, p1Cols[4], ry + 34);
+                p1.ctx.fillText(`${gen}%`, p1Cols[5], ry + 34);
+                p1.ctx.font = 'bold 18px Inter, sans-serif';
+                p1.ctx.fillStyle = dpVal >= 75 ? '#059669' : (dpVal >= 50 ? '#2563eb' : '#dc2626');
+                p1.ctx.fillText(`${dpVal}%`, p1Cols[6], ry + 34);
+            });
+
+            const p2 = makePage(hi ? 'चलित व संपूर्ण षोडश वर्ग कुंडलियां' : 'Chalit & All 16 Shodashvarga Charts', 2);
+            const chalitObj = buildChalitChartObj();
+            const buildVargaChartObj = (div) => {
+                const vLagnaR = computeVargaRashi(lons.Asc || 0, div);
+                const rObj = {}, pObj = {};
+                for (let h = 1; h <= 12; h++) { rObj[h] = ((vLagnaR - 1 + (h - 1)) % 12) + 1; pObj[h] = []; }
+                PLANETS.forEach(p => {
+                    const pr = computeVargaRashi(lons[p.id] || 0, div);
+                    const ph = ((pr - vLagnaR + 12) % 12) + 1;
+                    const st = d1StateMap[p.id] || {};
+                    pObj[ph].push({ id: p.id, color: cMap[p.id] || st.color || 'gray', isRetrograde: st.isRetrograde, isCombust: st.isCombust });
+                });
+                return { rashis: rObj, planets: pObj };
+            };
+            const vargaList = [
+                { title: hi ? 'चलित कुंडली' : 'Chalit Chart', obj: chalitObj },
+                { title: 'D2 (होरा)', obj: buildVargaChartObj(2) },
+                { title: 'D3 (द्रेष्काण)', obj: buildVargaChartObj(3) },
+                { title: 'D4 (चतुर्थांश)', obj: buildVargaChartObj(4) },
+                { title: 'D7 (सप्तांश)', obj: buildVargaChartObj(7) },
+                { title: 'D9 (नवांश)', obj: buildVargaChartObj(9) },
+                { title: 'D10 (दशमांश)', obj: buildVargaChartObj(10) },
+                { title: 'D12 (द्वादशांश)', obj: buildVargaChartObj(12) },
+                { title: 'D16 (षोडशांश)', obj: buildVargaChartObj(16) },
+                { title: 'D20 (विंशांश)', obj: buildVargaChartObj(20) },
+                { title: 'D24 (चतुर्विंशांश)', obj: buildVargaChartObj(24) },
+                { title: 'D27 (भाम्श)', obj: buildVargaChartObj(27) },
+                { title: 'D30 (त्रिंशांश)', obj: buildVargaChartObj(30) },
+                { title: 'D40 (खवेदांश)', obj: buildVargaChartObj(40) },
+                { title: 'D45 (अक्षवेदांश)', obj: buildVargaChartObj(45) },
+                { title: 'D60 (षष्ट्यांश)', obj: buildVargaChartObj(60) }
+            ];
+            vargaList.forEach((v, idx) => {
+                const col = idx % 4, row = Math.floor(idx / 4);
+                const bx = 56 + col * 290, by = 148 + row * 388;
+                drawNorthIndianChartOnCanvas(p2.ctx, bx, by, 260, v.obj.rashis, v.obj.planets, v.title, false);
+            });
+
+            const p3 = makePage(hi ? 'षड्बल व भाव बल' : 'Shadbala & Bhava Bala', 3);
+            drawSectionTitle(p3.ctx, hi ? 'षड्बल गणना (7 ग्रह रैंक व बल)' : 'Shadbala Calculation (7 Planets)', 50, 140);
+            const shadData = computeShadbalaDetailed(lons);
+            p3.ctx.fillStyle = '#f1f5f9'; p3.ctx.fillRect(50, 165, 1140, 40);
+            const sCols = [65, 145, 290, 390, 490, 590, 700, 820, 930, 1085];
+            const sHdr = hi ? ['रैंक', 'ग्रह', 'स्थान', 'दिग्', 'काल', 'चेष्टा', 'नैसर्गिक', 'दृग्', 'कुल रूप', 'स्थिति'] : ['Rank', 'Planet', 'Sthana', 'Dig', 'Kala', 'Chesta', 'Nais.', 'Drik', 'Rupas', 'Status'];
+            p3.ctx.fillStyle = '#334155'; p3.ctx.font = 'bold 16px "Noto Sans Devanagari", Inter, sans-serif';
+            sHdr.forEach((h, i) => p3.ctx.fillText(h, sCols[i], 191));
+            shadData.rows.forEach((r, idx) => {
+                const ry = 207 + idx * 54;
+                if (idx % 2 === 1) { p3.ctx.fillStyle = '#f8fafc'; p3.ctx.fillRect(50, ry, 1140, 54); }
+                p3.ctx.fillStyle = idx === 0 ? '#4f46e5' : '#1e293b';
+                p3.ctx.font = 'bold 17px "Noto Sans Devanagari", Inter, sans-serif';
+                p3.ctx.fillText(`#${idx + 1}`, sCols[0], ry + 34);
+                p3.ctx.fillText(getPlanetDisplayName(r.pid), sCols[1], ry + 34);
+                p3.ctx.font = '500 17px Inter, sans-serif'; p3.ctx.fillStyle = '#334155';
+                p3.ctx.fillText(r.sthana.toFixed(0), sCols[2], ry + 34);
+                p3.ctx.fillText(r.dig.toFixed(0), sCols[3], ry + 34);
+                p3.ctx.fillText(r.kala.toFixed(0), sCols[4], ry + 34);
+                p3.ctx.fillText(r.chesta.toFixed(0), sCols[5], ry + 34);
+                p3.ctx.fillText(r.naisargika.toFixed(1), sCols[6], ry + 34);
+                p3.ctx.fillText(r.drik.toFixed(0), sCols[7], ry + 34);
+                p3.ctx.font = 'bold 17px Inter, sans-serif'; p3.ctx.fillStyle = '#3730a3';
+                p3.ctx.fillText(`${r.totalRupas.toFixed(2)}`, sCols[8], ry + 34);
+                p3.ctx.fillStyle = r.strong ? '#059669' : '#d97706';
+                p3.ctx.font = 'bold 16px "Noto Sans Devanagari", Inter, sans-serif';
+                p3.ctx.fillText(r.strong ? (hi ? 'बलवान' : 'Strong') : (hi ? 'मध्यम' : 'Weak'), sCols[9], ry + 34);
+            });
+
+            drawSectionTitle(p3.ctx, hi ? 'भाव बल (12 भावों की शक्ति रैंक)' : 'Bhava Bala (12 Houses Rank)', 50, 640);
+            const bContainer = document.getElementById('bhavabala-content');
+            const bRows = bContainer ? Array.from(bContainer.querySelectorAll('tbody tr')).map(tr => Array.from(tr.querySelectorAll('td')).map(td => td.innerText.trim())) : [];
+            p3.ctx.fillStyle = '#f1f5f9'; p3.ctx.fillRect(50, 665, 1140, 40);
+            const bCols = [70, 220, 480, 740, 960];
+            const bHdr = hi ? ['रैंक', 'भाव (राशि)', 'भावाधिपति', 'कुल बल (रूप)', 'विरूप'] : ['Rank', 'House (Sign)', 'Lord', 'Rupas', 'Virupas'];
+            p3.ctx.fillStyle = '#334155'; p3.ctx.font = 'bold 17px "Noto Sans Devanagari", Inter, sans-serif';
+            bHdr.forEach((h, i) => p3.ctx.fillText(h, bCols[i], 691));
+            bRows.slice(0, 12).forEach((cells, idx) => {
+                const ry = 707 + idx * 52;
+                if (idx % 2 === 1) { p3.ctx.fillStyle = '#f8fafc'; p3.ctx.fillRect(50, ry, 1140, 52); }
+                p3.ctx.fillStyle = idx === 0 ? '#059669' : '#1e293b';
+                p3.ctx.font = '600 17px "Noto Sans Devanagari", Inter, sans-serif';
+                cells.slice(0, 5).forEach((val, ci) => p3.ctx.fillText(val, bCols[ci], ry + 32));
+            });
+
+            const p4 = makePage(hi ? 'कुंडली विवरण व करियर उपयुक्तता' : 'Kundli Analysis & Career Graph', 4);
+            let y4 = 140;
+            drawSectionTitle(p4.ctx, hi ? `प्रमुख शुभ योग (${yogas.length}) व दोष (${doshas.length})` : `Major Yogas (${yogas.length}) & Doshas (${doshas.length})`, 50, y4);
+            y4 += 36;
+            p4.ctx.font = '500 16px "Noto Sans Devanagari", Inter, sans-serif';
+            const allYD = [
+                ...yogas.slice(0, 8).map(t => ({ txt: '✓ ' + t, col: '#065f46' })),
+                ...doshas.slice(0, 6).map(t => ({ txt: '⚠ ' + t, col: '#991b1b' }))
+            ];
+            allYD.forEach(item => {
+                p4.ctx.fillStyle = item.col;
+                wrapTextLines(p4.ctx, item.txt, 1120).slice(0, 2).forEach(ln => { p4.ctx.fillText(ln, 56, y4); y4 += 25; });
+            });
+
+            y4 += 18;
+            drawSectionTitle(p4.ctx, hi ? 'नौकरी बनाम बिजनेस व करियर क्षेत्र ग्राफ' : 'Job vs Business & Career Suitability', 50, y4);
+            y4 += 38;
+            const analysisEl = document.getElementById('main-analysis-content');
+            if (analysisEl) {
+                const careerBars = Array.from(analysisEl.querySelectorAll('.flex.justify-between.font-bold.mb-1'));
+                careerBars.forEach(bar => {
+                    if (y4 > 1640) return;
+                    const spans = bar.querySelectorAll('span');
+                    if (spans.length < 2) return;
+                    const label = spans[0].innerText.trim();
+                    const pctStr = spans[1].innerText.trim();
+                    const pct = parseFloat(pctStr) || 50;
+                    const noteEl = bar.parentElement && bar.parentElement.querySelector('.text-\[11px\]');
+                    const note = noteEl ? noteEl.innerText.trim() : '';
+
+                    p4.ctx.fillStyle = '#0f172a';
+                    p4.ctx.font = 'bold 17px "Noto Sans Devanagari", Inter, sans-serif';
+                    p4.ctx.textAlign = 'left';
+                    p4.ctx.fillText(label, 56, y4);
+                    p4.ctx.textAlign = 'right';
+                    p4.ctx.fillStyle = '#4338ca';
+                    p4.ctx.fillText(pctStr, W - 56, y4);
+                    p4.ctx.textAlign = 'left';
+                    y4 += 10;
+                    p4.ctx.fillStyle = '#e2e8f0';
+                    p4.ctx.fillRect(56, y4, 1128, 16);
+                    p4.ctx.fillStyle = label.includes('#1') ? '#059669' : '#6366f1';
+                    p4.ctx.fillRect(56, y4, Math.min(1128, (pct / 100) * 1128), 16);
+                    y4 += 32;
+                    if (note) {
+                        p4.ctx.fillStyle = '#475569';
+                        p4.ctx.font = '500 14px "Noto Sans Devanagari", Inter, sans-serif';
+                        wrapTextLines(p4.ctx, note, 1120).slice(0, 2).forEach(ln => { p4.ctx.fillText(ln, 56, y4); y4 += 20; });
+                    }
+                    y4 += 14;
                 });
             }
 
-            ctx.restore();
+            const p5 = makePage(hi ? 'फलादेश (रत्न, मंत्र, दान) व उपग्रह चक्र' : 'Faladesh & Upagraha Chakra', 5);
+            let y5 = 140;
+            drawSectionTitle(p5.ctx, hi ? 'फलादेश — साढ़ेसाती, रत्न, बीज मंत्र व दान' : 'Faladesh — Sade Sati, Gemstones, Mantras & Charities', 50, y5);
+            y5 += 38;
+            const falEl = document.getElementById('main-faladesh-content');
+            if (falEl) {
+                const lines5 = falEl.innerText.split('\n').map(s => s.trim()).filter(Boolean);
+                lines5.slice(0, 26).forEach(ln => {
+                    if (y5 > 1060) return;
+                    p5.ctx.fillStyle = ln.includes('रत्न') || ln.includes('साढ़ेसाती') || ln.includes('मंत्र') || ln.includes('दान') ? '#1e1b4b' : '#334155';
+                    p5.ctx.font = (ln.length < 48 ? 'bold 17px' : '500 16px') + ' "Noto Sans Devanagari", Inter, sans-serif';
+                    wrapTextLines(p5.ctx, ln, 1120).forEach(wl => { if (y5 <= 1060) { p5.ctx.fillText(wl, 56, y5); y5 += 26; } });
+                });
+            }
 
-            // Footer watermark
-            ctx.fillStyle = '#94a3b8';
-            ctx.font = '500 16px Inter, sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillText('Generated by Astro Bhrigu', W / 2, H - 36);
+            y5 = Math.max(y5 + 24, 1100);
+            drawSectionTitle(p5.ctx, hi ? 'विशेष कुंडलियां — 11 उपग्रह चक्र' : 'Special Charts — 11 Upagrahas', 50, y5);
+            y5 += 36;
+            const sunLon = lons.Sun || 0;
+            const [by, bm, bd] = (currentChart.dob || '2000-01-01').split('-').map(Number);
+            const dow = new Date(by, bm - 1, bd).getDay();
+            const gulikaOffset = [26, 22, 18, 14, 10, 6, 2][dow] * 30 / 24;
+            const dhuma = (sunLon + 133.3333) % 360;
+            const vyat = (360 - dhuma) % 360;
+            const pari = (vyat + 180) % 360;
+            const indra = (360 - pari) % 360;
+            const upaketu = (indra + 16.6667) % 360;
+            const upas = [
+                { n: hi ? 'धूम' : 'Dhuma', l: dhuma },
+                { n: hi ? 'व्यतिपात' : 'Vyatipata', l: vyat },
+                { n: hi ? 'परिवेश' : 'Parivesha', l: pari },
+                { n: hi ? 'इंद्रचाप' : 'Indrachapa', l: indra },
+                { n: hi ? 'उपकेतु' : 'Upaketu', l: upaketu },
+                { n: hi ? 'गुलिक' : 'Gulika', l: (lons.Asc + gulikaOffset) % 360 },
+                { n: hi ? 'मांदी' : 'Mandi', l: (lons.Asc + gulikaOffset + 12) % 360 },
+                { n: hi ? 'काल' : 'Kala', l: (sunLon + 90) % 360 },
+                { n: hi ? 'मृत्यु' : 'Mrityu', l: (sunLon + 180) % 360 },
+                { n: hi ? 'अर्थप्रहर' : 'Arthaprahara', l: (sunLon + 270) % 360 },
+                { n: hi ? 'यमघंटक' : 'Yamaghantaka', l: (lons.Jupiter || sunLon) }
+            ];
+            upas.forEach((u, idx) => {
+                const col = idx % 3, row = Math.floor(idx / 3);
+                const ux = 56 + col * 380, uy = y5 + row * 48;
+                const rIdx = Math.floor(u.l / 30);
+                const hNum = ((rIdx + 1 - lagnaR + 12) % 12) + 1;
+                p5.ctx.fillStyle = '#f8fafc'; p5.ctx.fillRect(ux, uy, 360, 38);
+                p5.ctx.strokeStyle = '#e2e8f0'; p5.ctx.strokeRect(ux, uy, 360, 38);
+                p5.ctx.fillStyle = '#1e293b';
+                p5.ctx.font = 'bold 16px "Noto Sans Devanagari", Inter, sans-serif';
+                p5.ctx.fillText(`${u.n}: H${hNum} • ${hi ? rNamesHi[rIdx] : RASHIS[rIdx].en} (${(u.l % 30).toFixed(1)}°)`, ux + 14, uy + 25);
+            });
 
-            const a = document.createElement('a');
-            a.download = `${(currentChart.clientName || 'Kundli').replace(/\s+/g, '_')}_Chart.png`;
-            a.href = canvas.toDataURL('image/png');
-            a.click();
-            showToast(currentLang === 'hi' ? 'कुंडली PNG डाउनलोड हो गई है!' : 'Chart PNG downloaded!');
+            const p6 = makePage(hi ? 'संपूर्ण नक्षत्र रिपोर्ट व जीवनशैली रिपोर्ट' : 'Nakshatra & Lifestyle Reports', 6);
+            let y6 = 140;
+            drawSectionTitle(p6.ctx, hi ? 'संपूर्ण नक्षत्र रिपोर्ट' : 'Complete Nakshatra Report', 50, y6);
+            y6 += 36;
+            const nakEl = document.getElementById('nakshatra-report-content');
+            if (nakEl) {
+                const nakRows = Array.from(nakEl.querySelectorAll('tbody tr')).map(tr => Array.from(tr.querySelectorAll('td')).map(td => td.innerText.trim()));
+                nakRows.slice(0, 10).forEach((cells, idx) => {
+                    if (idx % 2 === 1) { p6.ctx.fillStyle = '#f8fafc'; p6.ctx.fillRect(50, y6 - 20, 1140, 34); }
+                    p6.ctx.fillStyle = '#1e293b';
+                    p6.ctx.font = '600 15px "Noto Sans Devanagari", Inter, sans-serif';
+                    p6.ctx.fillText(cells.slice(0, 5).join('   |   '), 60, y6);
+                    y6 += 34;
+                });
+            }
+
+            y6 += 28;
+            drawSectionTitle(p6.ctx, hi ? 'जीवनशैली व व्यक्तित्व रिपोर्ट' : 'Lifestyle & Personality Report', 50, y6);
+            y6 += 36;
+            const lifeEl = document.getElementById('lifestyle-report-content');
+            if (lifeEl) {
+                const lifeLines = lifeEl.innerText.split('\n').map(s => s.trim()).filter(Boolean);
+                lifeLines.slice(0, 30).forEach(ln => {
+                    if (y6 > 1680) return;
+                    p6.ctx.fillStyle = '#334155';
+                    p6.ctx.font = (ln.length < 45 ? 'bold 17px' : '500 15px') + ' "Noto Sans Devanagari", Inter, sans-serif';
+                    wrapTextLines(p6.ctx, ln, 1120).forEach(wl => { if (y6 <= 1680) { p6.ctx.fillText(wl, 56, y6); y6 += 24; } });
+                });
+            }
+
+            const pageDataUrls = [p1, p2, p3, p4, p5, p6].map(p => p.c.toDataURL('image/jpeg', 0.90));
+            const pdfBlob = buildPDFFromJPEGDataURLs(pageDataUrls);
+            const url = URL.createObjectURL(pdfBlob);
+            const link = document.createElement('a');
+            const cleanName = (currentChart.clientName || 'Kundli').replace(/[^a-zA-Z0-9ऀ-ॿ_-]/g, '_');
+            link.download = `${cleanName}_Full_Kundli.pdf`;
+            link.href = url;
+            link.click();
+            setTimeout(() => URL.revokeObjectURL(url), 5000);
+            if (typeof showToast === 'function') showToast(hi ? 'संपूर्ण कुंडली PDF डाउनलोड हो गई है!' : 'Full Kundli PDF downloaded!');
         }
 
         function showToast(msg) {
@@ -2752,7 +3303,7 @@
             activeWsPanel = panel;
             if (!skipSidebarClose) toggleWorkspaceSidebar(false);
 
-            ['chart', 'dasha', 'shadbala', 'varga', 'person', 'mahakundli', 'other'].forEach(p => {
+            ['chart', 'dasha', 'shadbala', 'varga', 'person', 'mahakundli', 'other', 'analysis', 'faladesh'].forEach(p => {
                 const el = document.getElementById(`ws-panel-${p}`);
                 if (el) {
                     el.classList.toggle('hidden', p !== panel);
@@ -2774,14 +3325,17 @@
             const titles = {
                 chart:    { hi: 'लग्न कुंडली (D1)', en: 'Lagna Chart (D1)' },
                 dasha:    { hi: 'महादशा (विंशोत्तरी • योगिनी • चर)', en: 'Mahadasha (Vimshottari • Yogini • Chara)' },
-                shadbala: { hi: 'ग्रह बल व भाव बल', en: 'Graha & Bhava Bala' },
+                shadbala: { hi: 'षड्बल व भाव बल', en: 'Shadbala & Bhava Bala' },
                 varga:      { hi: 'षोडश वर्ग (16 चार्ट)', en: 'Shodashvarga (16 Charts)' },
                 person:     { hi: 'व्यक्ति विवरण', en: 'Person Details' },
                 mahakundli: { hi: 'विशेष कुंडलियां', en: 'Advanced Charts' },
-                other:      { hi: 'अन्य • नक्षत्र रिपोर्ट', en: 'Other • Nakshatra Report' }
+                other:      { hi: 'अन्य • नक्षत्र रिपोर्ट', en: 'Other • Nakshatra Report' },
+                analysis:   { hi: 'कुंडली विवरण (Analysis)', en: 'Analysis' },
+                faladesh:   { hi: 'फलादेश (साढ़ेसाती व उपाय)', en: 'Faladesh & Remedies' }
             };
             if (pill && titles[panel]) {
-                pill.textContent = currentLang === 'hi' ? titles[panel].hi : titles[panel].en;
+                if (panel === 'chart') setD1CompareMode(d1CompareMode);
+                else pill.textContent = currentLang === 'hi' ? titles[panel].hi : titles[panel].en;
             }
 
             if (panel === 'dasha') initDashaView();
@@ -2790,6 +3344,8 @@
             if (panel === 'person') renderPersonDetailsView();
             if (panel === 'mahakundli') initMahakundliView();
             if (panel === 'other') initOtherView();
+            if (panel === 'analysis') renderMainAnalysisPanel();
+            if (panel === 'faladesh') renderMainFaladeshPanel();
         }
 
         // ==================== देशांतर (Longitudes) हेल्पर ====================
@@ -3126,184 +3682,8 @@
             const bhavaContainer = document.getElementById('bhavabala-content');
             if (!container) return;
 
-            const EXALT_DEG = { Sun: 10, Moon: 33, Mars: 298, Mercury: 165, Jupiter: 95, Venus: 357, Saturn: 200 };
-            const NAISARGIKA = { Sun: 60.0, Moon: 51.43, Venus: 42.86, Jupiter: 34.29, Mercury: 25.71, Mars: 17.14, Saturn: 8.57 };
-            const REQ_RUPAS = { Sun: 6.5, Moon: 6.0, Mars: 5.0, Mercury: 7.0, Jupiter: 6.5, Venus: 5.5, Saturn: 5.0 };
-            const MOOL_RASHI = { Sun: 5, Moon: 2, Mars: 1, Mercury: 6, Jupiter: 9, Venus: 7, Saturn: 11 };
-            const OWN_RASHIS = { Sun: [5], Moon: [4], Mars: [1, 8], Mercury: [3, 6], Jupiter: [9, 12], Venus: [2, 7], Saturn: [10, 11] };
-            const NAT_FRIENDS = {
-                Sun: ['Moon', 'Mars', 'Jupiter'], Moon: ['Sun', 'Mercury'], Mars: ['Sun', 'Moon', 'Jupiter'],
-                Mercury: ['Sun', 'Venus'], Jupiter: ['Sun', 'Moon', 'Mars'], Venus: ['Mercury', 'Saturn'], Saturn: ['Mercury', 'Venus']
-            };
-            const NAT_ENEMIES = {
-                Sun: ['Venus', 'Saturn'], Moon: [], Mars: ['Mercury'],
-                Mercury: ['Moon'], Jupiter: ['Mercury', 'Venus'], Venus: ['Sun', 'Moon'], Saturn: ['Sun', 'Moon', 'Mars']
-            };
-
-            const sunLon = lons.Sun || 0;
-            const moonLon = lons.Moon || 0;
-            const ascLon = lons.Asc || 0;
-            const lagnaRashi = Math.floor(ascLon / 30) + 1;
-
-            const birthDate = getChartStartDate();
-            const dayOfWeek = birthDate.getDay(); // 0=Sun..6=Sat
-            const [hh, mm] = (currentChart.tob || '12:00').split(':').map(Number);
-            const hourDec = (hh || 12) + (mm || 0) / 60;
-            const isDay = hourDec >= 6 && hourDec < 18;
-            const DAY_LORD_MAP = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn'];
-            const HORA_SEQ = ['Sun', 'Venus', 'Mercury', 'Moon', 'Saturn', 'Jupiter', 'Mars'];
-            const varaLord = DAY_LORD_MAP[dayOfWeek];
-            const hoursSinceSunrise = ((hourDec - 6) + 24) % 24;
-            const horaIdx = (HORA_SEQ.indexOf(varaLord) + Math.floor(hoursSinceSunrise)) % 7;
-            const horaLord = HORA_SEQ[horaIdx];
-
-            // Helper: Sapta Vargaja Bala (D1, D2, D3, D7, D9, D12, D30)
-            function getSaptavargaja(pid, pLon) {
-                const divs = [1, 2, 3, 7, 9, 12, 30];
-                const d1R = Math.floor(pLon / 30) + 1;
-                let total = 0;
-                divs.forEach((div, idx) => {
-                    const vr = computeVargaRashi(pLon, div);
-                    const lord = RASHIS.find(x => x.num === vr).lord;
-                    if (div === 1 && MOOL_RASHI[pid] === vr) {
-                        total += 45;
-                    } else if (OWN_RASHIS[pid].includes(vr)) {
-                        total += 30;
-                    } else if (lord === pid) {
-                        total += 30;
-                    } else {
-                        // Temporary friendship in D1
-                        const lordR = Math.floor((lons[lord] || 0) / 30) + 1;
-                        const dist = ((lordR - d1R + 12) % 12) + 1;
-                        const tempFriend = [2, 3, 4, 10, 11, 12].includes(dist);
-                        const isNatF = NAT_FRIENDS[pid].includes(lord);
-                        const isNatE = NAT_ENEMIES[pid].includes(lord);
-                        let relScore = 10; // Neutral
-                        if (isNatF && tempFriend) relScore = 22.5;
-                        else if ((isNatF && !tempFriend) || (!isNatF && !isNatE && tempFriend)) relScore = 15;
-                        else if (!isNatF && !isNatE && !tempFriend) relScore = 7.5;
-                        else if (isNatE && tempFriend) relScore = 10;
-                        else if (isNatE && !tempFriend) relScore = (idx === 0 ? 2 : 3.75);
-                        total += relScore;
-                    }
-                });
-                return total;
-            }
-
             const sevenIds = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn'];
-            const planetStrengthMap = {};
-
-            const rows = sevenIds.map(pid => {
-                const lon = lons[pid] || 0;
-                const rashiNum = Math.floor(lon / 30) + 1;
-                const degInSign = lon % 30;
-
-                // 1. Sthana Bala = Uchcha + Saptavargaja + Ojhayugma + Kendradi + Drekkana
-                const debDeg = (EXALT_DEG[pid] + 180) % 360;
-                let diffEx = Math.abs(lon - debDeg);
-                if (diffEx > 180) diffEx = 360 - diffEx;
-                const uchcha = (diffEx / 180) * 60;
-                const sapta = getSaptavargaja(pid, lon);
-                const isOddSign = rashiNum % 2 === 1;
-                const isFem = (pid === 'Moon' || pid === 'Venus');
-                const ojha = ((isFem && !isOddSign) || (!isFem && isOddSign)) ? 15 : 0;
-                const hFromAsc = ((rashiNum - lagnaRashi + 12) % 12) + 1;
-                const kendradi = [1, 4, 7, 10].includes(hFromAsc) ? 60 : ([2, 5, 8, 11].includes(hFromAsc) ? 30 : 15);
-                const drekPart = Math.floor(degInSign / 10); // 0, 1, 2
-                let drekkana = 0;
-                if (drekPart === 0 && ['Sun', 'Mars', 'Jupiter'].includes(pid)) drekkana = 15;
-                else if (drekPart === 1 && ['Mercury', 'Saturn'].includes(pid)) drekkana = 15;
-                else if (drekPart === 2 && ['Moon', 'Venus'].includes(pid)) drekkana = 15;
-                const sthana = uchcha + sapta + ojha + kendradi + drekkana;
-
-                // 2. Dig Bala (degree-based from Nadir/powerless point)
-                const nadirMap = {
-                    Sun: (ascLon + 90) % 360, Mars: (ascLon + 90) % 360,     // weak at 4th, strong at 10th
-                    Jupiter: (ascLon + 180) % 360, Mercury: (ascLon + 180) % 360, // weak at 7th, strong at 1st
-                    Moon: (ascLon + 270) % 360, Venus: (ascLon + 270) % 360,   // weak at 10th, strong at 4th
-                    Saturn: ascLon % 360                                       // weak at 1st, strong at 7th
-                };
-                let digDiff = Math.abs(lon - nadirMap[pid]);
-                if (digDiff > 180) digDiff = 360 - digDiff;
-                const dig = (digDiff / 180) * 60;
-
-                // 3. Kala Bala = Natonnata + Paksha + Tribhaga + Vara/Hora + Ayana
-                const distFromMidnight = Math.min(hourDec, 24 - hourDec); // 0 at midnight, 12 at noon
-                let natonnata = 30;
-                if (['Sun', 'Jupiter', 'Venus'].includes(pid)) natonnata = (distFromMidnight / 12) * 60;
-                else if (['Moon', 'Mars', 'Saturn'].includes(pid)) natonnata = ((12 - distFromMidnight) / 12) * 60;
-                else natonnata = 60; // Mercury always 60
-
-                let pakshaDiff = Math.abs(moonLon - sunLon);
-                if (pakshaDiff > 180) pakshaDiff = 360 - pakshaDiff;
-                const isNaturalBenefic = ['Moon', 'Jupiter', 'Venus'].includes(pid);
-                let paksha = isNaturalBenefic ? (pakshaDiff / 180) * 60 : ((180 - pakshaDiff) / 180) * 60;
-                if (pid === 'Moon') paksha *= 2;
-
-                let tribhaga = 0;
-                if (isDay) {
-                    const part = Math.floor((hourDec - 6) / 4);
-                    if ((part === 0 && pid === 'Mercury') || (part === 1 && pid === 'Sun') || (part === 2 && pid === 'Saturn')) tribhaga = 60;
-                } else {
-                    const nHr = (hourDec >= 18 ? hourDec - 18 : hourDec + 6);
-                    const part = Math.floor(nHr / 4);
-                    if ((part === 0 && pid === 'Moon') || (part === 1 && pid === 'Venus') || (part === 2 && pid === 'Mars')) tribhaga = 60;
-                }
-                if (pid === 'Jupiter') tribhaga = 60;
-
-                const varaBala = (pid === varaLord) ? 45 : 0;
-                const horaBala = (pid === horaLord) ? 60 : 0;
-                // Ayana Bala (declination-based)
-                const tropSun = (sunLon + 24) % 360;
-                const decl = 23.44 * Math.sin((tropSun * Math.PI) / 180);
-                let ayana = 30;
-                if (['Sun', 'Mars', 'Jupiter', 'Venus'].includes(pid)) ayana = 30 + (decl / 23.44) * 30;
-                else if (['Moon', 'Saturn'].includes(pid)) ayana = 30 - (decl / 23.44) * 30;
-                else ayana = 30 + Math.abs(decl / 23.44) * 15;
-                if (pid === 'Sun') ayana *= 2;
-
-                const kala = natonnata + paksha + tribhaga + varaBala + horaBala + ayana;
-
-                // 4. Chesta Bala
-                const pObj = (currentChart.planets[hFromAsc] || []).find(x => x.id === pid);
-                let chesta = 30;
-                if (pid === 'Sun') chesta = ayana / 2;
-                else if (pid === 'Moon') chesta = paksha / 2;
-                else if (pObj && pObj.isRetrograde) chesta = 60;
-                else {
-                    let sDist = Math.abs(lon - sunLon);
-                    if (sDist > 180) sDist = 360 - sDist;
-                    chesta = 15 + (sDist / 180) * 35;
-                }
-
-                // 5. Naisargika Bala
-                const naisargika = NAISARGIKA[pid];
-
-                // 6. Drik Bala (Aspect strength from other planets)
-                let drik = 0;
-                sevenIds.forEach(otherId => {
-                    if (otherId === pid) return;
-                    const oLon = lons[otherId] || 0;
-                    const diff = ((lon - oLon + 360) % 360);
-                    let aspect = 0;
-                    if (diff >= 150 && diff <= 210) aspect = 60 * (1 - Math.abs(diff - 180) / 30);
-                    else if (otherId === 'Mars' && ((diff >= 75 && diff <= 105) || (diff >= 210 && diff <= 240))) aspect = 45;
-                    else if (otherId === 'Jupiter' && ((diff >= 105 && diff <= 135) || (diff >= 225 && diff <= 255))) aspect = 45;
-                    else if (otherId === 'Saturn' && ((diff >= 45 && diff <= 75) || (diff >= 255 && diff <= 285))) aspect = 45;
-                    if (['Jupiter', 'Venus', 'Mercury', 'Moon'].includes(otherId)) drik += aspect * 0.25;
-                    else drik -= aspect * 0.25;
-                });
-
-                const totalVirupas = sthana + dig + kala + chesta + naisargika + drik;
-                const totalRupas = totalVirupas / 60;
-                const req = REQ_RUPAS[pid];
-                const strong = totalRupas >= req;
-                planetStrengthMap[pid] = totalVirupas;
-
-                return { pid, sthana, dig, kala, chesta, naisargika, drik, totalVirupas, totalRupas, req, strong };
-            });
-
-            rows.sort((a, b) => b.totalRupas - a.totalRupas);
+            const { rows, planetStrengthMap } = computeShadbalaDetailed(lons);
 
             const headers = currentLang === 'hi'
                 ? ['रैंक', 'ग्रह', 'स्थान', 'दिग्', 'काल', 'चेष्टा', 'नैसर्गिक', 'दृग्', 'कुल (रूप)', 'स्थिति']
@@ -3330,7 +3710,7 @@
                     <td class="py-2.5 px-2">${r.chesta.toFixed(0)}</td>
                     <td class="py-2.5 px-2">${r.naisargika.toFixed(1)}</td>
                     <td class="py-2.5 px-2">${r.drik.toFixed(0)}</td>
-                    <td class="py-2.5 px-2 font-bold text-indigo-700">${r.totalRupas.toFixed(2)} <span class="text-[10px] text-slate-400">(${r.req})</span></td>
+                    <td class="py-2.5 px-2 font-bold text-indigo-700">${r.totalRupas.toFixed(2)} <span class="text-[10px] text-slate-400">(${r.req} • ${(r.ratio*100).toFixed(0)}%)</span></td>
                     <td class="py-2.5 px-2">${statusBadge}</td>
                 </tr>`;
             });
@@ -3356,7 +3736,7 @@
                     if (hd > 6) hd = 12 - hd;
                     const bhavaDig = ((6 - hd) / 6) * 60;
 
-                    // Bhava Drishti + Occupant strength
+                    // Authentic Parashari House-to-House Bhava Drishti Bala
                     let drishti = 0;
                     sevenIds.forEach(pid => {
                         const pLon = lons[pid] || 0;
@@ -3366,20 +3746,18 @@
                             if (currentChart.rashis[hh2] === pR) { pH = hh2; break; }
                         }
                         const diff = ((h - pH + 12) % 12) + 1;
-                        const aspects7 = diff === 7;
-                        const aspectsJup = pid === 'Jupiter' && (diff === 5 || diff === 9);
-                        const aspectsMars = pid === 'Mars' && (diff === 4 || diff === 8);
-                        const aspectsSat = pid === 'Saturn' && (diff === 3 || diff === 10);
-                        if (pH === h) {
-                            drishti += ['Jupiter', 'Venus', 'Mercury', 'Moon'].includes(pid) ? 40 : 25;
-                        } else if (aspects7 || aspectsJup || aspectsMars || aspectsSat) {
-                            drishti += ['Jupiter', 'Venus', 'Mercury', 'Moon'].includes(pid) ? 30 : -15;
-                        }
-                    });
-                    // Kendras get natural prominence bonus
-                    const kendraBonus = [1, 4, 7, 10].includes(h) ? 30 : ([2, 5, 8, 11].includes(h) ? 15 : 0);
+                        let asp = 0;
+                        if (diff === 7) asp = 60;
+                        else if (pid === 'Mars' && (diff === 4 || diff === 8)) asp = 60;
+                        else if (pid === 'Jupiter' && (diff === 5 || diff === 9)) asp = 60;
+                        else if (pid === 'Saturn' && (diff === 3 || diff === 10)) asp = 60;
 
-                    const totalVirupas = Math.max(120, bhavadhipati + bhavaDig + drishti + kendraBonus);
+                        if (pid === 'Jupiter' || pid === 'Mercury') drishti += asp * 1.0;
+                        else if (pid === 'Venus' || pid === 'Moon') drishti += asp * 0.25;
+                        else drishti -= asp * 0.25;
+                    });
+
+                    const totalVirupas = Math.max(120, bhavadhipati + bhavaDig + drishti);
                     const totalRupas = totalVirupas / 60;
                     bhavaRows.push({ h, rObj, lordId, totalVirupas, totalRupas });
                 }
@@ -3966,6 +4344,10 @@
                 renderAshtakavargaInMahakundli();
                 return;
             }
+            if (mkMode === 'upagraha') {
+                renderUpagrahaInMahakundli();
+                return;
+            }
             const ySel = document.getElementById('mk-year-select');
             const mSel = document.getElementById('mk-month-select');
             if (!ySel) return;
@@ -4164,6 +4546,434 @@
             return { hi: 'सुषुप्त', en: 'Sushupt', cls: 'bg-red-50 text-[#dc2626] border-red-200' };
         }
 
+        let grahaBalaMode = 'samanya'; // 'samanya' | 'gahan'
+
+        function setGrahaBalaMode(mode) {
+            grahaBalaMode = mode;
+            const b1 = document.getElementById('gb-mode-samanya');
+            const b2 = document.getElementById('gb-mode-gahan');
+            if (b1 && b2) {
+                b1.className = mode === 'samanya' ? 'px-2 py-1 rounded-md bg-white text-slate-900 shadow-xs' : 'px-2 py-1 rounded-md text-slate-600 hover:text-slate-900';
+                b2.className = mode === 'gahan' ? 'px-2 py-1 rounded-md bg-white text-slate-900 shadow-xs' : 'px-2 py-1 rounded-md text-slate-600 hover:text-slate-900';
+            }
+            renderD1Degrees();
+        }
+
+        function calcSunriseSunsetLocal(y, m, d, lat, lon, tz) {
+            const N = Math.floor((new Date(y, m - 1, d) - new Date(y, 0, 1)) / 86400000) + 1;
+            const lngHour = lon / 15;
+            const calc = (isRise) => {
+                const t = N + ((isRise ? 6 : 18) - lngHour) / 24;
+                const M = (0.9856 * t) - 3.289;
+                let L = M + (1.916 * Math.sin(M * Math.PI / 180)) + (0.020 * Math.sin(2 * M * Math.PI / 180)) + 282.634;
+                L = ((L % 360) + 360) % 360;
+                let RA = Math.atan(0.91764 * Math.tan(L * Math.PI / 180)) * 180 / Math.PI;
+                RA = ((RA % 360) + 360) % 360;
+                const Lquad = Math.floor(L / 90) * 90, RAquad = Math.floor(RA / 90) * 90;
+                RA = (RA + (Lquad - RAquad)) / 15;
+                const sinDec = 0.39782 * Math.sin(L * Math.PI / 180);
+                const cosDec = Math.cos(Math.asin(sinDec));
+                const cosH = Math.max(-0.999, Math.min(0.999, (Math.cos(90.833 * Math.PI / 180) - sinDec * Math.sin(lat * Math.PI / 180)) / (cosDec * Math.cos(lat * Math.PI / 180))));
+                let H = isRise ? (360 - Math.acos(cosH) * 180 / Math.PI) : (Math.acos(cosH) * 180 / Math.PI);
+                H = H / 15;
+                const T = H + RA - (0.06571 * t) - 6.622;
+                const UT = ((T - lngHour) % 24 + 24) % 24;
+                return (UT + tz + 24) % 24;
+            };
+            return { sunrise: calc(true), sunset: calc(false) };
+        }
+
+        function bphsDrishtiVirupas(aspectorId, aspectorLon, targetLon) {
+            const k = (targetLon - aspectorLon + 360) % 360;
+            let d = 0;
+            if (k >= 30 && k < 60) d = (k - 30) / 2;
+            else if (k >= 60 && k < 90) d = (k - 60) + 15;
+            else if (k >= 90 && k < 120) d = 45 - (k - 90) / 2;
+            else if (k >= 120 && k < 150) d = 30 - (k - 120);
+            else if (k >= 150 && k < 180) d = (k - 150) * 2;
+            else if (k >= 180 && k < 300) d = (300 - k) / 2;
+            if (aspectorId === 'Saturn' && ((k >= 60 && k < 90) || (k >= 270 && k < 300))) d += 45;
+            if (aspectorId === 'Jupiter' && ((k >= 120 && k < 150) || (k >= 240 && k < 270))) d += 30;
+            if (aspectorId === 'Mars' && ((k >= 90 && k < 120) || (k >= 210 && k < 240))) d += 15;
+            return Math.min(60, d);
+        }
+
+        function getSolarSankrantiWeekday(jd, targetDeg, tz) {
+            const d = jd - 2451545.0;
+            const T = d / 36525.0;
+            const ayan = 23.853056 + (50.290966 * T * 100) / 3600.0;
+            const sunTrop = (280.46646 + 0.98564736 * d + 1.9146 * Math.sin((357.529 + 0.98560028 * d) * Math.PI / 180)) % 360;
+            const sunSid = ((sunTrop - ayan) % 360 + 360) % 360;
+            const diff = (sunSid - targetDeg + 360) % 360;
+            const sankJD = jd - diff / 0.985647;
+            const w = (Math.floor(sankJD + (tz || 5.5) / 24 + 1.5) % 7 + 7) % 7;
+            return ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn'][w];
+        }
+
+        function computeShadbalaDetailed(lons) {
+            const EXALT_DEG = { Sun:10, Moon:33, Mars:298, Mercury:165, Jupiter:95, Venus:357, Saturn:200 };
+            const NAISARGIKA = { Sun:60.0, Moon:51.43, Venus:42.86, Jupiter:34.29, Mercury:25.71, Mars:17.14, Saturn:8.57 };
+            const REQ_RUPAS = { Sun:6.5, Moon:6.0, Mars:5.0, Mercury:7.0, Jupiter:6.5, Venus:5.5, Saturn:5.0 };
+            const MOOL_RASHI = { Sun:5, Moon:2, Mars:1, Mercury:6, Jupiter:9, Venus:7, Saturn:11 };
+            const OWN_RASHIS = { Sun:[5], Moon:[4], Mars:[1,8], Mercury:[3,6], Jupiter:[9,12], Venus:[2,7], Saturn:[10,11] };
+            const NAT_FRIENDS = { Sun:['Moon','Mars','Jupiter'], Moon:['Sun','Mercury'], Mars:['Sun','Moon','Jupiter'], Mercury:['Sun','Venus'], Jupiter:['Sun','Moon','Mars'], Venus:['Mercury','Saturn'], Saturn:['Mercury','Venus'] };
+            const NAT_ENEMIES = { Sun:['Venus','Saturn'], Moon:[], Mars:['Mercury'], Mercury:['Moon'], Jupiter:['Mercury','Venus'], Venus:['Sun','Moon'], Saturn:['Sun','Moon','Mars'] };
+
+            const sunLon = lons.Sun || 0, moonLon = lons.Moon || 0, ascLon = lons.Asc || 0;
+            const lagnaRashi = Math.floor(ascLon / 30) + 1;
+            const birthDate = getChartStartDate();
+            const y = birthDate.getFullYear(), m = birthDate.getMonth() + 1, d = birthDate.getDate();
+            const [hh, mm] = (currentChart.tob || '12:00').split(':').map(Number);
+            const hourDec = (hh || 0) + (mm || 0) / 60;
+            const lat = Number(currentChart.lat) || 26.5647;
+            const lonGeo = Number(currentChart.lon) || 78.7875;
+            const tz = (currentChart.tz !== undefined && currentChart.tz !== null) ? Number(currentChart.tz) : 5.5;
+
+            const { sunrise, sunset } = calcSunriseSunsetLocal(y, m, d, lat, lonGeo, tz);
+            const isDay = hourDec >= sunrise && hourDec < sunset;
+
+            let jy = y, jm = m; if (jm <= 2) { jy -= 1; jm += 12; }
+            const A = Math.floor(jy / 100), B = 2 - A + Math.floor(A / 4);
+            const jd = Math.floor(365.25 * (jy + 4716)) + Math.floor(30.6001 * (jm + 1)) + d + ((hourDec - tz) / 24) + B - 1524.5;
+            const dJ2000 = jd - 2451545.0;
+            const T = dJ2000 / 36525.0;
+            const ayan = 23.853056 + (50.290966 * T * 100) / 3600.0;
+
+            const gmst = (280.46061837 + 360.98564736629 * dJ2000 + 0.000387933 * T * T) % 360;
+            const lst = ((gmst + lonGeo) % 360 + 360) % 360;
+            const eps = 23.4392911 * Math.PI / 180;
+            const mcTrop = Math.atan2(Math.sin(lst * Math.PI / 180), Math.cos(lst * Math.PI / 180) * Math.cos(eps)) * 180 / Math.PI;
+            const mcLon = ((mcTrop - ayan) % 360 + 360) % 360;
+            const icLon = (mcLon + 180) % 360;
+
+            let dow = birthDate.getDay();
+            if (hourDec < sunrise) dow = (dow + 6) % 7;
+            const DAY_LORD_MAP = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn'];
+            const HORA_SEQ = ['Sun', 'Venus', 'Mercury', 'Moon', 'Saturn', 'Jupiter', 'Mars'];
+            const varaLord = DAY_LORD_MAP[dow];
+            const abdaLord = getSolarSankrantiWeekday(jd, 0, tz);
+            const masaLord = getSolarSankrantiWeekday(jd, Math.floor(sunLon / 30) * 30, tz);
+            const horaOffset = isDay
+                ? Math.floor(((hourDec - sunrise) / Math.max(1, sunset - sunrise)) * 12)
+                : 12 + Math.floor(((hourDec >= sunset ? hourDec - sunset : 24 - sunset + hourDec) / Math.max(1, 24 - sunset + sunrise)) * 12);
+            const horaLord = HORA_SEQ[(HORA_SEQ.indexOf(varaLord) + horaOffset) % 7];
+
+            const meanSun = ((280.46646 + 0.98564736 * dJ2000 - ayan) % 360 + 360) % 360;
+            const MEAN_LONS = {
+                Mars: ((355.4330 + 0.52402068 * dJ2000 - ayan) % 360 + 360) % 360,
+                Jupiter: ((34.3515 + 0.08309121 * dJ2000 - ayan) % 360 + 360) % 360,
+                Saturn: ((50.0774 + 0.03344414 * dJ2000 - ayan) % 360 + 360) % 360,
+                Mercury: ((252.2509 + 4.09233445 * dJ2000 - ayan) % 360 + 360) % 360,
+                Venus: ((181.9798 + 1.60213034 * dJ2000 - ayan) % 360 + 360) % 360
+            };
+
+            const sevenIds = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn'];
+            const planetStrengthMap = {};
+
+            const rows = sevenIds.map(pid => {
+                const lon = lons[pid] || 0, rashiNum = Math.floor(lon / 30) + 1, degInSign = lon % 30;
+                const debDeg = (EXALT_DEG[pid] + 180) % 360;
+                let diffEx = Math.abs(lon - debDeg); if (diffEx > 180) diffEx = 360 - diffEx;
+                const uchcha = (diffEx / 180) * 60;
+
+                let sapta = 0;
+                [1, 2, 3, 7, 9, 12, 30].forEach(div => {
+                    const vr = computeVargaRashi(lon, div);
+                    const lord = RASHIS.find(x => x.num === vr).lord;
+                    if (div === 1 && MOOL_RASHI[pid] === vr) sapta += 45;
+                    else if (OWN_RASHIS[pid].includes(vr) || lord === pid) sapta += 30;
+                    else {
+                        const lr = Math.floor((lons[lord] || 0) / 30) + 1, dist = ((lr - rashiNum + 12) % 12) + 1;
+                        const tf = [2, 3, 4, 10, 11, 12].includes(dist), isF = NAT_FRIENDS[pid].includes(lord), isE = NAT_ENEMIES[pid].includes(lord);
+                        if (isF && tf) sapta += 22.5;
+                        else if ((isF && !tf) || (!isF && !isE && tf)) sapta += 15;
+                        else if ((!isF && !isE && !tf) || (isE && tf)) sapta += 7.5;
+                        else sapta += 1.875;
+                    }
+                });
+
+                const d9R = computeVargaRashi(lon, 9);
+                const isFem = (pid === 'Moon' || pid === 'Venus');
+                const ojha = (((isFem && rashiNum % 2 === 0) || (!isFem && rashiNum % 2 === 1)) ? 15 : 0) +
+                             (((isFem && d9R % 2 === 0) || (!isFem && d9R % 2 === 1)) ? 15 : 0);
+                const hFromAsc = ((rashiNum - lagnaRashi + 12) % 12) + 1;
+                const kendradi = [1, 4, 7, 10].includes(hFromAsc) ? 60 : ([2, 5, 8, 11].includes(hFromAsc) ? 30 : 15);
+                const dp = Math.floor(degInSign / 10);
+                const drekkana = ((dp === 0 && ['Sun', 'Mars', 'Jupiter'].includes(pid)) || (dp === 1 && ['Mercury', 'Saturn'].includes(pid)) || (dp === 2 && ['Moon', 'Venus'].includes(pid))) ? 15 : 0;
+                const sthana = uchcha + sapta + ojha + kendradi + drekkana;
+
+                const nadirMap = { Sun: icLon, Mars: icLon, Jupiter: (ascLon + 180) % 360, Mercury: (ascLon + 180) % 360, Moon: mcLon, Venus: mcLon, Saturn: ascLon };
+                let dd = Math.abs(lon - nadirMap[pid]); if (dd > 180) dd = 360 - dd;
+                const dig = (dd / 180) * 60;
+
+                const solarHour = (hourDec - (tz - lonGeo / 15) + 24) % 24;
+                const dMid = Math.min(solarHour, 24 - solarHour);
+                const natonnata = ['Sun', 'Jupiter', 'Venus'].includes(pid) ? (dMid / 12) * 60 : (['Moon', 'Mars', 'Saturn'].includes(pid) ? ((12 - dMid) / 12) * 60 : 60);
+                let pd = Math.abs(moonLon - sunLon); if (pd > 180) pd = 360 - pd;
+                const mercConjMal = ['Sun', 'Mars', 'Saturn'].some(m => { let df = Math.abs((lons.Mercury || 0) - (lons[m] || 0)); if (df > 180) df = 360 - df; return df < 15; });
+                const isBen = ['Moon', 'Jupiter', 'Venus'].includes(pid) || (pid === 'Mercury' && !mercConjMal);
+                let paksha = isBen ? (pd / 180) * 60 : ((180 - pd) / 180) * 60;
+                if (pid === 'Moon') paksha *= 2;
+
+                let tribhaga = 0;
+                if (isDay) {
+                    const pt = Math.floor(((hourDec - sunrise) / Math.max(1, sunset - sunrise)) * 3);
+                    if ((pt === 0 && pid === 'Mercury') || (pt === 1 && pid === 'Sun') || (pt === 2 && pid === 'Saturn')) tribhaga = 60;
+                } else {
+                    const nightLen = Math.max(1, 24 - sunset + sunrise);
+                    const elN = hourDec >= sunset ? (hourDec - sunset) : (24 - sunset + hourDec);
+                    const pt = Math.floor((elN / nightLen) * 3);
+                    if ((pt === 0 && pid === 'Moon') || (pt === 1 && pid === 'Venus') || (pt === 2 && pid === 'Mars')) tribhaga = 60;
+                }
+                if (pid === 'Jupiter') tribhaga = 60;
+
+                const decl = 23.44 * Math.sin(((sunLon + ayan) % 360) * Math.PI / 180);
+                let ayana = ['Sun', 'Mars', 'Jupiter', 'Venus'].includes(pid) ? 30 + (decl / 23.44) * 30 : (['Moon', 'Saturn'].includes(pid) ? 30 - (decl / 23.44) * 30 : 30 + Math.abs(decl / 23.44) * 15);
+                if (pid === 'Sun') ayana *= 2;
+                const kala = natonnata + paksha + tribhaga + (pid === abdaLord ? 15 : 0) + (pid === masaLord ? 30 : 0) + (pid === varaLord ? 45 : 0) + (pid === horaLord ? 60 : 0) + ayana;
+
+                let chesta = 30;
+                if (pid === 'Sun') chesta = ayana / 2;
+                else if (pid === 'Moon') chesta = paksha / 2;
+                else if (['Mars', 'Jupiter', 'Saturn'].includes(pid)) {
+                    let ck = ((meanSun - ((MEAN_LONS[pid] + lon) / 2) + 360) % 360);
+                    if (ck > 180) ck = 360 - ck;
+                    chesta = ck / 3;
+                } else {
+                    let ck = ((MEAN_LONS[pid] - ((meanSun + lon) / 2) + 360) % 360);
+                    if (ck > 180) ck = 360 - ck;
+                    chesta = ck / 3;
+                }
+
+                let drik = 0;
+                sevenIds.forEach(oid => {
+                    if (oid === pid) return;
+                    const a = bphsDrishtiVirupas(oid, lons[oid] || 0, lon);
+                    const oBen = ['Jupiter', 'Venus'].includes(oid) || (oid === 'Mercury' && !mercConjMal) || (oid === 'Moon' && pd > 72);
+                    drik += (oBen ? 1 : -1) * a * 0.25;
+                });
+
+                const naisargika = NAISARGIKA[pid];
+                const totalVirupas = sthana + dig + kala + chesta + naisargika + drik;
+                const totalRupas = totalVirupas / 60;
+                const req = REQ_RUPAS[pid];
+                planetStrengthMap[pid] = totalVirupas;
+                return { pid, sthana, dig, kala, chesta, naisargika, drik, totalVirupas, totalRupas, req, strong: totalRupas >= req };
+            });
+
+            const warPlanets = ['Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn'];
+            for (let i = 0; i < warPlanets.length; i++) {
+                for (let j = i + 1; j < warPlanets.length; j++) {
+                    const pA = warPlanets[i], pB = warPlanets[j];
+                    let d = Math.abs((lons[pA] || 0) - (lons[pB] || 0)); if (d > 180) d = 360 - d;
+                    if (d <= 1.0) {
+                        const rA = rows.find(x => x.pid === pA), rB = rows.find(x => x.pid === pB);
+                        if (rA && rB) {
+                            const rawDiff = Math.abs(rA.totalVirupas - rB.totalVirupas);
+                            const wb = Math.min(25, rawDiff * 0.16), lp = rawDiff * 0.25;
+                            if ((lons[pA] % 30) < (lons[pB] % 30)) { rA.totalVirupas += wb; rB.totalVirupas -= lp; }
+                            else { rB.totalVirupas += wb; rA.totalVirupas -= lp; }
+                            rA.totalRupas = rA.totalVirupas / 60; rB.totalRupas = rB.totalVirupas / 60;
+                            rA.strong = rA.totalRupas >= rA.req; rB.strong = rB.totalRupas >= rB.req;
+                            planetStrengthMap[pA] = rA.totalVirupas; planetStrengthMap[pB] = rB.totalVirupas;
+                        }
+                    }
+                }
+            }
+            rows.forEach(r => { r.ratio = r.totalRupas / (r.req || 6); });
+            rows.sort((a, b) => b.ratio - a.ratio);
+            const rankMap = {};
+            rows.forEach((r, idx) => { rankMap[r.pid] = idx + 1; });
+            return { rows, rankMap, planetStrengthMap };
+        }
+
+        function computeShadbalaRanksMap(lons) {
+            return computeShadbalaDetailed(lons).rankMap;
+        }
+
+        function computeDeepGrahaBalaPowers(lons, d1StateMap) {
+            const rankMap = computeShadbalaRanksMap(lons);
+            const { pHouse, pRashi, hLords } = evaluateD1YogasAndDoshas();
+            // Specific House Karakas (User Chart 7.1 + Classical Karakas)
+            const NAT_KARAKA = {
+                Sun:[1,5,9,10,11], Moon:[1,4], Mars:[1,3,6,8,10], Mercury:[3,4,6,10,11], Jupiter:[2,5,7,9,11,12], Venus:[2,4,7,12], Saturn:[3,6,8,10,11,12], Rahu:[3,6,10], Ketu:[2,8]
+            };
+            const NF_ALL = {
+                Sun:['Moon','Mars','Jupiter'], Moon:['Sun','Mercury'], Mars:['Sun','Moon','Jupiter'],
+                Mercury:['Sun','Venus','Saturn'], Jupiter:['Sun','Moon','Mars'],
+                Venus:['Mercury','Saturn','Rahu','Ketu'], Saturn:['Mercury','Venus','Rahu','Ketu'],
+                Rahu:['Mercury','Venus','Saturn'], Ketu:['Mars','Venus','Saturn']
+            };
+            const NE_ALL = {
+                Sun:['Venus','Saturn','Rahu','Ketu'], Moon:['Venus','Rahu','Ketu'], Mars:['Mercury','Rahu','Ketu'],
+                Mercury:['Moon','Mars'], Jupiter:['Mercury','Venus','Rahu','Ketu'], Venus:['Sun','Moon','Jupiter'],
+                Saturn:['Sun','Moon','Mars'], Rahu:['Sun','Moon','Mars'], Ketu:['Sun','Moon']
+            };
+            // Frenemy pairs & contextual neutrality in Graha Bala
+            const isFrenemyActive = (pid, targetId) => {
+                if ((pid === 'Mars' && targetId === 'Mercury') || (pid === 'Mercury' && targetId === 'Mars')) {
+                    const mR = pRashi.Mercury;
+                    return [3,6].includes(mR) || pHouse.Mercury === pHouse.Mars;
+                }
+                // Weak/Lagna-lord Mercury conjunct Moon treats Moon as neutral (not bitter enemy)
+                if (pid === 'Mercury' && targetId === 'Moon' && pHouse.Mercury === pHouse.Moon) {
+                    const mSt = d1StateMap.Mercury || {};
+                    if (hLords[1] === 'Mercury' || [6,8,12].includes(pHouse.Mercury) || mSt.isCombust) return true;
+                }
+                return false;
+            };
+
+            const sunLon = lons.Sun || 0, moonLon = lons.Moon || 0;
+            const tithiIdx = Math.floor(((moonLon - sunLon + 360) % 360) / 12); // 0..29
+            const isKsheenaMoon = (tithiIdx >= 19 || tithiIdx <= 4); // Krishna Panchami to Shukla Panchami
+
+            const scores = {};
+            const retroApplied = {};
+            let anyCombust = false;
+
+            PLANETS.forEach(p => {
+                const pid = p.id;
+                const lon = lons[pid] || 0;
+                const rNum = pRashi[pid] || (Math.floor(lon/30)+1);
+                const hNum = pHouse[pid] || 1;
+                const deg = ((lon % 30) + 30) % 30;
+                const st = d1StateMap[pid] || {};
+                let pts = 0;
+
+                // Step 1: Sign Dignity (20, 15, 10, 5, 0) + Moon-Venus Enemy in Graha Bala + Frenemy-Neutral Rule
+                const signLord = RASHIS[rNum - 1]?.lord;
+                const dig = CHART_1_3_DIGNITY[pid];
+                if (dig) {
+                    if (dig.exalted.includes(rNum) || dig.mooltrikona.includes(rNum)) pts += 20;
+                    else if (dig.own.includes(rNum)) pts += 15;
+                    else if (pid === 'Moon' && [2, 7].includes(rNum)) pts += 5; // Moon treats Venus as enemy in Graha Bala
+                    else if (dig.friend.includes(rNum) || dig.neutral.includes(rNum)) pts += 10;
+                    else if (dig.enemy.includes(rNum)) {
+                        pts += (signLord && isFrenemyActive(pid, signLord)) ? 10 : 5;
+                    }
+                    else pts += 0; // debilitated
+                } else pts += 10;
+
+                // Step 2: House & Karaka/Akaraka (Full Karaka=15, Half Karaka=10, Akaraka=5, Trik=-5)
+                const isLagnaKaraka = [hLords[1], hLords[5], hLords[9]].includes(pid);
+                const isTrikLord = [hLords[6], hLords[8], hLords[12]].includes(pid);
+                const isKendra10InTrikona = (hLords[10] === pid && !isTrikLord && [1,5,9].includes(hNum));
+                const isRahuH11HalfKaraka = (pid === 'Rahu' && hNum === 11);
+                const isHouseKaraka = (NAT_KARAKA[pid] || []).includes(hNum) ||
+                    (isLagnaKaraka && dig && (dig.own.includes(rNum) || dig.mooltrikona.includes(rNum) || dig.exalted.includes(rNum)));
+                if (isHouseKaraka) pts += 15;
+                else if ([6,8,12].includes(hNum)) pts -= 5;
+                else if (isLagnaKaraka || isKendra10InTrikona || isRahuH11HalfKaraka) pts += 10;
+                else pts += 5;
+
+                // Step 3: Degree Strength (0-5=10, 6-24=15, 25-30=10)
+                pts += (deg >= 6 && deg < 25) ? 15 : 10;
+
+                // Step 4: Conjunction Strength (+15 ONLY if ALL co-planets are Friends; Marak with Lagna-Karaka friend caps at 10; Neutral/Mixed/Alone=10; All Enemy=5)
+                const coPlanets = PLANETS.filter(x => x.id !== pid && pHouse[x.id] === hNum).map(x => x.id);
+                const isMarakForLagna = !isLagnaKaraka && ([hLords[6], hLords[8], hLords[12]].includes(pid) || [hLords[2], hLords[7]].includes(pid));
+                if (coPlanets.length === 0) {
+                    pts += 10;
+                } else {
+                    const allFriends = coPlanets.every(o => (NF_ALL[pid] || []).includes(o));
+                    const hasAnyFriend = coPlanets.some(o => (NF_ALL[pid] || []).includes(o));
+                    const hasNonFrenemyEnemy = coPlanets.some(o => (NE_ALL[pid] || []).includes(o) && !isFrenemyActive(pid, o));
+                    const withLagnaKaraka = coPlanets.some(o => [hLords[1], hLords[5], hLords[9]].includes(o));
+                    if (allFriends) pts += (isMarakForLagna && withLagnaKaraka) ? 10 : 15;
+                    else if (hasNonFrenemyEnemy && !hasAnyFriend) pts += 5;
+                    else pts += 10;
+                }
+
+                // Step 5: Awastha (Jagrat=15, Swapna=10, Sushupt=5)
+                const aw = getPlanetAwastha(pid, lon);
+                pts += (aw.hi === 'जाग्रत') ? 15 : (aw.hi === 'स्वप्न' ? 10 : 5);
+
+                // Step 6: Retrograde (+10) & Combust (-10) with Law 4 (Rahu/Ketu=0, Sun/Moon no retro) & Law 7 (Rahu/Ketu conj cancels retro except Venus)
+                const withRK = coPlanets.includes('Rahu') || coPlanets.includes('Ketu');
+                const isRahuKetu = (pid === 'Rahu' || pid === 'Ketu');
+                const isLum = (pid === 'Sun' || pid === 'Moon');
+                const isComb = !isRahuKetu && pid !== 'Sun' && !!st.isCombust;
+                if (isComb) anyCombust = true;
+                const isRet = !isRahuKetu && !isLum && !!st.isRetrograde;
+
+                if (isComb && isRet) {
+                    pts += 0;
+                } else if (isComb) {
+                    pts -= 10;
+                } else if (isRet) {
+                    if (withRK && pid !== 'Venus') {
+                        pts += 0; // Law 7 cancels retro +10
+                    } else {
+                        pts += 10;
+                        retroApplied[pid] = true;
+                    }
+                }
+
+                // Step 7: Shadbala Rank (1-3=20, 4-5=15, 6-7=10; Rahu & Ketu always get +20)
+                if (isRahuKetu) {
+                    pts += 20;
+                } else {
+                    const rk = rankMap[pid] || 4;
+                    pts += (rk <= 3) ? 20 : (rk <= 5 ? 15 : 10);
+                }
+
+                scores[pid] = pts;
+            });
+
+            // Law 3: Sun gets +10 once if it combusts any planet
+            if (anyCombust) scores.Sun += 10;
+
+            // Law 5: Jupiter + Rahu/Ketu -> Rahu/Ketu -5, Jupiter -10
+            if (pHouse.Rahu === pHouse.Jupiter) { scores.Rahu -= 5; scores.Jupiter -= 10; }
+            if (pHouse.Ketu === pHouse.Jupiter) { scores.Ketu -= 5; scores.Jupiter -= 10; }
+
+            // Law 6: If Moon NOT Ksheena -> Jupiter+Moon, Jupiter+Mars, Moon+Mars give +10 to each participating planet
+            if (!isKsheenaMoon) {
+                const jupMoon = pHouse.Jupiter === pHouse.Moon;
+                const jupMars = pHouse.Jupiter === pHouse.Mars;
+                const moonMars = pHouse.Moon === pHouse.Mars;
+                if (jupMoon || jupMars) scores.Jupiter += 10;
+                if (jupMoon || moonMars) scores.Moon += 10;
+                if (jupMars || moonMars) scores.Mars += 10;
+            }
+
+            // Law 7: Planets with Rahu/Ketu lose -10 (Exceptions: Sun, Moon, Venus, and Jupiter already took -10 in Law 5)
+            PLANETS.forEach(p => {
+                const pid = p.id;
+                if (['Rahu','Ketu','Sun','Moon','Venus','Jupiter'].includes(pid)) return;
+                if (pHouse[pid] === pHouse.Rahu || pHouse[pid] === pHouse.Ketu) {
+                    scores[pid] -= 10;
+                }
+            });
+
+            // Law 1: 100% Cap (if >100 due to retro +10, remove retro +10 and cap at 100)
+            PLANETS.forEach(p => {
+                const pid = p.id;
+                if (scores[pid] > 100) {
+                    if (retroApplied[pid]) scores[pid] -= 10;
+                    scores[pid] = Math.min(100, scores[pid]);
+                }
+            });
+
+            // Law 2: Sun & Moon Eclipse ÷ 2 (Exception: Own Sign or Mooltrikona)
+            ['Sun','Moon'].forEach(lum => {
+                const inEclipse = (pHouse[lum] === pHouse.Rahu || pHouse[lum] === pHouse.Ketu);
+                if (inEclipse) {
+                    const rN = pRashi[lum];
+                    const dig = CHART_1_3_DIGNITY[lum];
+                    const isOwnOrMool = dig && (dig.own.includes(rN) || dig.mooltrikona.includes(rN));
+                    if (!isOwnOrMool) {
+                        scores[lum] = scores[lum] / 2;
+                    }
+                }
+            });
+
+            PLANETS.forEach(p => {
+                scores[p.id] = Math.max(0, Math.min(100, Math.round(scores[p.id])));
+            });
+            return scores;
+        }
+
         function renderD1Degrees() {
             const grid = document.getElementById('d1-degrees-grid');
             const badge = document.getElementById('d1-lagna-deg-badge');
@@ -4173,27 +4983,67 @@
             const ascLon = lons.Asc || 0;
             const ascRashi = Math.floor(ascLon / 30) + 1;
             const ascRObj = RASHIS.find(x => x.num === ascRashi);
-            if (badge && ascRObj) {
-                badge.textContent = currentLang === 'hi'
-                    ? `लग्न: ${ascRObj.hindi} ${formatDMS(ascLon)}`
-                    : `Lagna: ${ascRObj.enName} ${formatDMS(ascLon)}`;
-            }
 
             const d1StateMap = {};
             for (let h = 1; h <= 12; h++) {
                 (currentChart.planets[h] || []).forEach(p => { d1StateMap[p.id] = p; });
             }
 
+            let planetPowers = {};
+            if (grahaBalaMode === 'gahan') {
+                planetPowers = computeDeepGrahaBalaPowers(lons, d1StateMap);
+            } else {
+                const { lagnaR, pHouse, pRashi, cMap } = evaluateD1YogasAndDoshas();
+                const chalitInfo = computeChalitHouseAndD1RashiMap();
+                PLANETS.forEach(p => {
+                    const pLon = lons[p.id];
+                    if (typeof pLon === 'number') {
+                        planetPowers[p.id] = Math.round(getHolisticPlanetScore(p.id, lons, pHouse, pRashi, lagnaR, cMap, chalitInfo));
+                    }
+                });
+            }
+
+            let powerSum = 0, powerCount = 0;
+            PLANETS.forEach(p => {
+                if (typeof planetPowers[p.id] === 'number') {
+                    powerSum += planetPowers[p.id];
+                    powerCount++;
+                }
+            });
+            const avgPower = powerCount > 0 ? (powerSum / powerCount) : 0;
+
+            if (badge && ascRObj) {
+                badge.textContent = currentLang === 'hi'
+                    ? `कुल बल: ${avgPower.toFixed(1)}%`
+                    : `Total Power: ${avgPower.toFixed(1)}%`;
+            }
+
             grid.innerHTML = '';
+
+            if (ascRObj) {
+                const lagnaRow = document.createElement('div');
+                lagnaRow.className = 'sm:col-span-2 flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-amber-50/80 border border-amber-200';
+                lagnaRow.innerHTML = `
+                    <div class="flex items-center gap-1.5 min-w-0">
+                        <span class="font-bold text-amber-950 truncate">${currentLang === 'hi' ? 'लग्न (कुल बल)' : 'Lagna (Avg Power)'}</span>
+                        <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-white text-amber-800 border border-amber-300 shrink-0">${avgPower.toFixed(1)}%</span>
+                    </div>
+                    <span class="text-slate-800 font-semibold text-[11px] shrink-0">${currentLang === 'hi' ? ascRObj.hindi : ascRObj.enName} ${formatDMS(ascLon)}</span>
+                `;
+                grid.appendChild(lagnaRow);
+            }
+
             PLANETS.forEach(p => {
                 const pLon = lons[p.id];
                 if (typeof pLon !== 'number') return;
-                const pRashi = Math.floor(pLon / 30) + 1;
-                const rObj = RASHIS.find(x => x.num === pRashi);
+                const pRashiNum = Math.floor(pLon / 30) + 1;
+                const rObj = RASHIS.find(x => x.num === pRashiNum);
                 const st = d1StateMap[p.id] || {};
                 const colKey = st.manualColor || st.autoColor || 'blue';
                 const hex = (COLOR_PALETTE[colKey] || COLOR_PALETTE.blue).hex;
                 const awastha = getPlanetAwastha(p.id, pLon);
+                const pwr = planetPowers[p.id] ?? 60;
+                const pwrCls = pwr >= 75 ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : pwr >= 55 ? 'bg-blue-50 text-blue-800 border-blue-200' : 'bg-rose-50 text-rose-800 border-rose-200';
 
                 let tags = '';
                 if (st.isCombust) tags += currentLang === 'hi' ? ' (अ)' : ' (C)';
@@ -4205,6 +5055,7 @@
                     <div class="flex items-center gap-1.5 min-w-0">
                         <span class="font-bold truncate" style="color:${hex}">${currentLang === 'hi' ? p.hindi : p.en}<span class="text-[10px] text-slate-500 font-semibold">${tags}</span></span>
                         <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-md border shrink-0 ${awastha.cls}">${currentLang === 'hi' ? awastha.hi : awastha.en}</span>
+                        <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-md border shrink-0 ${pwrCls}">${pwr}%</span>
                     </div>
                     <span class="text-slate-700 font-medium text-[11px] shrink-0">${currentLang === 'hi' ? rObj.hindi : rObj.enName} ${formatDMS(pLon)}</span>
                 `;
@@ -4242,9 +5093,10 @@
                 const cHouse = Math.floor(diffFromAsc / 30) + 1;
                 chalitHouseMap[p.id] = cHouse;
                 const st = d1StateMap[p.id] || {};
+                const chalitEval = computeChalitHouseAndD1RashiMap();
                 chalitPlanets[cHouse].push({
                     id: p.id,
-                    autoColor: st.manualColor || st.autoColor || 'blue',
+                    autoColor: chalitEval.cColorMap[p.id] || st.manualColor || st.autoColor || 'blue',
                     isCombust: !!st.isCombust,
                     combustColor: st.combustColor || 'red',
                     isRetrograde: !!st.isRetrograde,
@@ -5364,6 +6216,14 @@
                         <span class="text-slate-800">${moolText}</span>
                     </div>
                     <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 flex flex-wrap items-center justify-between gap-2">
+                        <span class="font-bold text-slate-700">आज का ताराबल</span>
+                        <span class="text-slate-800">${getGeneralTarabalSummary(snap.nakIdx)}</span>
+                    </div>
+                    <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 flex flex-wrap items-center justify-between gap-2">
+                        <span class="font-bold text-slate-700">आज की दिशा शूल</span>
+                        <span class="text-slate-800">${getDishaShoolText(dayOfWeek)}</span>
+                    </div>
+                    <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 flex flex-wrap items-center justify-between gap-2">
                         <span class="font-bold text-slate-700">भद्रा स्थिति</span>
                         <span>${snap.isBhadra ? '<span class="text-rose-700 font-bold">भद्रा सक्रिय है (विष्टि करण)</span>' : '<span class="text-emerald-700 font-bold">भद्रा नहीं है</span>'}</span>
                     </div>
@@ -5496,7 +6356,25 @@
                         ? '<span class="text-emerald-700 font-bold">शुभ दिन:</span> आज नए कार्य, व्यापार प्रारंभ, वाहन/संपत्ति क्रय व सामान्य मांगलिक कार्यों के लिए अनुकूल योग है (राहुकाल छोड़कर)।'
                         : '<span class="text-amber-700 font-bold">मध्यम/सामान्य दिन:</span> आज तिथि-नक्षत्र या भद्रा/पंचक के कारण बड़े मांगलिक कार्यों (विवाह, गृह प्रवेश) से पूर्व अभिजित मुहूर्त या शुभ चौघड़िया का चयन करें।'}</div>
                 </div>
+                <div class="p-4 rounded-2xl bg-teal-50/60 border border-teal-200 space-y-3 mt-3">
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <h4 class="font-bold text-teal-950 text-sm">मासिक मुहूर्त खोजक (Monthly Muhurat Finder)</h4>
+                        <div class="flex flex-wrap gap-2">
+                            <select id="main-muh-type" onchange="calcMainPanchangMuhurat()" class="px-3 py-1.5 rounded-xl border border-teal-300 bg-white text-xs font-bold text-slate-800">
+                                <option value="vivah" selected>विवाह मुहूर्त (Marriage)</option>
+                                <option value="mundan">मुंडन मुहूर्त (Mundan)</option>
+                                <option value="griha">गृह प्रवेश</option>
+                                <option value="vehicle">वाहन / संपत्ति खरीद</option>
+                                <option value="business">व्यापार / नया कार्य</option>
+                                <option value="travel">लंबी यात्रा</option>
+                            </select>
+                            <input id="main-muh-month" type="month" value="${y}-${String(m).padStart(2,'0')}" onchange="calcMainPanchangMuhurat()" class="px-3 py-1.5 rounded-xl border border-teal-300 bg-white text-xs font-bold" />
+                        </div>
+                    </div>
+                    <div id="main-muh-results" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 text-xs"></div>
+                </div>
             `;
+            calcMainPanchangMuhurat();
             renderSomvatiAmavasyaSummary(y);
             renderPanchangFestivals(y);
         }
@@ -5889,7 +6767,7 @@
         let gcSpeedMode = 'live';
         let gcSpinAngle = 0;
 
-        let gcTheme = 'dark'; // 'dark' (Black) or 'light' (White)
+        let gcTheme = 'light'; // Default White (Light) theme
 
         function setGcTheme(theme) {
             gcTheme = theme;
@@ -6210,20 +7088,20 @@
                 ctx.fillText(String(rashis[h]), rx, ry);
             }
 
-            // Strict Anti-Clockwise (Vamavarta) continuous tracks across all 12 houses: 1 -> 2 -> ... -> 12 -> 1
+            // Continuous closed Anti-Clockwise loop where every house exit point == next house entry point on exact house boundary!
             const TRACKS = {
-                1:  { x1: 550, y1: 225, x2: 350, y2: 225 },
-                2:  { x1: 325, y1: 68,  x2: 135, y2: 68  },
-                3:  { x1: 72,  y1: 135, x2: 72,  y2: 325 },
-                4:  { x1: 215, y1: 350, x2: 215, y2: 550 },
-                5:  { x1: 72,  y1: 575, x2: 72,  y2: 765 },
-                6:  { x1: 135, y1: 825, x2: 325, y2: 825 },
-                7:  { x1: 350, y1: 675, x2: 550, y2: 675 },
-                8:  { x1: 575, y1: 825, x2: 765, y2: 825 },
-                9:  { x1: 825, y1: 765, x2: 825, y2: 575 },
-                10: { x1: 685, y1: 550, x2: 685, y2: 350 },
-                11: { x1: 825, y1: 325, x2: 825, y2: 135 },
-                12: { x1: 765, y1: 68,  x2: 575, y2: 68  }
+                1:  { x1: 560, y1: 125, x2: 340, y2: 125 },
+                2:  { x1: 340, y1: 125, x2: 125, y2: 125 },
+                3:  { x1: 125, y1: 125, x2: 125, y2: 340 },
+                4:  { x1: 125, y1: 340, x2: 125, y2: 560 },
+                5:  { x1: 125, y1: 560, x2: 125, y2: 775 },
+                6:  { x1: 125, y1: 775, x2: 340, y2: 775 },
+                7:  { x1: 340, y1: 775, x2: 560, y2: 775 },
+                8:  { x1: 560, y1: 775, x2: 775, y2: 775 },
+                9:  { x1: 775, y1: 775, x2: 775, y2: 560 },
+                10: { x1: 775, y1: 560, x2: 775, y2: 340 },
+                11: { x1: 775, y1: 340, x2: 775, y2: 125 },
+                12: { x1: 775, y1: 125, x2: 560, y2: 125 }
             };
 
             const houseBuckets = {};
@@ -6244,7 +7122,7 @@
                 const tr = TRACKS[h];
                 list.forEach((item, idx) => {
                     const t = item.degInSign / 30;
-                    const jitter = (idx - (list.length - 1) / 2) * 44;
+                    const jitter = list.length > 1 ? (idx - (list.length - 1) / 2) * 26 : 0;
                     const isVert = Math.abs(tr.x2 - tr.x1) < 20;
                     const isHoriz = Math.abs(tr.y2 - tr.y1) < 20;
                     const px = tr.x1 + (tr.x2 - tr.x1) * t + (isVert ? jitter : 0);
@@ -6266,6 +7144,820 @@
                     </div>`;
                 }).join('');
             }
+        }
+
+        // ==================== MAIN UPGRADE: D1 COMPARE (D9, CHALIT, D1+D9+CHALIT WITH FULL COLORS) ====================
+        let d1CompareMode = 'none'; // 'none' | 'd9' | 'chalit' | 'both'
+
+        function onSectionPillClick() {
+            if (activeWsPanel !== 'chart') return;
+            const order = ['none', 'd9', 'chalit', 'both'];
+            const next = order[(order.indexOf(d1CompareMode) + 1) % order.length];
+            setD1CompareMode(next);
+        }
+
+        function renderColoredNorthIndianSVG(svg, chartObj, skipRecalc) {
+            if (!svg) return;
+            if (!skipRecalc) recalculateAllAutoColors(chartObj);
+            svg.innerHTML = `
+                <rect x="0" y="0" width="600" height="600" fill="#ffffff" />
+                <line x1="0" y1="0" x2="600" y2="600" stroke="#334155" stroke-width="2" />
+                <line x1="600" y1="0" x2="0" y2="600" stroke="#334155" stroke-width="2" />
+                <polygon points="300,0 0,300 300,600 600,300" fill="none" stroke="#334155" stroke-width="2" />
+                <rect x="1" y="1" width="598" height="598" fill="none" stroke="#1e293b" stroke-width="3" />
+            `;
+            const rashiCoords = {
+                1:[300,255], 2:[150,118], 3:[115,150], 4:[255,300],
+                5:[115,450], 6:[150,482], 7:[300,345], 8:[450,482],
+                9:[485,450], 10:[345,300], 11:[485,150], 12:[450,118]
+            };
+            for (let h = 1; h <= 12; h++) {
+                const [rx, ry] = rashiCoords[h];
+                const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                t.setAttribute('x', rx); t.setAttribute('y', ry);
+                t.setAttribute('text-anchor', 'middle'); t.setAttribute('dominant-baseline', 'central');
+                t.setAttribute('font-size', '18'); t.setAttribute('font-weight', '700'); t.setAttribute('fill', '#64748b');
+                t.textContent = chartObj.rashis[h];
+                svg.appendChild(t);
+
+                const pList = chartObj.planets[h] || [];
+                if (pList.length > 0) {
+                    const box = HOUSE_PLANET_BOXES[h];
+                    const fo = document.createElementNS('http://www.w3.org/2000/svg', 'foreignObject');
+                    fo.setAttribute('x', box.x); fo.setAttribute('y', box.y);
+                    fo.setAttribute('width', box.w); fo.setAttribute('height', box.h);
+                    const div = document.createElement('div');
+                    div.className = 'w-full h-full flex flex-wrap items-center justify-center content-center gap-1 p-1';
+                    const cLbl = currentLang === 'hi' ? '(अ)' : '(C)';
+                    const rLbl = currentLang === 'hi' ? '(व)' : '(R)';
+                    pList.forEach(pObj => {
+                        const pMeta = PLANETS.find(x => x.id === pObj.id);
+                        if (!pMeta) return;
+                        const sp = document.createElement('span');
+                        sp.className = 'planet-text-item';
+                        const colKey = pObj.manualColor || pObj.autoColor || 'blue';
+                        sp.style.color = (COLOR_PALETTE[colKey] || COLOR_PALETTE.blue).hex;
+                        sp.style.fontSize = '15px';
+                        sp.textContent = currentLang === 'hi' ? pMeta.hindi : pMeta.en;
+                        if (pObj.isCombust) {
+                            const ct = document.createElement('span');
+                            ct.className = 'cond-tag';
+                            ct.style.color = (CONDITION_COLORS[pObj.combustColor] || CONDITION_COLORS.red).hex;
+                            ct.textContent = cLbl;
+                            sp.appendChild(ct);
+                        }
+                        if (pObj.isRetrograde) {
+                            const rt = document.createElement('span');
+                            rt.className = 'cond-tag';
+                            rt.style.color = (CONDITION_COLORS[pObj.retroColor] || CONDITION_COLORS.pureYellow).hex;
+                            rt.textContent = rLbl;
+                            sp.appendChild(rt);
+                        }
+                        div.appendChild(sp);
+                    });
+                    fo.appendChild(div);
+                    svg.appendChild(fo);
+                }
+            }
+        }
+
+        function buildD9ChartObj() {
+            const lons = getChartLongitudes();
+            const lagnaR = computeVargaRashi(lons.Asc || 0, 9);
+            const rashis = {}, planets = {};
+            for (let h = 1; h <= 12; h++) { rashis[h] = ((lagnaR - 1 + (h - 1)) % 12) + 1; planets[h] = []; }
+            const d1StateMap = {};
+            for (let h = 1; h <= 12; h++) (currentChart.planets[h] || []).forEach(p => { d1StateMap[p.id] = p; });
+            PLANETS.forEach(p => {
+                const pLon = lons[p.id];
+                if (typeof pLon !== 'number') return;
+                const pR = computeVargaRashi(pLon, 9);
+                const d1P = d1StateMap[p.id] || {};
+                const pObj = {
+                    id: p.id, autoColor: 'blue', manualColor: null,
+                    isCombust: !!d1P.isCombust, combustColor: d1P.combustColor || 'red',
+                    isRetrograde: (p.id === 'Rahu' || p.id === 'Ketu') ? true : !!d1P.isRetrograde, retroColor: 'pureYellow'
+                };
+                for (let h = 1; h <= 12; h++) { if (rashis[h] === pR) { planets[h].push(pObj); break; } }
+            });
+            return { rashis, planets };
+        }
+
+        function computeChalitHouseAndD1RashiMap() {
+            const lons = getChartLongitudes();
+            const lagnaDeg = lons.Asc || 0;
+            const lagnaR = currentChart.rashis[1] || (Math.floor(lagnaDeg / 30) + 1);
+            const rashis = {}, planets = {}, cHouseMap = {}, cColorMap = {}, d1RashiMap = {};
+            for (let h = 1; h <= 12; h++) { rashis[h] = ((lagnaR - 1 + (h - 1)) % 12) + 1; planets[h] = []; }
+            const d1StateMap = {};
+            for (let h = 1; h <= 12; h++) (currentChart.planets[h] || []).forEach(p => { d1StateMap[p.id] = p; });
+
+            // Place planets into Chalit houses, remembering each planet's D1 Rashi
+            PLANETS.forEach(p => {
+                const pLon = lons[p.id];
+                if (typeof pLon !== 'number') return;
+                const diff = ((pLon - lagnaDeg + 15) % 360 + 360) % 360;
+                const ch = Math.floor(diff / 30) + 1;
+                const d1R = Math.floor(pLon / 30) + 1;
+                cHouseMap[p.id] = ch;
+                d1RashiMap[p.id] = d1R;
+                const d1P = d1StateMap[p.id] || {};
+                planets[ch].push({
+                    id: p.id, d1Rashi: d1R, autoColor: 'blue', manualColor: null,
+                    isCombust: !!d1P.isCombust, combustColor: d1P.combustColor || 'red',
+                    isRetrograde: (p.id === 'Rahu' || p.id === 'Ketu') ? true : !!d1P.isRetrograde, retroColor: 'pureYellow'
+                });
+            });
+
+            // Evaluate each planet's color using Chalit House + D1 Rashi!
+            PLANETS.forEach(p => {
+                const ch = cHouseMap[p.id];
+                if (!ch) return;
+                const tempChart = {
+                    rashis: Object.assign({}, rashis),
+                    planets: {}
+                };
+                tempChart.rashis[ch] = d1RashiMap[p.id]; // Keep D1 Rashi for this planet in its Chalit House
+                for (let h = 1; h <= 12; h++) {
+                    tempChart.planets[h] = (planets[h] || []).map(item => Object.assign({}, item));
+                }
+                recalculateAllAutoColors(tempChart);
+                const evaluated = (tempChart.planets[ch] || []).find(item => item.id === p.id);
+                const finalCol = evaluated ? evaluated.autoColor : 'blue';
+                cColorMap[p.id] = finalCol;
+                const targetObj = (planets[ch] || []).find(item => item.id === p.id);
+                if (targetObj) targetObj.autoColor = finalCol;
+            });
+
+            return { rashis, planets, cHouseMap, cColorMap, d1RashiMap };
+        }
+
+        function buildChalitChartObj() {
+            const res = computeChalitHouseAndD1RashiMap();
+            return { rashis: res.rashis, planets: res.planets };
+        }
+
+        function setD1CompareMode(mode) {
+            d1CompareMode = mode;
+            const pill = document.getElementById('ws-active-section-pill');
+            if (pill && activeWsPanel === 'chart') {
+                const labels = {
+                    none:   currentLang === 'hi' ? 'लग्न कुंडली (D1) ▾' : 'Lagna Chart (D1) ▾',
+                    d9:     currentLang === 'hi' ? 'D1 + D9 ▾' : 'D1 + D9 ▾',
+                    chalit: currentLang === 'hi' ? 'D1 + चलित ▾' : 'D1 + Chalit ▾',
+                    both:   currentLang === 'hi' ? 'D1 + D9 + चलित ▾' : 'D1 + D9 + Chalit ▾'
+                };
+                pill.textContent = labels[mode] || labels.none;
+            }
+            const box2 = document.getElementById('d1-secondary-chart-box');
+            const title2 = document.getElementById('d1-secondary-title');
+            const svg2 = document.getElementById('kundli-secondary-svg');
+            const box3 = document.getElementById('d1-tertiary-chart-box');
+            const title3 = document.getElementById('d1-tertiary-title');
+            const svg3 = document.getElementById('kundli-tertiary-svg');
+            if (!box2 || !box3) return;
+
+            box2.classList.add('hidden'); box2.classList.remove('flex');
+            box3.classList.add('hidden'); box3.classList.remove('flex');
+
+            if (mode === 'd9') {
+                box2.classList.remove('hidden'); box2.classList.add('flex');
+                if (title2) title2.textContent = currentLang === 'hi' ? 'नवमांश कुंडली (D9)' : 'Navamsa Chart (D9)';
+                renderColoredNorthIndianSVG(svg2, buildD9ChartObj());
+            } else if (mode === 'chalit') {
+                box2.classList.remove('hidden'); box2.classList.add('flex');
+                if (title2) title2.textContent = currentLang === 'hi' ? 'चलित कुंडली (Bhava Chalit)' : 'Chalit Kundli';
+                renderColoredNorthIndianSVG(svg2, buildChalitChartObj(), true);
+            } else if (mode === 'both') {
+                box2.classList.remove('hidden'); box2.classList.add('flex');
+                if (title2) title2.textContent = currentLang === 'hi' ? 'नवमांश कुंडली (D9)' : 'Navamsa Chart (D9)';
+                renderColoredNorthIndianSVG(svg2, buildD9ChartObj());
+                box3.classList.remove('hidden'); box3.classList.add('flex');
+                if (title3) title3.textContent = currentLang === 'hi' ? 'चलित कुंडली (Bhava Chalit)' : 'Chalit Kundli';
+                renderColoredNorthIndianSVG(svg3, buildChalitChartObj(), true);
+            }
+        }
+
+        // ==================== MAIN UPGRADE: PANCHANG TARABAL, DISHA SHOOL & MUHURAT FINDER ====================
+        function getGeneralTarabalSummary(nakIdx) {
+            const curNak = currentLang === 'hi' ? (NAKSHATRAS_HI[nakIdx] || '') : (NAKSHATRAS_EN[nakIdx] || '');
+            return currentLang === 'hi'
+                ? `आज <strong>${curNak}</strong> नक्षत्र है — जन्म नक्षत्र से 2 (संपत), 4 (क्षेम), 6 (साधक), 8 (मित्र), 9 (परम मित्र) तारा शुभ माने जाते हैं।`
+                : `Today's Nakshatra is <strong>${curNak}</strong> — Tara 2 (Sampat), 4 (Kshema), 6 (Sadhaka), 8 (Mitra), and 9 (Parama Mitra) from birth Nakshatra are favorable.`;
+        }
+        function getDishaShoolText(dow) {
+            const hi = [
+                'पश्चिम (परिहार: दलिया/घी सेवन)', 'पूर्व (परिहार: दर्पण देखकर या दूध)', 'उत्तर (परिहार: गुड़ सेवन)',
+                'उत्तर (परिहार: तिल/धनिया)', 'दक्षिण (परिहार: दही/जीरा)', 'पश्चिम (परिहार: जौ/दही)', 'पूर्व (परिहार: अदरक/उड़द)'
+            ];
+            const en = [
+                'West (Remedy: Ghee/Porridge)', 'East (Remedy: Mirror/Milk)', 'North (Remedy: Jaggery)',
+                'North (Remedy: Sesame/Coriander)', 'South (Remedy: Curd/Cumin)', 'West (Remedy: Barley/Curd)', 'East (Remedy: Ginger/Black gram)'
+            ];
+            return (currentLang === 'hi' ? hi[dow] : en[dow]) || '—';
+        }
+        function calcMainPanchangMuhurat() {
+            const out = document.getElementById('main-muh-results');
+            if (!out) return;
+            const type = document.getElementById('main-muh-type')?.value || 'vivah';
+            const ym = document.getElementById('main-muh-month')?.value || '2026-11';
+            const [y, m] = ym.split('-').map(Number);
+            const days = new Date(y, m, 0).getDate();
+            const goodNaks = {
+                vivah:   [3,4,9,11,12,14,16,18,20,25,26],
+                mundan:  [0,4,6,7,12,13,14,21,22,23,26],
+                griha:   [3,4,7,11,12,13,16,20,21,22,25,26],
+                vehicle: [0,3,6,7,12,13,14,21,22,23,26],
+                business:[0,3,6,7,11,12,13,14,16,20,21,26],
+                travel:  [0,4,6,7,12,14,16,21,26]
+            }[type] || [3,7,12,21];
+
+            const matches = [];
+            for (let d=1; d<=days; d++) {
+                const dt = new Date(y, m-1, d, 6, 30);
+                const sn = getPanchangSnapshot(dt);
+                const tNum1Based = sn.tithiIdx + 1;
+                const rikta = [4,9,14,19,24,29,30].includes(tNum1Based);
+                const dow = dt.getDay();
+                if (!rikta && goodNaks.includes(sn.nakIdx) && dow !== 2 && !sn.isBhadra) {
+                    const paksha = currentLang === 'hi'
+                        ? (tNum1Based <= 15 ? 'शुक्ल' : 'कृष्ण')
+                        : (tNum1Based <= 15 ? 'Shukla' : 'Krishna');
+                    const tn = tNum1Based <= 15 ? tNum1Based : tNum1Based - 15;
+                    const dayStr = currentLang === 'hi' ? WEEKDAYS_HI[dow] : WEEKDAYS_EN[dow];
+                    const nakStr = currentLang === 'hi' ? NAKSHATRAS_HI[sn.nakIdx] : NAKSHATRAS_EN[sn.nakIdx];
+                    matches.push({ d, day: dayStr, paksha, tn, nak: nakStr });
+                }
+            }
+            const tithiLbl = currentLang === 'hi' ? 'तिथि' : 'Tithi';
+            out.innerHTML = matches.length ? matches.map(x => `
+                <div class="p-3 rounded-xl bg-white border border-teal-200">
+                    <div class="font-bold text-slate-900">${String(x.d).padStart(2,'0')}/${String(m).padStart(2,'0')}/${y} • ${x.day}</div>
+                    <div class="text-teal-800 mt-0.5">${x.paksha} ${tithiLbl} ${x.tn} • <strong>${x.nak}</strong></div>
+                </div>
+            `).join('') : `<div class="text-slate-500 col-span-full">${currentLang === 'hi' ? 'इस माह में चयनित कार्य के लिए कम मुहूर्त मिले — अगला माह देखें।' : 'Few matching Muhurats in this month — try another month.'}</div>`;
+        }
+
+        // ==================== MAIN UPGRADE: UPAGRAHA CHAKRA IN ADVANCED CHARTS ====================
+        function renderUpagrahaInMahakundli() {
+            const filters = document.getElementById('mk-filters-bar');
+            if (filters) filters.classList.add('hidden');
+            const banner = document.getElementById('mk-muntha-banner');
+            const lons = getChartLongitudes();
+            const lagnaR = currentChart.rashis[1] || (Math.floor((lons.Asc||0)/30)+1);
+            const [by,bm,bd] = (currentChart.dob||'2000-01-01').split('-').map(Number);
+            const dow = new Date(by, bm-1, bd).getDay();
+            const sunLon = lons.Sun || 0;
+            const dhuma = (sunLon + 133.3333)%360;
+            const vyat = (360 - dhuma)%360;
+            const pari = (vyat + 180)%360;
+            const indra = (360 - pari)%360;
+            const upaK = (indra + 16.6667)%360;
+            const gSlot = [6,5,4,3,2,1,0][dow];
+            const pDeg = s => ((lons.Asc||0) + s*22.5)%360;
+            const list = [
+                { hi:'गुलिक', en:'Gulika', lon:pDeg(gSlot) }, { hi:'मांदी', en:'Mandi', lon:(pDeg(gSlot)+4)%360 },
+                { hi:'यमघंटक', en:'Yamaghantaka', lon:pDeg((gSlot+4)%8) }, { hi:'काल', en:'Kala', lon:pDeg((gSlot+1)%8) },
+                { hi:'मृत्यु', en:'Mrityu', lon:pDeg((gSlot+2)%8) }, { hi:'अर्धप्रहर', en:'Ardhaprahara', lon:pDeg((gSlot+3)%8) },
+                { hi:'धूम', en:'Dhuma', lon:dhuma }, { hi:'व्यतिपात', en:'Vyatipata', lon:vyat },
+                { hi:'परिवेश', en:'Parivesha', lon:pari }, { hi:'इंद्रचाप', en:'Indrachapa', lon:indra }, { hi:'उपकेतु', en:'Upaketu', lon:upaK }
+            ];
+            if (banner) {
+                banner.innerHTML = currentLang === 'hi'
+                    ? `<strong>उपग्रह चक्र (11 अप्रकाश ग्रह):</strong> जन्म वार व सूर्य अंश से गुलिक, मांदी, यमघंटक, काल, मृत्यु, अर्धप्रहर, धूम, व्यतिपात, परिवेश, इंद्रचाप और उपकेतु की स्थिति।`
+                    : `<strong>Upagraha Chart (11 Sub-Planets):</strong> Positions of Gulika, Mandi, Yamaghantaka, Kala, Mrityu, Ardhaprahara, Dhuma, Vyatipata, Parivesha, Indrachapa, and Upaketu.`;
+            }
+
+            const houseItems = Array.from({length:12}, ()=>[]);
+            list.forEach(u => {
+                const r = Math.floor(u.lon/30)+1;
+                const h = ((r - lagnaR + 12)%12);
+                houseItems[h].push(currentLang === 'hi' ? u.hi : u.en);
+            });
+            const svg = document.getElementById('mahakundli-svg');
+            if (svg) {
+                const polys = [
+                    '300,0 150,150 300,300 450,150', '0,0 300,0 150,150', '0,0 150,150 0,300',
+                    '150,150 0,300 150,450 300,300', '0,300 150,450 0,600', '0,600 150,450 300,600',
+                    '300,300 150,450 300,600 450,450', '300,600 450,450 600,600', '450,450 600,300 600,600',
+                    '300,300 450,150 600,300 450,450', '450,150 600,0 600,300', '300,0 600,0 450,150'
+                ];
+                const centers = [[300,150],[150,70],[70,150],[150,300],[70,450],[150,530],[300,450],[450,530],[530,450],[450,300],[530,150],[450,70]];
+                const rPos = [[300,255],[150,118],[115,150],[255,300],[115,450],[150,482],[300,345],[450,482],[485,450],[345,300],[485,150],[450,118]];
+                let out = `<rect x="0" y="0" width="600" height="600" fill="#ffffff" stroke="#1e293b" stroke-width="3"/>`;
+                polys.forEach((pts, i) => {
+                    const rNum = ((lagnaR - 1 + i)%12)+1;
+                    out += `<polygon points="${pts}" fill="none" stroke="#334155" stroke-width="2"/>`;
+                    out += `<text x="${rPos[i][0]}" y="${rPos[i][1]}" font-size="16" font-weight="700" fill="#64748b" text-anchor="middle">${rNum}</text>`;
+                    if (houseItems[i].length) {
+                        out += `<text x="${centers[i][0]}" y="${centers[i][1]}" font-size="12" font-weight="700" fill="#9f1239" text-anchor="middle">${houseItems[i].join(', ')}</text>`;
+                    }
+                });
+                svg.innerHTML = out;
+            }
+            const meta = document.getElementById('mk-meta-info');
+            const pList = document.getElementById('mk-planets-list');
+            if (meta) meta.textContent = currentLang === 'hi' ? 'सभी 11 उपग्रहों के भाव, राशि व अंश:' : 'House, Sign & Degrees for all 11 Upagrahas:';
+            if (pList) {
+                const hLbl = currentLang === 'hi' ? 'भाव' : 'House';
+                pList.innerHTML = list.map(u => {
+                    const r = Math.floor(u.lon/30)+1;
+                    const h = ((r - lagnaR + 12)%12)+1;
+                    const rName = currentLang === 'hi' ? RASHIS[r-1].hindi : RASHIS[r-1].enName;
+                    return `<div class="flex items-center justify-between px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200">
+                        <span class="font-bold text-slate-900">${currentLang === 'hi' ? u.hi : u.en}</span>
+                        <span class="text-slate-700">${hLbl} ${h} • ${rName} ${(u.lon%30).toFixed(2)}°</span>
+                    </div>`;
+                }).join('');
+            }
+        }
+
+        // ==================== SHARED D1-FIRST YOGA & DOSHA ENGINE (BILINGUAL) ====================
+        function evaluateD1YogasAndDoshas() {
+            const lons = getChartLongitudes();
+            const rLords = { 1:'Mars',2:'Venus',3:'Mercury',4:'Moon',5:'Sun',6:'Mercury',7:'Venus',8:'Mars',9:'Jupiter',10:'Saturn',11:'Saturn',12:'Jupiter' };
+            const pHouse = {}, pRashi = {}, hLords = {}, cMap = {};
+
+            const lagnaR = (currentChart.rashis && currentChart.rashis[1]) ? currentChart.rashis[1] : (Math.floor((lons.Asc||0)/30)+1);
+            for (let h=1; h<=12; h++) {
+                const r = (currentChart.rashis && currentChart.rashis[h]) ? currentChart.rashis[h] : (((lagnaR-1+(h-1))%12)+1);
+                hLords[h] = rLords[r];
+                ((currentChart.planets && currentChart.planets[h]) || []).forEach(p => {
+                    pHouse[p.id] = h;
+                    pRashi[p.id] = r;
+                    cMap[p.id] = p.manualColor || p.autoColor || 'blue';
+                });
+            }
+            PLANETS.forEach(p => {
+                if (!pHouse[p.id]) {
+                    pRashi[p.id] = Math.floor((lons[p.id]||0)/30)+1;
+                    pHouse[p.id] = ((pRashi[p.id]-lagnaR+12)%12)+1;
+                }
+            });
+
+            const pName = id => { const x = PLANETS.find(p=>p.id===id); return x ? (currentLang==='hi'?x.hindi:x.en) : id; };
+            const hi = currentLang === 'hi';
+            const yogas = [];
+            const jFromM = ((pHouse.Jupiter - pHouse.Moon + 12)%12)+1;
+            if ([1,4,7,10].includes(jFromM)) yogas.push(hi ? 'गजकेसरी योग (D1 में गुरु-चंद्र केंद्र संबंध)' : 'Gajakesari Yoga (Jupiter-Moon in Kendra in D1)');
+            if (pHouse.Sun === pHouse.Mercury) yogas.push(hi ? 'बुधादित्य योग (D1 में सूर्य-बुध युति)' : 'Budhaditya Yoga (Sun-Mercury conjunction in D1)');
+            if ([1,4,7,10].includes(pHouse.Mars) && [1,8,10].includes(pRashi.Mars)) yogas.push(hi ? 'रुचक महापुरुष योग (D1 मंगल)' : 'Ruchaka Mahapurusha Yoga (D1 Mars)');
+            if ([1,4,7,10].includes(pHouse.Mercury) && [3,6].includes(pRashi.Mercury)) yogas.push(hi ? 'भद्र महापुरुष योग (D1 बुध)' : 'Bhadra Mahapurusha Yoga (D1 Mercury)');
+            const jH = pHouse.Jupiter, jR = pRashi.Jupiter;
+            if ([1,4].includes(jH) && [4,9].includes(jR)) {
+                yogas.push(hi ? 'विशिष्ट हंस योग (1st/4th में कर्क/धनु का अत्यंत बलवान गुरु — प्रबल प्रभाव, प्रसिद्धि व वाणी का गहरा महत्व)' : 'Special Hamsa Yoga (Jupiter in 1st/4th in Cancer/Sagittarius — high influence, fame & impactful speech)');
+            } else if ([1,4,7,10].includes(jH) && [4,9,12].includes(jR)) {
+                yogas.push(hi ? 'हंस महापुरुष योग (D1 गुरु)' : 'Hamsa Mahapurusha Yoga (D1 Jupiter)');
+            }
+            if ([1,4,7,10].includes(jH) && jR === 9) {
+                yogas.push(hi ? 'महा सौभाग्यशाली योग (धनु मूल त्रिकोण का गुरु केंद्र में — किस्मत सदैव समर्थन में)' : 'Maha Saubhagyashali Yoga (Sagittarius Jupiter in Kendra — destiny strongly supportive)');
+            } else if (([1,4,7,10].includes(jH) && [4,9,12].includes(jR)) || [1,5,9].includes(jH)) {
+                yogas.push(hi ? 'सौभाग्यशाली योग (केंद्र/त्रिकोण में शुभ गुरु — नियति का साथ)' : 'Saubhagyashali Yoga (Jupiter in Kendra/Trikona — fortune support)');
+            }
+            if (pHouse.Sun === jH && cMap.Jupiter === 'green') {
+                yogas.push(hi ? 'ज्ञान योग (सूर्य + शुभ ग्रीन गुरु युति)' : 'Gyan Yoga (Sun + Green Jupiter conjunction)');
+            }
+            if ([1,4,7,10].includes(pHouse.Venus) && [2,7,12].includes(pRashi.Venus)) yogas.push(hi ? 'मालव्य महापुरुष योग (D1 शुक्र)' : 'Malavya Mahapurusha Yoga (D1 Venus)');
+            if ([1,4,7,10].includes(pHouse.Saturn) && [7,10,11].includes(pRashi.Saturn)) yogas.push(hi ? 'शश महापुरुष योग (D1 शनि)' : 'Shasha Mahapurusha Yoga (D1 Saturn)');
+            [1,4,7,10].forEach(k => [1,5,9].forEach(t => {
+                if (k !== t && hLords[k] !== hLords[t] && pHouse[hLords[k]] === pHouse[hLords[t]]) {
+                    yogas.push(hi ? `केंद्र-त्रिकोण राजयोग (${k}वें व ${t}वें भावेष की युति D1 भाव ${pHouse[hLords[k]]} में)` : `Kendra-Trikona Rajyoga (Lords of H${k} & H${t} in D1 House ${pHouse[hLords[k]]})`);
+                }
+            }));
+            [6,8,12].forEach(d => { if ([6,8,12].includes(pHouse[hLords[d]])) yogas.push(hi ? `विपरीत राजयोग (D1 ${d}वें भावेष ${pName(hLords[d])} भाव ${pHouse[hLords[d]]} में)` : `Vipareeta Rajyoga (D1 H${d} Lord ${pName(hLords[d])} in H${pHouse[hLords[d]]})`); });
+            if (pHouse[hLords[2]] === pHouse[hLords[11]] || pHouse[hLords[5]] === pHouse[hLords[9]]) yogas.push(hi ? 'धन / लक्ष्मी योग (D1 2/11 या 5/9 भावेष संबंध)' : 'Dhana / Lakshmi Yoga (D1 H2/H11 or H5/H9 link)');
+            const sunNext = ((pHouse.Sun)%12)+1, sunPrev = pHouse.Sun===1?12:pHouse.Sun-1;
+            if (PLANETS.some(p=>!['Sun','Moon','Rahu','Ketu'].includes(p.id) && pHouse[p.id]===sunNext)) yogas.push(hi ? 'वेशी योग (D1 सूर्य से द्वितीय भाव में ग्रह)' : 'Vesi Yoga (Planet in 2nd from Sun in D1)');
+            if (PLANETS.some(p=>!['Sun','Moon','Rahu','Ketu'].includes(p.id) && pHouse[p.id]===sunPrev)) yogas.push(hi ? 'वोशी योग (D1 सूर्य से द्वादश भाव में ग्रह)' : 'Voshi Yoga (Planet in 12th from Sun in D1)');
+            const vargCount = PLANETS.filter(p => pRashi[p.id] === computeVargaRashi(lons[p.id]||0, 9)).length;
+            if (vargCount > 0) yogas.push(hi ? `वर्गोत्तम ग्रह बल (${vargCount} ग्रह D1 व D9 में समान राशि में)` : `Vargottama Strength (${vargCount} planet(s) in same sign in D1 & D9)`);
+
+            const doshas = [];
+            if ([1,2,4,7,8,12].includes(pHouse.Mars)) {
+                const hasParihar = [1,8,10].includes(pRashi.Mars) || pHouse.Jupiter === pHouse.Mars || [1,4,7,10].includes(pHouse.Jupiter);
+                doshas.push(hi ? `मांगलिक दोष (D1 मंगल भाव ${pHouse.Mars} में${hasParihar ? ' — गुरु/स्वराशि परिहार सक्रिय' : ''})` : `Manglik Dosha (D1 Mars in H${pHouse.Mars}${hasParihar ? ' — Cancellation active' : ''})`);
+            }
+
+            const ksNamesHi = ['अनंत','कुलिक','वासुकि','शंखपाल','पद्म','महापद्म','तक्षक','कर्कोटक','शंखचूड़','घातक','विषधर','शेषनाग'];
+            const ksNamesEn = ['Ananta','Kulika','Vasuki','Shankhapala','Padma','Mahapadma','Takshaka','Karkotaka','Shankhachuda','Ghataka','Vishadhara','Sheshnag'];
+            const rH = pHouse.Rahu, kH = pHouse.Ketu;
+            const seven = ['Sun','Moon','Mars','Mercury','Jupiter','Venus','Saturn'];
+            const inArcHouse = (a, b, x) => (a <= b) ? (x >= a && x <= b) : (x >= a || x <= b);
+            if (seven.every(id => inArcHouse(rH, kH, pHouse[id])) || seven.every(id => inArcHouse(kH, rH, pHouse[id]))) {
+                const ksType = (hi ? ksNamesHi : ksNamesEn)[(rH - 1) % 12] || '';
+                doshas.push(hi ? `${ksType} कालसर्प दोष (D1 में सभी 7 ग्रह राहु [भाव ${rH}] – केतु [भाव ${kH}] अक्ष के एक ओर)` : `${ksType} Kaal Sarp Dosha (All 7 planets hemmed between Rahu H${rH} & Ketu H${kH} in D1)`);
+            }
+
+            if (pHouse.Sun === pHouse.Rahu || pHouse.Sun === pHouse.Ketu) doshas.push(hi ? 'सूर्य ग्रहण योग (D1 में सूर्य-राहु/केतु युति)' : 'Surya Grahan Yoga (Sun-Rahu/Ketu in D1)');
+            if (pHouse.Moon === pHouse.Rahu || pHouse.Moon === pHouse.Ketu) doshas.push(hi ? 'चंद्र ग्रहण योग (D1 में चंद्र-राहु/केतु युति)' : 'Chandra Grahan Yoga (Moon-Rahu/Ketu in D1)');
+            if (pHouse.Saturn === pHouse.Rahu) doshas.push(hi ? 'श्रापित दोष (D1 में शनि-राहु युति)' : 'Shrapit Dosha (Saturn-Rahu in D1)');
+            if (pHouse.Mars === pHouse.Rahu || pHouse.Mars === pHouse.Ketu) doshas.push(hi ? 'अंगारक योग (D1 में मंगल-राहु/केतु युति)' : 'Angarak Yoga (Mars-Rahu/Ketu in D1)');
+            if (pHouse.Jupiter === pHouse.Rahu || pHouse.Jupiter === pHouse.Ketu) doshas.push(hi ? 'गुरु-चांडाल योग (D1 में गुरु-राहु/केतु युति)' : 'Guru-Chandal Yoga (Jupiter-Rahu/Ketu in D1)');
+            if (pHouse.Saturn === pHouse.Moon) doshas.push(hi ? 'विष योग (D1 में शनि-चंद्र युति)' : 'Vish Yoga (Saturn-Moon in D1)');
+
+            return { lons, lagnaR, pHouse, pRashi, hLords, cMap, yogas, doshas };
+        }
+
+        // ==================== MAIN UPGRADE: ANALYSIS (ALL YOGAS, DOSHAS, HOLISTIC CAREER & JOB VS BUSINESS) ====================
+        function getHolisticPlanetScore(id, lons, pHouse, pRashi, lagnaR, cMap, chalitInfo) {
+            const cScore = { green:94, pureYellow:86, blue:71, pink:57, orange:42, red:27 };
+            const d1Base = cScore[cMap[id]] || 64;
+            const chCol = chalitInfo && chalitInfo.cColorMap ? chalitInfo.cColorMap[id] : null;
+            const chBase = chCol ? (cScore[chCol] || d1Base) : d1Base;
+            const base = d1Base * 0.65 + chBase * 0.35; // Combine D1 + Chalit Color (with D1 Rashi)
+
+            const lon = lons[id] || 0;
+            const deg = lon % 30;
+            const degBonus = (deg >= 6 && deg <= 24) ? 5.2 : (deg >= 2 && deg <= 28) ? 2.1 : -1.5;
+            const d1H = pHouse[id] || 1;
+            const chH = (chalitInfo && chalitInfo.cHouseMap && chalitInfo.cHouseMap[id]) ? chalitInfo.cHouseMap[id] : d1H;
+            const hBonus = ([1,4,7,10,5,9,11].includes(d1H) ? 4.2 : [6,8,12].includes(d1H) ? -3.0 : 1.0)
+                         + ([1,4,7,10,5,9,11].includes(chH) ? 2.8 : [6,8,12].includes(chH) ? -1.8 : 0.6);
+
+            const dig = (typeof CHART_1_3_DIGNITY !== 'undefined' && CHART_1_3_DIGNITY[id]) ? CHART_1_3_DIGNITY[id] : null;
+            const r1 = pRashi[id] || 1;
+            let digBonus = 0;
+            if (dig) {
+                if (dig.exalted.includes(r1)) digBonus += 8.5;
+                else if (dig.own.includes(r1) || dig.mooltrikona.includes(r1)) digBonus += 6.2;
+                else if (dig.friend.includes(r1)) digBonus += 2.8;
+                else if (dig.debilitated.includes(r1)) digBonus -= 6.5;
+                else if (dig.enemy.includes(r1)) digBonus -= 3.2;
+            }
+            const d9R = computeVargaRashi(lon, 9);
+            const d9Lagna = computeVargaRashi(lons.Asc || 0, 9);
+            const d9H = ((d9R - d9Lagna + 12) % 12) + 1;
+            let d9Bonus = [1,4,7,10,5,9].includes(d9H) ? 4.3 : [6,8,12].includes(d9H) ? -2.4 : 1.1;
+            if (r1 === d9R) d9Bonus += 4.5;
+            const d10R = computeVargaRashi(lon, 10);
+            const d10Lagna = computeVargaRashi(lons.Asc || 0, 10);
+            const d10H = ((d10R - d10Lagna + 12) % 12) + 1;
+            const d10Bonus = [1,4,7,10,9,11].includes(d10H) ? 5.1 : [6,8,12].includes(d10H) ? -2.6 : 1.2;
+            const savProxy = ((chH * 7 + r1 * 3 + Math.floor(deg)) % 14) + 22;
+            const avBonus = (savProxy - 28) * 0.45;
+            return Math.max(18, Math.min(99.5, base + degBonus + hBonus + digBonus + d9Bonus + d10Bonus + avBonus));
+        }
+
+        function getJyotishSamhitaInsights(lons, lagnaR, pHouse, pRashi, hLords, hi) {
+            const rLords = { 1:'Mars',2:'Venus',3:'Mercury',4:'Moon',5:'Sun',6:'Mercury',7:'Venus',8:'Mars',9:'Jupiter',10:'Saturn',11:'Saturn',12:'Jupiter' };
+            const pName = id => { const x = PLANETS.find(p=>p.id===id); return x ? (hi?x.hindi:x.en) : id; };
+            const riseYr = { Jupiter:16, Sun:22, Moon:24, Venus:25, Mars:28, Mercury:32, Saturn:36, Rahu:42, Ketu:42 };
+
+            // 1. Bhagyodaya (9th lord -> Karta -> Upakarta)
+            const bhagyesh = hLords[9];
+            const bhagyaR = pRashi[bhagyesh] || 1;
+            const karta = rLords[bhagyaR];
+            const kartaR = pRashi[karta] || 1;
+            const upakarta = rLords[kartaR];
+            const degDiff = Math.abs(((lons[bhagyesh]||0)%30) - ((lons[karta]||0)%30));
+            const bhagyaMsg = hi
+                ? `भाग्येश: <strong>${pName(bhagyesh)}</strong> • कर्ता: <strong>${pName(karta)} (${riseYr[karta]||'—'}वाँ वर्ष)</strong> • उपकर्ता: <strong>${pName(upakarta)} (${riseYr[upakarta]||'—'}वाँ वर्ष)</strong>${degDiff<=10?' (10° के भीतर — प्रबल भाग्योदय योग)':''}`
+                : `Bhagyesh: <strong>${pName(bhagyesh)}</strong> • Karta: <strong>${pName(karta)} (Yr ${riseYr[karta]||'—'})</strong> • Upakarta: <strong>${pName(upakarta)} (Yr ${riseYr[upakarta]||'—'})</strong>${degDiff<=10?' (Within 10° — strong fortune rise)':''}`;
+
+            // 2. Lakhpati / Crorepati / Hazarpati Yoga (Kalas)
+            const kalas = { Sun:30, Moon:16, Jupiter:10, Mercury:8, Venus:12, Saturn:1, Mars:2 };
+            const moonR = pRashi.Moon || 1;
+            const ninthFromMoonR = ((moonR + 7) % 12) + 1;
+            const l9Lagna = hLords[9], l9Moon = rLords[ninthFromMoonR];
+            let kSum = (kalas[l9Lagna] || 5) + (kalas[l9Moon] || 5);
+            let rem = kSum > 12 ? (kSum % 12 || 12) : kSum;
+            const targetH = ((pHouse.Moon - 1 + rem - 1) % 12) + 1;
+            const inTarget = PLANETS.filter(p => pHouse[p.id] === targetH);
+            const hasBen = inTarget.some(p => ['Jupiter','Venus','Mercury','Moon'].includes(p.id));
+            const hasMal = inTarget.some(p => ['Sun','Mars','Saturn','Rahu','Ketu'].includes(p.id));
+            let kalaYoga = hi ? 'सामान्य धन योग (लक्ष-स्थान रिक्त)' : 'Standard Wealth Yoga (target house empty)';
+            if (hasBen && hasMal) kalaYoga = hi ? `लखपति योग संकेत (चंद्र से ${rem}वें भाव ${targetH} में शुभ+पाप ग्रह)` : `Lakhpati Yoga indication (Benefic+Malefic in H${targetH})`;
+            else if (hasBen) kalaYoga = hi ? `करोड़पति योग संकेत (चंद्र से ${rem}वें भाव ${targetH} में शुभ ग्रह)` : `Crorepati Yoga indication (Benefic in H${targetH})`;
+            else if (hasMal) kalaYoga = hi ? `संघर्ष से धन / हजारपति योग (चंद्र से ${rem}वें भाव ${targetH} में क्रूर ग्रह)` : `Hazarpati / Effort Wealth Yoga (Malefic in H${targetH})`;
+
+            // 3. Powerful Marakesh (owns 2 among 2,3,6,7,8,11,12)
+            const marakHouses = [2,3,6,7,8,11,12];
+            const ownCount = {};
+            marakHouses.forEach(h => { ownCount[hLords[h]] = (ownCount[hLords[h]]||0) + 1; });
+            const strongMaraks = Object.keys(ownCount).filter(k => ownCount[k] >= 2).map(pName);
+
+            // 4. Foreign Travel & Dharma-Karmadhipati
+            const foreignHits = [];
+            if (pHouse[hLords[1]] === 12) foreignHits.push(hi ? 'लग्नेश 12वें भाव में' : 'Lagnesh in H12');
+            if (pHouse[hLords[4]] === 12) foreignHits.push(hi ? 'चतुर्थेश 12वें भाव में' : '4th Lord in H12');
+            if (pHouse.Rahu === 12) foreignHits.push(hi ? 'राहु 12वें भाव में' : 'Rahu in H12');
+            if (pHouse.Saturn === 12) foreignHits.push(hi ? 'शनि 12वें भाव में' : 'Saturn in H12');
+            const dkYoga = (pHouse[hLords[9]] === pHouse[hLords[10]] || ((pHouse[hLords[9]] - pHouse[hLords[10]] + 12)%12) === 6);
+
+            // 5. Hora Wealth (D2)
+            const d2Lagna = computeVargaRashi(lons.Asc || 0, 2);
+            const horaType = (d2Lagna === 4)
+                ? (hi ? 'चंद्र होरा (परिवार व पैतृक सहयोग से धन संभावना)' : 'Moon Hora (Family & ancestral wealth support)')
+                : (hi ? 'सूर्य होरा (स्व-परिश्रम व बाहुबल से धन संभावना)' : 'Sun Hora (Self-earned wealth via effort)');
+
+            return { bhagyaMsg, kalaYoga, strongMaraks, foreignHits, dkYoga, horaType };
+        }
+
+        function renderMainAnalysisPanel() {
+            const box = document.getElementById('main-analysis-content');
+            if (!box) return;
+            const hi = currentLang === 'hi';
+            const { lons, lagnaR, pHouse, pRashi, hLords, cMap, yogas, doshas } = evaluateD1YogasAndDoshas();
+            const jsInsights = getJyotishSamhitaInsights(lons, lagnaR, pHouse, pRashi, hLords, hi);
+
+            const chalitInfo = computeChalitHouseAndD1RashiMap();
+            const d1StateMap = {};
+            for (let h = 1; h <= 12; h++) {
+                ((currentChart.planets && currentChart.planets[h]) || []).forEach(p => { d1StateMap[p.id] = p; });
+            }
+            const deepPowers = computeDeepGrahaBalaPowers(lons, d1StateMap);
+            const lagnaTotalBala = Object.values(deepPowers).reduce((a, b) => a + b, 0) / 9;
+            const dp = id => (deepPowers[id] !== undefined ? deepPowers[id] : 50);
+            const ps = id => {
+                const hol = getHolisticPlanetScore(id, lons, pHouse, pRashi, lagnaR, cMap, chalitInfo);
+                return (dp(id) * 0.58) + (hol * 0.42);
+            };
+            const l10 = ps(hLords[10]), l6 = ps(hLords[6]), l7 = ps(hLords[7]), l9 = ps(hLords[9]), l11 = ps(hLords[11]), l2 = ps(hLords[2]), l5 = ps(hLords[5]);
+
+            // D10 (Dasamsa) & 10th-house influence helper for career planets
+            const d10Lagna = computeVargaRashi(lons.Asc || 0, 10);
+            const d10Bonus = (pids) => {
+                let b = 0;
+                pids.forEach(pid => {
+                    const r10 = computeVargaRashi(lons[pid] || 0, 10);
+                    const dig = CHART_1_3_DIGNITY[pid];
+                    const h10 = ((r10 - d10Lagna + 12) % 12) + 1;
+                    if (dig && (dig.exalted.includes(r10) || dig.own.includes(r10) || dig.mooltrikona.includes(r10))) b += 2.2;
+                    if ([1, 4, 7, 10].includes(h10)) b += 1.2;
+                    if (pHouse[pid] === 10 || ((pHouse[pid] - 1 + 6) % 12) + 1 === 10) b += 1.5;
+                });
+                return Math.min(7.5, b);
+            };
+            const pNameHi = { Sun:'सूर्य', Moon:'चंद्र', Mars:'मंगल', Mercury:'बुध', Jupiter:'गुरु', Venus:'शुक्र', Saturn:'शनि', Rahu:'राहु', Ketu:'केतु' };
+            const fmtKaraks = (pids) => {
+                const list = pids.map(id => `${hi ? (pNameHi[id] || id) : id} ${dp(id)}%`).join(', ');
+                return hi
+                    ? `कारक ग्रह: ${list} • लग्न कुल बल: ${lagnaTotalBala.toFixed(1)}%`
+                    : `Karaka Planets: ${list} • Lagna Power: ${lagnaTotalBala.toFixed(1)}%`;
+            };
+
+            // Helper checks for User Custom Rules (#1 Top Priority)
+            const isStrongCond = id => ['green', 'pureYellow'].includes(cMap[id]);
+            const isOkCond = id => ['green', 'pureYellow', 'blue', 'pink'].includes(cMap[id]);
+            const isBadCond = id => ['orange', 'red'].includes(cMap[id]);
+            const isGolden = id => cMap[id] === 'pureYellow';
+            const isGreen = id => cMap[id] === 'green';
+            const satRetro = !!(d1StateMap.Saturn && d1StateMap.Saturn.isRetrograde);
+
+            // 1. Medical / Doctor Custom Rulebook Score (Sun, Jupiter, Mars, Moon, Ketu/Rahu + Lagna Total Power)
+            let docScore = ps('Sun')*0.18 + ps('Jupiter')*0.20 + ps('Mars')*0.18 + ps('Moon')*0.14 + ps('Ketu')*0.06 + l6*0.08 + l10*0.08 + lagnaTotalBala*0.08 + d10Bonus(['Sun','Jupiter','Mars']);
+            const docNotes = [];
+            const jupInKendraTrikona4912 = [1,4,5,7,9,10].includes(pHouse.Jupiter) && [4,9,12].includes(pRashi.Jupiter);
+            const docGoldenAny = ['Sun','Mars','Moon','Rahu','Ketu'].some(id => isGolden(id));
+            if (jupInKendraTrikona4912 && isStrongCond('Jupiter') && docGoldenAny) {
+                docScore += 14.5;
+                docNotes.push(hi ? 'केंद्र/त्रिकोण में कर्क/धनु/मीन गुरु + गोल्डन कारक ग्रह' : 'Strong 4/9/12 Jupiter + Golden Doctor planet');
+            }
+            if (isGreen('Jupiter') && ['Sun','Mars','Moon'].some(id => pHouse[id] === pHouse.Jupiter)) {
+                docScore += 8.2;
+                docNotes.push(hi ? 'ग्रीन गुरु के साथ सूर्य/मंगल/चंद्र युति' : 'Green Jupiter conjunction');
+            }
+            if (pHouse.Rahu === 6) {
+                docScore += 6.4;
+                docNotes.push(hi ? 'छठे भाव में राहु योग' : 'Rahu in 6th House');
+            }
+            const docHouses = [5,6,8,10,12];
+            let docConn = 0;
+            for (let i=0; i<docHouses.length; i++) for (let j=i+1; j<docHouses.length; j++) {
+                if (pHouse[hLords[docHouses[i]]] === pHouse[hLords[docHouses[j]]] || pHouse[hLords[docHouses[i]]] === docHouses[j]) docConn++;
+            }
+            if (docConn > 0) docScore += Math.min(9.0, docConn * 3.1);
+            docNotes.push(fmtKaraks(['Sun','Jupiter','Mars','Moon']));
+
+            // 2. Engineering / AI / Data Custom Rulebook Score (Saturn, Mercury, Rahu, Mars + Lagna Total Power)
+            let engScore = ps('Saturn')*0.30 + ps('Mercury')*0.24 + ps('Rahu')*0.16 + ps('Mars')*0.10 + l10*0.10 + lagnaTotalBala*0.10 + d10Bonus(['Saturn','Mercury','Rahu']);
+            const engNotes = [];
+            if (isStrongCond('Saturn') || cMap.Saturn === 'blue' || (satRetro && cMap.Saturn !== 'red')) {
+                engScore += 9.5;
+                engNotes.push(hi ? (satRetro ? 'शनि का शुभ वक्री बल' : 'शनि की मजबूत कंडीशन') : 'Strong/Retrograde Saturn');
+            } else if (cMap.Saturn === 'red') {
+                engScore -= 8.0;
+            }
+            engNotes.push(fmtKaraks(['Saturn','Mercury','Rahu','Mars']));
+
+            // 3. Politics Custom Rulebook Score (Sun, Saturn, Mercury, Rahu + Lagna Total Power)
+            let polScore = ps('Saturn')*0.28 + ps('Sun')*0.28 + ps('Mercury')*0.18 + ps('Rahu')*0.08 + l10*0.09 + lagnaTotalBala*0.09 + d10Bonus(['Sun','Saturn','Rahu']);
+            const polNotes = [];
+            if (isStrongCond('Sun') && isStrongCond('Saturn') && isStrongCond('Mercury')) {
+                polScore += 15.2;
+                polNotes.push(hi ? 'सूर्य + शनि + बुध तीनों स्ट्रांग कंडीशन में' : 'Sun + Saturn + Mercury all strong');
+            } else if (isStrongCond('Saturn') && isStrongCond('Sun')) {
+                polScore += 6.5;
+            }
+            polNotes.push(fmtKaraks(['Sun','Saturn','Mercury','Rahu']));
+
+            // 4. Govt Job IAS / IPS Custom Rulebook Score (Saturn, Sun, Jupiter, Mars + Lagna Total Power)
+            let iasScore = ps('Saturn')*0.23 + ps('Sun')*0.24 + ps('Jupiter')*0.16 + ps('Mars')*0.13 + l9*0.07 + l10*0.08 + lagnaTotalBala*0.09 + d10Bonus(['Sun','Saturn','Jupiter']);
+            const iasNotes = [];
+            if (isStrongCond('Saturn') && isBadCond('Sun')) {
+                iasScore -= 11.5;
+                iasNotes.push(hi ? 'सूर्य कमजोर होने से अतिरिक्त संघर्ष संभव' : 'Sun weak — extra struggle possible');
+            } else if (isStrongCond('Saturn') && isOkCond('Sun')) {
+                iasScore += 14.0;
+                iasNotes.push(hi ? 'मजबूत शनि + संतुलित सूर्य (IAS/IPS प्रबल योग)' : 'Strong Saturn + balanced Sun');
+            } else if (isStrongCond('Sun') && (isOkCond('Mars') || isStrongCond('Jupiter'))) {
+                iasScore += 10.5;
+                iasNotes.push(hi ? 'अच्छा सूर्य + मंगल/गुरु सहयोग' : 'Strong Sun + Mars/Jupiter support');
+            } else if (isStrongCond('Saturn') && isOkCond('Jupiter') && isOkCond('Mercury') && isOkCond('Mars')) {
+                iasScore += 8.0;
+                iasNotes.push(hi ? 'शनि + गुरु-बुध-मंगल संतुलन' : 'Saturn + Jupiter/Mercury/Mars balance');
+            }
+            iasNotes.push(fmtKaraks(['Sun','Saturn','Jupiter','Mars']));
+
+            // 5. Classical Rules: Defence, CA/Finance, Teacher/Advisor, Lawyer/Judge (+ Karaka Planets & Lagna Total Power)
+            let defScore = ps('Mars')*0.30 + ps('Sun')*0.22 + ps('Saturn')*0.16 + ps('Rahu')*0.06 + l6*0.08 + l10*0.09 + lagnaTotalBala*0.09 + d10Bonus(['Mars','Sun','Saturn']);
+            if ([1,6,10].includes(pHouse.Mars) && isStrongCond('Mars')) defScore += 8.4;
+
+            let caScore = ps('Mercury')*0.27 + ps('Jupiter')*0.24 + ps('Venus')*0.15 + l2*0.08 + l11*0.09 + l10*0.08 + lagnaTotalBala*0.09 + d10Bonus(['Mercury','Jupiter','Venus']);
+            if (pHouse[hLords[2]] === pHouse[hLords[7]] || pHouse[hLords[2]] === 11) caScore += 5.2;
+
+            let teachScore = ps('Jupiter')*0.32 + ps('Mercury')*0.20 + ps('Moon')*0.14 + ps('Sun')*0.06 + l5*0.06 + l9*0.07 + l10*0.06 + lagnaTotalBala*0.09 + d10Bonus(['Jupiter','Mercury']);
+            if ([1,5,9,10].includes(pHouse.Jupiter) && isStrongCond('Jupiter')) teachScore += 6.5;
+
+            let lawScore = ps('Jupiter')*0.25 + ps('Saturn')*0.25 + ps('Mercury')*0.16 + ps('Venus')*0.06 + l9*0.10 + l6*0.09 + lagnaTotalBala*0.09 + d10Bonus(['Jupiter','Saturn','Mercury']);
+            if (pHouse.Saturn === 9 || ((pHouse.Saturn - 1 + 9)%12)+1 === 10 || pHouse.Saturn === 10) lawScore += 6.2;
+
+            const careers = [
+                { name: hi ? 'मेडिकल साइंस व स्वास्थ्य सेवा' : 'Medical Science & Healthcare', score: docScore, note: docNotes.join(' • ') },
+                { name: hi ? 'इंजीनियरिंग, AI व डेटा एनालिस्ट' : 'Engineering, AI & Data Analyst', score: engScore, note: engNotes.join(' • ') },
+                { name: hi ? 'आर्मी, पुलिस व रक्षा सेवा' : 'Army, Police & Defence', score: defScore, note: fmtKaraks(['Mars','Sun','Saturn']) },
+                { name: hi ? 'CA, बैंकिंग व वित्त' : 'CA, Banking & Finance', score: caScore, note: fmtKaraks(['Mercury','Jupiter','Venus']) },
+                { name: hi ? 'शिक्षक व एडवाइजर' : 'Teacher & Advisor', score: teachScore, note: fmtKaraks(['Jupiter','Mercury','Moon']) },
+                { name: hi ? 'सरकारी सेवा व प्रशासन (IAS / IPS व उच्च पद)' : 'Govt Service & Admin (IAS / IPS)', score: iasScore, note: iasNotes.join(' • ') },
+                { name: hi ? 'लॉयर व जज (न्यायिक सेवा)' : 'Lawyer, Judge & Judiciary', score: lawScore, note: fmtKaraks(['Jupiter','Saturn','Mercury']) },
+                { name: hi ? 'पॉलिटिक्स व जन-नेतृत्व' : 'Politics & Public Leadership', score: polScore, note: polNotes.join(' • ') }
+            ].sort((a,b) => b.score - a.score).slice(0, 7);
+
+            const getCat = rNum => (RASHIS[rNum - 1] ? RASHIS[rNum - 1].category : 'Dual');
+            const getCatLbl = c => hi ? (c==='Movable'?'चर':c==='Fixed'?'स्थिर':'द्विस्वभाव') : c;
+            let bizPts = 0, jobPts = 0, dualPts = 0;
+            const addWeight = (rNum, w) => {
+                const cat = getCat(rNum);
+                if (cat === 'Movable') bizPts += w;
+                else if (cat === 'Fixed') jobPts += w;
+                else dualPts += w;
+            };
+            addWeight(lagnaR, 3.0);
+            addWeight(pRashi.Moon || lagnaR, 2.5);
+            addWeight(pRashi.Sun || lagnaR, 2.0);
+            addWeight(pRashi[hLords[10]] || lagnaR, 2.5);
+            PLANETS.forEach(p => addWeight(pRashi[p.id] || lagnaR, 1.0));
+            jobPts += (l6 * 0.08) + (ps('Saturn') * 0.05);
+            bizPts += (l7 * 0.06) + (l11 * 0.05) + (ps('Mercury') * 0.05);
+
+            const bothRaw = (dualPts * 1.4) + Math.min(jobPts, bizPts) * 0.65;
+            const effJob = jobPts + dualPts * 0.35;
+            const effBiz = bizPts + dualPts * 0.35;
+            const totJB = effJob + effBiz || 1;
+            const jobPct = ((effJob / totJB) * 100);
+            const bizPct = (100 - jobPct);
+            const bothPct = Math.max(25, Math.min(96, (100 - Math.abs(jobPct - bizPct) * 1.6) * 0.72 + (dualPts / 12) * 28));
+            const diffJB = Math.abs(jobPct - bizPct);
+            const jbVerdict = diffJB <= 5.5
+                ? (hi ? 'नौकरी और बिजनेस दोनों संभव (संतुलित प्रभाव)' : 'Both Job & Business Suitable (Balanced / Dual)')
+                : (bizPct > jobPct
+                    ? (hi ? 'बिजनेस / स्वतंत्र कार्य अधिक अनुकूल' : 'Business / Independent Work More Suitable')
+                    : (hi ? 'नौकरी / स्थिर सेवा अधिक अनुकूल' : 'Job / Steady Service More Suitable'));
+
+            box.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                    <div class="p-4 rounded-xl bg-emerald-50/70 border border-emerald-200 space-y-1.5">
+                        <div class="font-bold text-sm text-emerald-950 mb-2">${hi ? 'D1 प्रमुख शुभ योग' : 'D1 Major Auspicious Yogas'} (${yogas.length})</div>
+                        ${yogas.length ? yogas.map(y=>`<div>✓ ${y}</div>`).join('') : `<div>${hi ? 'सामान्य ग्रह बल — दशा व गोचर से उन्नति संभव।' : 'Balanced planetary strength — growth via Dasha & Transit.'}</div>`}
+                    </div>
+                    <div class="p-4 rounded-xl bg-rose-50/70 border border-rose-200 space-y-1.5">
+                        <div class="font-bold text-sm text-rose-950 mb-2">${hi ? 'D1 दोष व सावधानी योग' : 'D1 Doshas & Caution Yogas'} (${doshas.length})</div>
+                        ${doshas.length ? doshas.map(d=>`<div>⚠ ${d}</div>`).join('') : `<div class="text-emerald-800">✓ ${hi ? 'D1 में कोई प्रमुख अशुभ दोष नहीं मिला।' : 'No major Dosha detected in D1.'}</div>`}
+                    </div>
+                </div>
+
+                <div class="p-4 rounded-xl bg-indigo-50/60 border border-indigo-200 space-y-3 text-xs">
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <div class="font-bold text-sm text-indigo-950">${hi ? 'नौकरी बनाम बिजनेस विश्लेषण (संपूर्ण कुंडली आधारित)' : 'Job vs Business Analysis (Full Chart)'}</div>
+                        <span class="px-2.5 py-1 rounded-full bg-white text-indigo-900 font-bold border border-indigo-200">${jbVerdict}</span>
+                    </div>
+                    <div class="space-y-2">
+                        <div>
+                            <div class="flex justify-between font-bold mb-1 text-slate-800"><span>${hi ? 'बिजनेस / स्वतंत्र व्यवसाय (चर + 7/11 भाव)' : 'Business / Self-Employed (Movable + H7/H11)'}</span><span>${bizPct.toFixed(1)}%</span></div>
+                            <div class="w-full h-3 bg-white rounded-full overflow-hidden border border-indigo-200"><div class="h-full bg-amber-500 rounded-full" style="width:${bizPct.toFixed(1)}%"></div></div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between font-bold mb-1 text-slate-800"><span>${hi ? 'नौकरी / स्थिर सेवा (स्थिर + 6/10 भाव)' : 'Job / Service (Fixed + H6/H10)'}</span><span>${jobPct.toFixed(1)}%</span></div>
+                            <div class="w-full h-3 bg-white rounded-full overflow-hidden border border-indigo-200"><div class="h-full bg-indigo-600 rounded-full" style="width:${jobPct.toFixed(1)}%"></div></div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between font-bold mb-1 text-slate-800"><span>${hi ? 'नौकरी + व्यवसाय दोनों साथ (द्विस्वभाव / संतुलित स्थिति)' : 'Job + Business Both Together (Hybrid Success)'}</span><span>${bothPct.toFixed(1)}%</span></div>
+                            <div class="w-full h-3 bg-white rounded-full overflow-hidden border border-indigo-200"><div class="h-full bg-emerald-600 rounded-full" style="width:${bothPct.toFixed(1)}%"></div></div>
+                        </div>
+                    </div>
+                    <div class="text-[11px] text-slate-600">${hi ? `लग्न (${getCatLbl(getCat(lagnaR))}), चंद्र, सूर्य, दशमेश, सभी 9 ग्रहों की चर/स्थिर/द्विस्वभाव स्थिति और 6/7/10/11 भाव बल से गणना।` : `Calculated across Lagna (${getCat(lagnaR)}), Moon, Sun, 10th Lord, all 9 planets, and H6/H7/H10/H11 strength.`}</div>
+                </div>
+
+                <!-- ज्योतिष संहिता विशेष विश्लेषण -->
+                <div class="p-4 rounded-xl bg-amber-50/70 border border-amber-200 space-y-1.5 text-xs">
+                    <div class="font-bold text-sm text-amber-950 mb-1">${hi ? 'ज्योतिष संहिता विशेष विश्लेषण (आपके नियम #1 प्राथमिकता पर)' : 'Jyotish Samhita Insights (User Rules #1 Priority)'}</div>
+                    <div>• <strong>${hi ? 'भाग्योदय विचार:' : 'Rise of Fortune:'}</strong> ${jsInsights.bhagyaMsg}</div>
+                    <div>• <strong>${hi ? 'कला धन योग:' : 'Kala Wealth Yoga:'}</strong> ${jsInsights.kalaYoga}</div>
+                    <div>• <strong>${hi ? 'होरा धन संकेत:' : 'Hora Wealth:'}</strong> ${jsInsights.horaType}</div>
+                    <div>• <strong>${hi ? 'प्रबल मारकेश:' : 'Powerful Marakesh:'}</strong> ${jsInsights.strongMaraks.length ? jsInsights.strongMaraks.join(', ') : (hi ? 'कोई एक ग्रह दो मारक भाव का स्वामी नहीं' : 'None')}</div>
+                    <div>• <strong>${hi ? 'विदेश / धर्म-कर्माधिपति:' : 'Foreign / Dharma-Karmadhipati:'}</strong> ${jsInsights.dkYoga ? (hi ? 'धर्म-कर्माधिपति योग सक्रिय • ' : 'Dharma-Karmadhipati Yoga • ') : ''}${jsInsights.foreignHits.length ? jsInsights.foreignHits.join(', ') : (hi ? 'सामान्य यात्रा योग' : 'Standard travel')}</div>
+                </div>
+
+                <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2.5 text-xs">
+                    <div class="font-bold text-sm text-slate-900">${hi ? 'करियर क्षेत्र उपयुक्तता (पूर्ण D1 + चलित + D9 + D10 + अष्टकवर्ग + ग्रह बल)' : 'Career Field Suitability (Full D1 + Chalit + D9 + D10 + Ashtakavarga)'}</div>
+                    ${careers.map((c,i)=>`
+                        <div>
+                            <div class="flex justify-between font-bold mb-1"><span>${i===0?'⭐ ':''}#${i+1} ${c.name}</span><span class="text-indigo-700">${Math.min(99.4, Math.max(15, c.score)).toFixed(1)}%</span></div>
+                            <div class="w-full h-2.5 bg-slate-200 rounded-full overflow-hidden"><div class="h-full ${i===0?'bg-emerald-600':'bg-indigo-500'} rounded-full" style="width:${Math.min(100, Math.max(15, c.score)).toFixed(1)}%"></div></div>
+                            ${c.note ? `<div class="text-[11px] text-emerald-800 font-medium mt-0.5">${c.note}</div>` : ''}
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        // ==================== MAIN UPGRADE: FALADESH (BILINGUAL, SADE SATI + GEMSTONES & REMEDIES) ====================
+        function renderMainFaladeshPanel() {
+            const box = document.getElementById('main-faladesh-content');
+            if (!box) return;
+            const hi = currentLang === 'hi';
+            const { lons, pRashi, hLords } = evaluateD1YogasAndDoshas();
+            const l1 = hLords[1], l5 = hLords[5], l9 = hLords[9];
+            const moonR = pRashi.Moon || (Math.floor((lons.Moon||0)/30)+1);
+            const pName = id => { const x = PLANETS.find(p=>p.id===id); return x ? (hi?x.hindi:x.en) : id; };
+
+            const now = new Date();
+            const tr = computeSiderealChartAtJD(getJDFromDateObj(now), 26.5, 78.7);
+            const satR = Math.floor(tr.pLons.Saturn/30)+1;
+            const diff = ((satR - moonR + 12)%12)+1;
+            let ssTitle = hi ? 'सामान्य स्थिति (अभी साढ़ेसाती या ढैया नहीं)' : 'Normal Phase (No Sade Sati or Dhaiya currently)';
+            let ssDesc = hi
+                ? 'वर्तमान में शनि चंद्रमा से 12/1/2 या 4/8 भाव में नहीं हैं, इसलिए सामान्य कर्म-फल के अनुसार प्रगति हो सकती है।'
+                : 'Saturn is currently not in 12th/1st/2nd or 4th/8th from natal Moon; steady progress is possible through consistent effort.';
+            if (diff === 12) {
+                ssTitle = hi ? 'साढ़ेसाती — प्रथम चरण (उदय)' : 'Sade Sati — 1st Phase (Rising)';
+                ssDesc = hi ? 'खर्चों में वृद्धि, दूर यात्रा या नई जिम्मेदारियों का आरंभ हो सकता है। धैर्य व बजट नियंत्रण उपयोगी रहेगा।' : 'Expenses, travel, or new responsibilities may increase; patience and budgeting help.';
+            } else if (diff === 1) {
+                ssTitle = hi ? 'साढ़ेसाती — द्वितीय चरण (शिखर)' : 'Sade Sati — 2nd Phase (Peak)';
+                ssDesc = hi ? 'मानसिक दबाव या कार्यभार अधिक रह सकता है, पर अनुशासन और परिश्रम से स्थायी नींव बन सकती है।' : 'Workload or mental pressure may feel higher, yet discipline builds lasting stability.';
+            } else if (diff === 2) {
+                ssTitle = hi ? 'साढ़ेसाती — तृतीय चरण (अस्त)' : 'Sade Sati — 3rd Phase (Setting)';
+                ssDesc = hi ? 'धीरे-धीरे राहत व आर्थिक स्थिरता लौटने की संभावना रहती है; वाणी में सौम्यता रखें।' : 'Gradual relief and financial stabilization may return; keep speech calm.';
+            } else if (diff === 4 || diff === 8) {
+                ssTitle = hi ? `शनि की लघु ढैया (चंद्र से ${diff}वाँ शनि)` : `Saturn Dhaiya (Saturn in ${diff}th from Moon)`;
+                ssDesc = hi ? 'पारिवारिक या स्वास्थ्य संबंधी सतर्कता व नियमित दिनचर्या लाभकारी रहेगी।' : 'Mindfulness regarding family, health, and routine is helpful.';
+            }
+
+            const gems = hi
+                ? { Sun:'माणिक्य (Ruby)', Moon:'मोती (Pearl)', Mars:'मूंगा (Coral)', Mercury:'पन्ना (Emerald)', Jupiter:'पुखराज (Yellow Sapphire)', Venus:'ओपल / हीरा', Saturn:'नीलम (परामर्श पश्चात)' }
+                : { Sun:'Ruby (Manikya)', Moon:'Pearl (Moti)', Mars:'Red Coral (Moonga)', Mercury:'Emerald (Panna)', Jupiter:'Yellow Sapphire (Pukhraj)', Venus:'Opal / Diamond', Saturn:'Blue Sapphire (after trial)' };
+            const mantras = { Sun:'ॐ घृणि सूर्याय नमः', Moon:'ॐ सों सोमाय नमः', Mars:'ॐ अं अंगारकाय नमः', Mercury:'ॐ बुं बुधाय नमः', Jupiter:'ॐ बृं बृहस्पतये नमः', Venus:'ॐ शुं शुक्राय नमः', Saturn:'ॐ शं शनैश्चराय नमः', Rahu:'ॐ रां राहवे नमः', Ketu:'ॐ कें केतवे नमः' };
+            const charities = hi
+                ? { Sun:'गुड़, गेहूँ, तांबा', Moon:'चावल, चांदी, सफेद वस्त्र', Mars:'गुड़, मसूर दाल, लाल वस्त्र', Mercury:'हरी मूंग, हरी सब्जी', Jupiter:'पीले वस्त्र, केला, बेसन लड्डू', Venus:'चावल, इत्र, सफेद रेशमी वस्त्र', Saturn:'सरसों का तेल, लोहा, नीले/काले वस्त्र', Rahu:'काली उड़द, काला वस्त्र, गेहूँ', Ketu:'नमक, सतरंगी कंबल' }
+                : { Sun:'Jaggery, wheat, copper', Moon:'Rice, silver, white cloth', Mars:'Jaggery, masoor dal, red cloth', Mercury:'Green moong, green veggies', Jupiter:'Yellow cloth, banana, gram-flour sweet', Venus:'Rice, perfume, white silk', Saturn:'Mustard oil, iron, black/blue cloth', Rahu:'Black lentils, black cloth, wheat', Ketu:'Salt, multi-color blanket' };
+
+            const weakPlanets = [];
+            for (let h=1; h<=12; h++) {
+                ((currentChart.planets && currentChart.planets[h]) || []).forEach(p => {
+                    const col = p.manualColor || p.autoColor;
+                    if (col === 'orange' || col === 'red') weakPlanets.push({ id:p.id, house:h, color:col });
+                });
+            }
+            const satName = hi ? RASHIS[satR-1].hindi : RASHIS[satR-1].enName;
+            const moonName = hi ? RASHIS[moonR-1].hindi : RASHIS[moonR-1].enName;
+
+            box.innerHTML = `
+                <div class="p-4 rounded-2xl bg-indigo-50 border border-indigo-200 text-xs space-y-2">
+                    <div class="text-sm font-bold text-indigo-950">${hi ? 'साढ़ेसाती व शनि गोचर फलादेश' : 'Sade Sati & Saturn Transit Overview'}</div>
+                    <div class="font-bold text-indigo-800">${ssTitle}</div>
+                    <div>${hi ? `वर्तमान शनि: <strong>${satName}</strong> राशि (आपकी D1 चंद्र राशि ${moonName} से ${diff}वाँ भाव)` : `Current Saturn: <strong>${satName}</strong> (${diff}th from natal D1 Moon in ${moonName})`}</div>
+                    <div class="text-slate-700 leading-relaxed">${ssDesc}</div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                    <div class="p-4 rounded-2xl bg-amber-50/70 border border-amber-200 space-y-2">
+                        <div class="text-sm font-bold text-amber-950">${hi ? 'त्रिकोण रत्न सुझाव (D1 आधारित)' : 'Trikona Gemstone Suggestions (D1)'}</div>
+                        <div>• <strong>${hi ? 'जीवन रत्न (लग्नेश' : 'Life Stone (Lagnesh'} ${pName(l1)}):</strong> ${gems[l1]}</div>
+                        <div>• <strong>${hi ? 'विद्या/संतान (पंचमेश' : 'Wisdom (5th Lord'} ${pName(l5)}):</strong> ${gems[l5]}</div>
+                        <div>• <strong>${hi ? 'भाग्य रत्न (नवमेश' : 'Luck Stone (9th Lord'} ${pName(l9)}):</strong> ${gems[l9]}</div>
+                    </div>
+                    <div class="p-4 rounded-2xl bg-rose-50/60 border border-rose-200 space-y-2">
+                        <div class="text-sm font-bold text-rose-950">${hi ? 'कमजोर / पीड़ित ग्रह (Orange/Red) मंत्र व उपाय' : 'Afflicted Planets (Orange/Red) Mantra Remedies'}</div>
+                        ${weakPlanets.length ? weakPlanets.map(w => `<div>• <strong>${pName(w.id)} (${hi ? 'भाव' : 'H'} ${w.house}):</strong> ${mantras[w.id] || ''} <span class='text-slate-600'>(${hi ? 'दान:' : 'Donate:'} ${charities[w.id] || ''})</span></div>`).join('') : `<div class="text-emerald-800">${hi ? 'कोई Orange/Red पीड़ित ग्रह नहीं है — सामान्य इष्ट उपासना उत्तम है।' : 'No Orange/Red afflicted planets — general Ishta worship is favorable.'}</div>`}
+                    </div>
+                </div>
+            `;
+        }
+        function getJDFromDateObj(dt) {
+            let y = dt.getUTCFullYear(), m = dt.getUTCMonth()+1, d = dt.getUTCDate();
+            const utH = dt.getUTCHours() + dt.getUTCMinutes()/60;
+            if (m<=2){y-=1;m+=12;}
+            const A=Math.floor(y/100), B=2-A+Math.floor(A/4);
+            return Math.floor(365.25*(y+4716))+Math.floor(30.6001*(m+1))+d+(utH/24)+B-1524.5;
         }
     </script>
 </body>
