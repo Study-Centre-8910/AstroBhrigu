@@ -7846,9 +7846,15 @@
             const deepPowers = computeDeepGrahaBalaPowers(lons, d1StateMap);
             const lagnaTotalBala = Object.values(deepPowers).reduce((a, b) => a + b, 0) / 9;
             const dp = id => (deepPowers[id] !== undefined ? deepPowers[id] : 50);
+            const isCareerSupporter = id => ['green', 'pureYellow', 'blue'].includes(cMap[id]);
             const ps = id => {
                 const hol = getHolisticPlanetScore(id, lons, pHouse, pRashi, lagnaR, cMap, chalitInfo);
-                return (dp(id) * 0.58) + (hol * 0.42);
+                const raw = (dp(id) * 0.58) + (hol * 0.42);
+                const col = cMap[id];
+                if (col === 'red') return Math.min(20, raw * 0.15);
+                if (col === 'orange') return Math.min(28, raw * 0.25);
+                if (col === 'pink') return Math.min(38, raw * 0.40);
+                return raw; // green, pureYellow, blue are supporters
             };
             const l10 = ps(hLords[10]), l6 = ps(hLords[6]), l7 = ps(hLords[7]), l9 = ps(hLords[9]), l11 = ps(hLords[11]), l2 = ps(hLords[2]), l5 = ps(hLords[5]);
 
@@ -7857,6 +7863,7 @@
             const d10Bonus = (pids) => {
                 let b = 0;
                 pids.forEach(pid => {
+                    if (!isCareerSupporter(pid)) return;
                     const r10 = computeVargaRashi(lons[pid] || 0, 10);
                     const dig = CHART_1_3_DIGNITY[pid];
                     const h10 = ((r10 - d10Lagna + 12) % 12) + 1;
@@ -7903,14 +7910,17 @@
                         notes.push(hi ? `${pLbl} नीचभंग योग (लाभ संभव, पर महादशा में संघर्ष रह सकता है)` : `${pLbl} Neechabhanga (gains possible, struggle in Mahadasha)`);
                     }
 
-                    if (isLagnaTrikona) {
+                    if (!isCareerSupporter(pid)) {
+                        notes.push(hi ? `${pLbl} (${cMap[pid] === 'red' ? 'Red' : (cMap[pid] === 'orange' ? 'Orange' : 'Pink')}) करियर सपोर्टर नहीं है` : `${pLbl} (${cMap[pid]}) not a career supporter`);
+                    }
+                    if (isLagnaTrikona && isCareerSupporter(pid)) {
                         adj += 3.2 * weight;
                     } else if (isPureTrikOrMarak && isBadCond(pid)) {
                         adj -= 4.5 * weight;
                         notes.push(hi ? `${pLbl} इस लग्न के लिए अकारक/मारक स्थिति में` : `${pLbl} non-beneficial/marak for this Lagna`);
                     } else if (isPureTrikOrMarak) {
                         adj -= 2.2 * weight;
-                    } else if (isLagnaFriend && isOkCond(pid)) {
+                    } else if (isLagnaFriend && isCareerSupporter(pid)) {
                         adj += 1.5 * weight;
                     }
                 });
