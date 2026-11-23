@@ -87,12 +87,37 @@
 </head>
 <body class="min-h-screen flex flex-col bg-slate-50 text-slate-900">
 
-    <!-- ==================== ग्लोबल टॉप-राइट लैंग्वेज स्विच (हर पेज पर) ==================== -->
-    <div class="fixed top-3 right-3 z-50">
+    <!-- ==================== ग्लोबल टॉप-राइट लैंग्वेज स्विच व कॉर्नर प्रोफ़ाइल (हर पेज पर) ==================== -->
+    <div class="fixed top-3 right-3 z-50 flex items-center gap-2" id="global-top-right-bar">
         <button type="button" onclick="toggleLanguage()" id="lang-switch-btn" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/95 backdrop-blur-sm border border-slate-200 text-slate-700 text-xs font-semibold shadow-md hover:bg-slate-50 transition-colors">
             <i data-lucide="languages" class="w-4 h-4 text-amber-600"></i>
             <span id="lang-switch-text">English / हिंदी</span>
         </button>
+        <div class="relative" id="corner-profile-wrap">
+            <button type="button" onclick="toggleCornerProfileMenu(event)" id="header-profile-btn" class="inline-flex items-center gap-1.5 pl-1.5 pr-2.5 py-1 rounded-full bg-white/95 backdrop-blur-sm border border-slate-200 text-slate-800 text-xs font-bold shadow-md hover:bg-slate-50 transition-colors" title="प्रोफ़ाइल / लॉगिन / लॉगआउट">
+                <span id="header-profile-avatar" class="w-7 h-7 rounded-full bg-indigo-600 text-white text-xs font-extrabold inline-flex items-center justify-center shadow-sm">G</span>
+                <span id="header-profile-label" class="hidden sm:inline max-w-[90px] truncate" data-lang-en="Guest" data-lang-hi="गेस्ट">गेस्ट</span>
+                <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400"></i>
+            </button>
+            <div id="corner-profile-menu" class="hidden absolute right-0 top-full mt-2 w-60 rounded-2xl bg-white border border-slate-200 shadow-2xl py-2 z-[9995] text-left">
+                <div class="px-3.5 py-2 border-b border-slate-100">
+                    <div id="corner-menu-name" class="text-xs font-bold text-slate-900 truncate">Guest Account</div>
+                    <div id="corner-menu-email" class="text-[11px] text-slate-500 truncate" data-lang-hi="स्थानीय गेस्ट मोड" data-lang-en="Local Guest Mode">स्थानीय गेस्ट मोड</div>
+                </div>
+                <button type="button" onclick="closeCornerProfileMenu(); openProfileModal()" class="w-full flex items-center gap-2 px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-indigo-50 hover:text-indigo-800 transition-colors">
+                    <i data-lucide="user-check" class="w-4 h-4 text-indigo-600"></i>
+                    <span id="corner-menu-login-lbl" data-lang-hi="Google / Gmail से लॉगिन व सिंक" data-lang-en="Login with Gmail & Sync">Google / Gmail से लॉगिन व सिंक</span>
+                </button>
+                <button type="button" id="corner-btn-guest" onclick="closeCornerProfileMenu(); switchToGuestProfile()" class="w-full flex items-center gap-2 px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors">
+                    <i data-lucide="user" class="w-4 h-4 text-slate-500"></i>
+                    <span data-lang-hi="गेस्ट अकाउंट पर स्विच करें" data-lang-en="Switch to Guest Account">गेस्ट अकाउंट पर स्विच करें</span>
+                </button>
+                <button type="button" id="corner-btn-logout" onclick="closeCornerProfileMenu(); logoutUserProfile()" class="hidden w-full flex items-center gap-2 px-3.5 py-2 text-xs font-bold text-rose-600 hover:bg-rose-50 border-t border-slate-100 mt-1 pt-2 transition-colors">
+                    <i data-lucide="log-out" class="w-4 h-4"></i>
+                    <span data-lang-hi="लॉगआउट (Log out)" data-lang-en="Log out">लॉगआउट (Log out)</span>
+                </button>
+            </div>
+        </div>
     </div>
 
     <!-- ==================== टोस्ट नोटिफिकेशन ==================== -->
@@ -270,6 +295,20 @@
             </button>
         </div>
 
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+            <div class="inline-flex rounded-xl bg-slate-100 p-1 border border-slate-200">
+                <button type="button" id="tab-btn-saved" onclick="setSavedViewTab('saved')" class="px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold bg-white text-slate-900 shadow-sm transition-colors">
+                    <span data-lang-hi="सेव की गई कुंडलियां" data-lang-en="Saved Charts">सेव की गई कुंडलियां</span>
+                </button>
+                <button type="button" id="tab-btn-history" onclick="setSavedViewTab('history')" class="px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold text-slate-600 hover:text-slate-900 transition-colors">
+                    <span data-lang-hi="हिस्ट्री (7 दिन)" data-lang-en="History (7 Days)">हिस्ट्री (7 दिन)</span>
+                    <span id="history-tab-badge" class="ml-1 px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[10px]">0</span>
+                </button>
+            </div>
+            <button type="button" id="btn-clear-history" onclick="clearAllHistoryCharts()" class="hidden inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold transition-colors">
+                <span data-lang-hi="पूरी हिस्ट्री हटाएं" data-lang-en="Clear All History">पूरी हिस्ट्री हटाएं</span>
+            </button>
+        </div>
         <div id="saved-charts-list" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
     </div>
 
@@ -1769,12 +1808,303 @@
             const metaParts = [currentChart.dob, currentChart.tob, currentChart.pob].filter(Boolean);
             document.getElementById('ws-client-meta').textContent = metaParts.join(' • ') || (currentLang === 'hi' ? 'वैदिक कुंडली चार्ट' : 'Vedic Chart');
             renderFullChart();
+            addToHistoryCharts(currentChart);
             switchWorkspacePanel('chart', true);
             showView('workspace');
         }
 
+        
+        const PROFILE_KEY = 'astropro_active_profile_v1';
+        const HISTORY_KEY_BASE = 'astropro_history_charts_v1';
+        const HISTORY_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+        let activeSavedViewTab = 'saved';
+
+        function getActiveProfile() {
+            try { return JSON.parse(localStorage.getItem(PROFILE_KEY)) || { mode: 'guest', name: 'Guest', email: '' }; }
+            catch (e) { return { mode: 'guest', name: 'Guest', email: '' }; }
+        }
+        function getActiveStorageKey() {
+            const p = getActiveProfile();
+            if (p.mode === 'google' && p.email) {
+                return `${STORAGE_KEY}_${p.email.toLowerCase().replace(/[^a-z0-9]/g, '_')}`;
+            }
+            return STORAGE_KEY;
+        }
+        function getActiveHistoryKey() {
+            const p = getActiveProfile();
+            if (p.mode === 'google' && p.email) {
+                return `${HISTORY_KEY_BASE}_${p.email.toLowerCase().replace(/[^a-z0-9]/g, '_')}`;
+            }
+            return HISTORY_KEY_BASE;
+        }
+        function getHistoryCharts() {
+            try {
+                const raw = JSON.parse(localStorage.getItem(getActiveHistoryKey())) || [];
+                const now = Date.now();
+                const valid = raw.filter(item => item && item.viewedAt && (now - Number(item.viewedAt)) <= HISTORY_TTL_MS);
+                if (valid.length !== raw.length) {
+                    localStorage.setItem(getActiveHistoryKey(), JSON.stringify(valid));
+                }
+                return valid;
+            } catch (e) { return []; }
+        }
+        function addToHistoryCharts(chartObj) {
+            if (!chartObj) return;
+            try {
+                const list = getHistoryCharts();
+                const copy = JSON.parse(JSON.stringify(chartObj));
+                copy.historyId = copy.historyId || ('hist_' + Date.now() + '_' + Math.floor(Math.random() * 1000));
+                copy.viewedAt = Date.now();
+                const filtered = list.filter(x => !(x.dob === copy.dob && x.tob === copy.tob && x.pob === copy.pob && x.clientName === copy.clientName));
+                filtered.unshift(copy);
+                localStorage.setItem(getActiveHistoryKey(), JSON.stringify(filtered.slice(0, 60)));
+                updateHistoryBadge();
+            } catch (e) {}
+        }
+        function updateHistoryBadge() {
+            const b = document.getElementById('history-tab-badge');
+            if (b) b.textContent = String(getHistoryCharts().length);
+        }
+        function deleteHistoryItem(historyId) {
+            const list = getHistoryCharts().filter(x => x.historyId !== historyId);
+            localStorage.setItem(getActiveHistoryKey(), JSON.stringify(list));
+            updateHistoryBadge();
+            renderSavedOrHistoryList();
+        }
+        function clearAllHistoryCharts() {
+            localStorage.setItem(getActiveHistoryKey(), JSON.stringify([]));
+            updateHistoryBadge();
+            renderSavedOrHistoryList();
+            showToast(currentLang === 'hi' ? 'पूरी हिस्ट्री हटा दी गई है' : 'All history cleared');
+        }
+        function saveChartFromHistory(historyId) {
+            const item = getHistoryCharts().find(x => x.historyId === historyId);
+            if (!item) return;
+            const toSave = JSON.parse(JSON.stringify(item));
+            toSave.id = toSave.id || ('chart_' + Date.now());
+            toSave.updatedAt = new Date().toISOString();
+            const list = getSavedCharts();
+            if (!list.some(c => c.id === toSave.id || (c.dob === toSave.dob && c.tob === toSave.tob && c.pob === toSave.pob && c.clientName === toSave.clientName))) {
+                list.unshift(toSave);
+                localStorage.setItem(getActiveStorageKey(), JSON.stringify(list));
+            }
+            updateSavedBadge();
+            showToast(currentLang === 'hi' ? 'हिस्ट्री से कुंडली सेव हो गई!' : 'Chart saved from history!');
+        }
+        function openChartFromHistory(historyId) {
+            const item = getHistoryCharts().find(x => x.historyId === historyId);
+            if (!item) return;
+            currentChart = JSON.parse(JSON.stringify(item));
+            document.getElementById('ws-client-name').textContent = currentChart.clientName || (currentLang === 'hi' ? 'कुंडली' : 'Chart');
+            const metaParts = [currentChart.dob, currentChart.tob, currentChart.pob].filter(Boolean);
+            document.getElementById('ws-client-meta').textContent = metaParts.join(' • ') || (currentLang === 'hi' ? 'वैदिक कुंडली चार्ट' : 'Vedic Chart');
+            renderFullChart();
+            switchWorkspacePanel('chart', true);
+            showView('workspace');
+        }
+        function setSavedViewTab(tab) {
+            activeSavedViewTab = tab === 'history' ? 'history' : 'saved';
+            const bSaved = document.getElementById('tab-btn-saved');
+            const bHist = document.getElementById('tab-btn-history');
+            const clrBtn = document.getElementById('btn-clear-history');
+            if (bSaved && bHist) {
+                if (activeSavedViewTab === 'saved') {
+                    bSaved.className = 'px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold bg-white text-slate-900 shadow-sm transition-colors';
+                    bHist.className = 'px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold text-slate-600 hover:text-slate-900 transition-colors';
+                } else {
+                    bHist.className = 'px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold bg-white text-slate-900 shadow-sm transition-colors';
+                    bSaved.className = 'px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-bold text-slate-600 hover:text-slate-900 transition-colors';
+                }
+            }
+            if (clrBtn) clrBtn.classList.toggle('hidden', activeSavedViewTab !== 'history');
+            renderSavedOrHistoryList();
+        }
+        function renderSavedOrHistoryList() {
+            if (activeSavedViewTab !== 'history') {
+                renderSavedChartsOnly();
+                return;
+            }
+            const list = getHistoryCharts();
+            const container = document.getElementById('saved-charts-list');
+            if (!container) return;
+            container.innerHTML = '';
+            updateHistoryBadge();
+            if (list.length === 0) {
+                container.innerHTML = `<div class="col-span-full text-center py-12 bg-white rounded-2xl border border-slate-200"><p class="text-slate-500 text-sm">${currentLang === 'hi' ? 'पिछले 7 दिनों में कोई नई कुंडली हिस्ट्री नहीं है।' : 'No recent chart history in the last 7 days.'}</p></div>`;
+                return;
+            }
+            list.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between gap-3';
+                const dt = new Date(item.viewedAt).toLocaleDateString();
+                const meta = [item.dob, item.tob, item.pob].filter(Boolean).join(' • ');
+                card.innerHTML = `
+                    <div>
+                        <div class="flex items-center justify-between gap-2">
+                            <div class="font-bold text-slate-900 truncate">${item.clientName || (currentLang === 'hi' ? 'बिना नाम कुंडली' : 'Unnamed Chart')}</div>
+                            <span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200 font-semibold">${dt}</span>
+                        </div>
+                        <div class="text-xs text-slate-500 mt-1">${meta || '-'}</div>
+                    </div>
+                    <div class="flex flex-wrap gap-1.5 pt-2 border-t border-slate-100">
+                        <button type="button" onclick="openChartFromHistory('${item.historyId}')" class="flex-1 py-1.5 px-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold">${currentLang === 'hi' ? 'खोलें' : 'Open'}</button>
+                        <button type="button" onclick="saveChartFromHistory('${item.historyId}')" class="py-1.5 px-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold">${currentLang === 'hi' ? 'सेव करें' : 'Save'}</button>
+                        <button type="button" onclick="deleteHistoryItem('${item.historyId}')" class="py-1.5 px-2.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold">${currentLang === 'hi' ? 'हटाएं' : 'Delete'}</button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function toggleCornerProfileMenu(e) {
+            if (e) e.stopPropagation();
+            const m = document.getElementById('corner-profile-menu');
+            if (m) m.classList.toggle('hidden');
+        }
+        function closeCornerProfileMenu() {
+            const m = document.getElementById('corner-profile-menu');
+            if (m) m.classList.add('hidden');
+        }
+        document.addEventListener('click', (e) => {
+            const wrap = document.getElementById('corner-profile-wrap');
+            if (wrap && !wrap.contains(e.target)) closeCornerProfileMenu();
+        });
+        function logoutUserProfile() {
+            localStorage.setItem(PROFILE_KEY, JSON.stringify({ mode: 'guest', name: 'Guest', email: '' }));
+            refreshProfileUI();
+            if (typeof openSavedCharts === 'function' && !document.getElementById('view-saved-charts')?.classList.contains('hidden')) {
+                openSavedCharts();
+            }
+            showToast(currentLang === 'hi' ? 'लॉगआउट हो गया (गेस्ट मोड सक्रिय)' : 'Logged out (Switched to Guest Mode)');
+        }
+        function refreshProfileUI() {
+            const p = getActiveProfile();
+            const isGoogle = (p.mode === 'google' && p.email);
+            const av = document.getElementById('header-profile-avatar');
+            const lbl = document.getElementById('header-profile-label');
+            const mav = document.getElementById('modal-profile-avatar');
+            const msub = document.getElementById('modal-profile-sub');
+            const cName = document.getElementById('corner-menu-name');
+            const cEmail = document.getElementById('corner-menu-email');
+            const cLogout = document.getElementById('corner-btn-logout');
+            const cGuest = document.getElementById('corner-btn-guest');
+            const cLoginLbl = document.getElementById('corner-menu-login-lbl');
+            const letter = (p.name || p.email || 'G').trim().charAt(0).toUpperCase() || 'G';
+            if (av) {
+                av.textContent = letter;
+                av.className = isGoogle
+                    ? 'w-7 h-7 rounded-full bg-emerald-600 text-white text-xs font-extrabold inline-flex items-center justify-center shadow-sm'
+                    : 'w-7 h-7 rounded-full bg-indigo-600 text-white text-xs font-extrabold inline-flex items-center justify-center shadow-sm';
+            }
+            if (mav) mav.textContent = letter;
+            if (lbl) lbl.textContent = isGoogle ? (p.name || p.email.split('@')[0]) : (currentLang === 'hi' ? 'गेस्ट' : 'Guest');
+            if (msub) msub.textContent = isGoogle ? `${p.name} (${p.email})` : (currentLang === 'hi' ? 'गेस्ट अकाउंट (स्थानीय)' : 'Guest Account (Local)');
+            if (cName) cName.textContent = isGoogle ? (p.name || p.email.split('@')[0]) : (currentLang === 'hi' ? 'गेस्ट अकाउंट' : 'Guest Account');
+            if (cEmail) cEmail.textContent = isGoogle ? p.email : (currentLang === 'hi' ? 'स्थानीय गेस्ट मोड' : 'Local Guest Mode');
+            if (cLogout) cLogout.classList.toggle('hidden', !isGoogle);
+            if (cGuest) cGuest.classList.toggle('hidden', !isGoogle);
+            if (cLoginLbl) cLoginLbl.textContent = isGoogle
+                ? (currentLang === 'hi' ? 'प्रोफ़ाइल व डेटा सिंक' : 'Profile & Data Sync')
+                : (currentLang === 'hi' ? 'Google / Gmail से लॉगिन करें' : 'Login with Google / Gmail');
+            updateSavedBadge();
+            updateHistoryBadge();
+        }
+        function openProfileModal() {
+            const p = getActiveProfile();
+            const nIn = document.getElementById('profile-input-name');
+            const eIn = document.getElementById('profile-input-email');
+            if (nIn) nIn.value = p.mode === 'google' ? (p.name || '') : '';
+            if (eIn) eIn.value = p.mode === 'google' ? (p.email || '') : '';
+            refreshProfileUI();
+            const m = document.getElementById('profile-modal');
+            if (m) m.classList.remove('hidden');
+        }
+        function closeProfileModal() {
+            const m = document.getElementById('profile-modal');
+            if (m) m.classList.add('hidden');
+        }
+        function loginWithGoogleEmail() {
+            const name = (document.getElementById('profile-input-name')?.value || '').trim();
+            const email = (document.getElementById('profile-input-email')?.value || '').trim().toLowerCase();
+            if (!email || !email.includes('@')) {
+                showToast(currentLang === 'hi' ? 'कृपया सही Gmail / ईमेल दर्ज करें' : 'Please enter a valid Gmail / email');
+                return;
+            }
+            const guestCharts = getSavedCharts();
+            const prof = { mode: 'google', name: name || email.split('@')[0], email };
+            localStorage.setItem(PROFILE_KEY, JSON.stringify(prof));
+            const existing = getSavedCharts();
+            if (existing.length === 0 && guestCharts.length > 0) {
+                localStorage.setItem(getActiveStorageKey(), JSON.stringify(guestCharts));
+            }
+            refreshProfileUI();
+            showToast(currentLang === 'hi' ? `${prof.email} से लॉगिन हो गया!` : `Signed in as ${prof.email}!`);
+        }
+        function switchToGuestProfile() {
+            localStorage.setItem(PROFILE_KEY, JSON.stringify({ mode: 'guest', name: 'Guest', email: '' }));
+            refreshProfileUI();
+            showToast(currentLang === 'hi' ? 'गेस्ट अकाउंट सक्रिय है' : 'Switched to Guest Account');
+        }
+        function buildProfileSyncPayload() {
+            return JSON.stringify({ v: 1, profile: getActiveProfile(), charts: getSavedCharts(), history: getHistoryCharts() });
+        }
+        function copyProfileSyncCode() {
+            const json = buildProfileSyncPayload();
+            const code = 'ABSYNC1:' + btoa(unescape(encodeURIComponent(json)));
+            const box = document.getElementById('profile-sync-paste');
+            if (box) box.value = code;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(code).catch(() => {});
+            }
+            showToast(currentLang === 'hi' ? 'Sync Code कॉपी हो गया! दूसरे डिवाइस में पेस्ट करें।' : 'Sync Code copied!');
+        }
+        function applyImportedSyncData(data) {
+            if (!data || !Array.isArray(data.charts)) throw new Error('Invalid sync data');
+            if (data.profile && data.profile.mode === 'google' && data.profile.email) {
+                localStorage.setItem(PROFILE_KEY, JSON.stringify(data.profile));
+            }
+            const cur = getSavedCharts();
+            const merged = [...data.charts];
+            cur.forEach(c => { if (!merged.some(m => m.id === c.id)) merged.push(c); });
+            localStorage.setItem(getActiveStorageKey(), JSON.stringify(merged));
+            if (Array.isArray(data.history)) {
+                const curH = getHistoryCharts();
+                const mergedH = [...data.history];
+                curH.forEach(h => { if (!mergedH.some(m => m.historyId === h.historyId)) mergedH.push(h); });
+                localStorage.setItem(getActiveHistoryKey(), JSON.stringify(mergedH.slice(0, 60)));
+            }
+            refreshProfileUI();
+            showToast(currentLang === 'hi' ? `${data.charts.length} कुंडलियां सिंक हो गईं!` : `Synced ${data.charts.length} charts!`);
+        }
+        function importProfileSyncCode() {
+            try {
+                const raw = (document.getElementById('profile-sync-paste')?.value || '').trim();
+                if (!raw.startsWith('ABSYNC1:')) throw new Error('Invalid code');
+                const json = decodeURIComponent(escape(atob(raw.slice(8))));
+                applyImportedSyncData(JSON.parse(json));
+            } catch (e) {
+                showToast(currentLang === 'hi' ? 'अमान्य Sync Code है' : 'Invalid Sync Code');
+            }
+        }
+        function exportProfileBackupJSON() {
+            const blob = new Blob([buildProfileSyncPayload()], { type: 'application/json' });
+            const prof = getActiveProfile();
+            const fname = `AstroBhrigu_${(prof.email || 'Guest').replace(/[^a-zA-Z0-9_-]/g, '_')}.json`;
+            triggerSafeDownload(blob, fname, false);
+        }
+        function importProfileBackupJSON(e) {
+            const file = e.target.files && e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = () => {
+                try { applyImportedSyncData(JSON.parse(reader.result)); }
+                catch (err) { showToast(currentLang === 'hi' ? 'फ़ाइल पढ़ने में त्रुटि' : 'Invalid backup file'); }
+            };
+            reader.readAsText(file);
+        }
+
         function getSavedCharts() {
-            try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch (e) { return []; }
+            try { return JSON.parse(localStorage.getItem(getActiveStorageKey())) || []; } catch (e) { return []; }
         }
 
         function saveCurrentChart() {
@@ -1785,8 +2115,8 @@
             if (idx >= 0) list[idx] = JSON.parse(JSON.stringify(currentChart));
             else list.unshift(JSON.parse(JSON.stringify(currentChart)));
             try {
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
-                updateSavedBadge();
+                localStorage.setItem(getActiveStorageKey(), JSON.stringify(list));
+                refreshProfileUI(); updateSavedBadge();
                 showToast(currentLang === 'hi' ? 'कुंडली सुरक्षित कर ली गई है!' : 'Chart saved successfully!');
             } catch (e) {
                 showToast(currentLang === 'hi' ? 'कुंडली सेव करने में त्रुटि हुई' : 'Could not save chart to storage');
@@ -1799,7 +2129,8 @@
             if (badge) badge.textContent = count;
         }
 
-        function openSavedCharts() {
+        function openSavedCharts() { setSavedViewTab(activeSavedViewTab || 'saved'); }
+        function renderSavedChartsOnly() {
             const list = getSavedCharts();
             const container = document.getElementById('saved-charts-list');
             container.innerHTML = '';
@@ -1871,7 +2202,7 @@
             document.getElementById('confirm-yes-btn').onclick = () => {
                 const updated = getSavedCharts().filter(c => c.id !== id);
                 try {
-                    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+                    localStorage.setItem(getActiveStorageKey(), JSON.stringify(updated));
                 } catch (e) {}
                 closeModals();
                 openSavedCharts();
@@ -8024,5 +8355,61 @@
             return Math.floor(365.25*(y+4716))+Math.floor(30.6001*(m+1))+d+(utH/24)+B-1524.5;
         }
     </script>
+
+    <!-- Profile & Sync Modal -->
+    <div id="profile-modal" class="hidden fixed inset-0 z-[9990] bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-5 sm:p-6 border border-slate-200 space-y-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div class="flex items-center gap-2.5">
+                    <div id="modal-profile-avatar" class="w-9 h-9 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center text-sm">G</div>
+                    <div>
+                        <h3 class="text-base font-bold text-slate-900" data-lang-hi="यूज़र प्रोफ़ाइल व डेटा सिंक" data-lang-en="User Profile & Data Sync">यूज़र प्रोफ़ाइल व डेटा सिंक</h3>
+                        <p id="modal-profile-sub" class="text-xs text-slate-500">Guest Account</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeProfileModal()" class="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 text-sm font-bold">✕</button>
+            </div>
+
+            <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2.5">
+                <div class="flex items-center gap-2 text-xs font-bold text-slate-800">
+                    <span class="inline-flex w-5 h-5 rounded-full bg-white border border-slate-300 items-center justify-center font-extrabold text-[11px] text-red-500">G</span>
+                    <span data-lang-hi="Continue with Google / Gmail प्रोफ़ाइल" data-lang-en="Continue with Google / Gmail Profile">Continue with Google / Gmail प्रोफ़ाइल</span>
+                </div>
+                <input type="text" id="profile-input-name" placeholder="आपका नाम (उदा. Rahul)" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs sm:text-sm outline-none focus:ring-2 focus:ring-indigo-500 bg-white"/>
+                <input type="email" id="profile-input-email" placeholder="example@gmail.com" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs sm:text-sm outline-none focus:ring-2 focus:ring-indigo-500 bg-white"/>
+                <div class="flex gap-2">
+                    <button type="button" onclick="loginWithGoogleEmail()" class="flex-1 py-2 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-bold shadow-sm transition-colors">
+                        <span data-lang-hi="Gmail से लॉगिन करें" data-lang-en="Continue with Gmail">Gmail से लॉगिन करें</span>
+                    </button>
+                    <button type="button" onclick="switchToGuestProfile()" class="py-2 px-3 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs font-semibold transition-colors">
+                        <span data-lang-hi="गेस्ट मोड" data-lang-en="Guest">गेस्ट मोड</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="p-3.5 rounded-xl bg-indigo-50/70 border border-indigo-200 space-y-2.5">
+                <div class="text-xs font-bold text-indigo-950" data-lang-hi="फ़ोन ↔ लैपटॉप डेटा सिंक (सेव की गई कुंडलियां ट्रांसफर करें)" data-lang-en="Phone ↔ Laptop Sync (Transfer Saved Charts)">फ़ोन ↔ लैपटॉप डेटा सिंक (सेव की गई कुंडलियां ट्रांसफर करें)</div>
+                <p class="text-[11px] text-indigo-800/80 leading-relaxed" data-lang-hi="चूँकि यह ऑफ़लाइन HTML ऐप है, एक डिवाइस से दूसरे डिवाइस पर कुंडलियां ले जाने के लिए Sync Code कॉपी करके दूसरे डिवाइस में पेस्ट करें या बैकअप फ़ाइल इस्तेमाल करें।" data-lang-en="Since this is an offline HTML app, copy your Sync Code or export backup to transfer saved charts between phone and laptop.">चूँकि यह ऑफ़लाइन HTML ऐप है, एक डिवाइस से दूसरे डिवाइस पर कुंडलियां ले जाने के लिए Sync Code कॉपी करके दूसरे डिवाइस में पेस्ट करें या बैकअप फ़ाइल इस्तेमाल करें।</p>
+                <div class="flex flex-wrap gap-2">
+                    <button type="button" onclick="copyProfileSyncCode()" class="flex-1 py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-sm">
+                        <span data-lang-hi="Sync Code कॉपी करें" data-lang-en="Copy Sync Code">Sync Code कॉपी करें</span>
+                    </button>
+                    <button type="button" onclick="exportProfileBackupJSON()" class="py-2 px-3 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 text-xs font-semibold">
+                        <span data-lang-hi="फ़ाइल एक्सपोर्ट" data-lang-en="Export JSON">फ़ाइल एक्सपोर्ट</span>
+                    </button>
+                </div>
+                <textarea id="profile-sync-paste" rows="2" placeholder="यहाँ दूसरे डिवाइस का Sync Code पेस्ट करें..." class="w-full px-3 py-2 rounded-lg border border-indigo-200 text-xs outline-none focus:ring-2 focus:ring-indigo-500 bg-white"></textarea>
+                <div class="flex gap-2">
+                    <button type="button" onclick="importProfileSyncCode()" class="flex-1 py-2 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold">
+                        <span data-lang-hi="Sync Code से लोड करें" data-lang-en="Import Sync Code">Sync Code से लोड करें</span>
+                    </button>
+                    <label class="py-2 px-3 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 text-xs font-semibold cursor-pointer">
+                        <span data-lang-hi="फ़ाइल इम्पोर्ट" data-lang-en="Import File">फ़ाइल इम्पोर्ट</span>
+                        <input type="file" accept=".json" onchange="importProfileBackupJSON(event)" class="hidden"/>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
