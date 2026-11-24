@@ -5385,6 +5385,21 @@
         }
 
         // ==================== अन्य: संपूर्ण नक्षत्र रिपोर्ट ====================
+        function getNakshatraFromLon(lon) {
+            const norm = ((lon % 360) + 360) % 360;
+            const span = 360 / 27;
+            const idx = Math.floor(norm / span) % 27;
+            const pada = Math.floor((norm % span) / (span / 4)) + 1;
+            const lordsHi = ['केतु','शुक्र','सूर्य','चंद्र','मंगल','राहु','गुरु','शनि','बुध'];
+            const lordsEn = ['Ketu','Venus','Sun','Moon','Mars','Rahu','Jupiter','Saturn','Mercury'];
+            const arr = (currentLang === 'hi' && typeof NAKSHATRAS_HI !== 'undefined') ? NAKSHATRAS_HI : ((typeof NAKSHATRAS_EN !== 'undefined') ? NAKSHATRAS_EN : []);
+            return {
+                name: arr[idx] || '-',
+                pada,
+                lord: currentLang === 'hi' ? lordsHi[idx % 9] : lordsEn[idx % 9]
+            };
+        }
+
         function renderNakshatraReportView() {
             const container = document.getElementById('nakshatra-report-content');
             if (!container) return;
@@ -7881,6 +7896,10 @@
             const satAsp10 = (pHouse.Saturn === 10 || ((pHouse.Saturn - 1 + 9) % 12) + 1 === 10 || ((pHouse.Saturn - 1 + 2) % 12) + 1 === 10 || ((pHouse.Saturn - 1 + 6) % 12) + 1 === 10);
             const satGreenRetroRescue = !!(satObjD1.isRetrograde && satObjD1.retroColor === 'green' && satAsp10 && ([hLords[1], hLords[5], hLords[9], hLords[10]].includes('Saturn') || [10, 11].includes(pRashi[hLords[10]]) || pHouse.Saturn === 4));
             const rahuWithJupRescue = (pHouse.Rahu === pHouse.Jupiter && cMap.Rahu === 'red');
+            const hasGoodRetroRescue = id => {
+                const st = d1StateMap[id] || {};
+                return !!(st.isRetrograde && ['pureYellow', 'green'].includes(st.retroColor));
+            };
             const isCareerSupporter = id => ['green', 'pureYellow', 'blue'].includes(cMap[id]) || (id === 'Saturn' && satGreenRetroRescue);
                         const lagnaLord = hLords[1];
             const isNeechabhanga = (pid) => {
@@ -7916,6 +7935,9 @@
                     return Math.max(24, raw * 0.35);
                 }
                 const col = cMap[id];
+                if ((col === 'orange' || col === 'pink') && hasGoodRetroRescue(id)) {
+                    return Math.min(62, Math.max(48, raw * 0.78));
+                }
                 if (col === 'red') return Math.min(20, raw * 0.15);
                 if (col === 'orange') return Math.min(28, raw * 0.25);
                 if (col === 'pink') return Math.min(38, raw * 0.40);
@@ -7972,7 +7994,12 @@
                     }
 
                     if (!isCareerSupporter(pid)) {
-                        notes.push(hi ? `${pLbl} (${cMap[pid] === 'red' ? 'Red' : (cMap[pid] === 'orange' ? 'Orange' : 'Pink')}) करियर सपोर्टर नहीं है` : `${pLbl} (${cMap[pid]}) not a career supporter`);
+                        if ((cMap[pid] === 'orange' || cMap[pid] === 'pink') && hasGoodRetroRescue(pid)) {
+                            adj += 2.0 * weight;
+                            notes.push(hi ? `${pLbl} (${cMap[pid] === 'orange' ? 'Orange' : 'Pink'}, पर शुभ वक्री से हल्का सहारा)` : `${pLbl} (mild support via auspicious retrograde)`);
+                        } else {
+                            notes.push(hi ? `${pLbl} (${cMap[pid] === 'red' ? 'Red' : (cMap[pid] === 'orange' ? 'Orange' : 'Pink')}) करियर सपोर्टर नहीं है` : `${pLbl} (${cMap[pid]}) not a career supporter`);
+                        }
                     }
                     if (isLagnaTrikona && isCareerSupporter(pid)) {
                         adj += 3.2 * weight;
@@ -8146,6 +8173,7 @@
             if ([1,4,6,10].includes(pHouse.Mars) && isStrongCond('Mars')) defScore += 11.0;
             if (pRashi.Mars === 10 && isStrongCond('Mars')) defScore += 5.5;
             if (isStrongCond('Mars') && isStrongCond('Moon')) defScore += 4.5;
+            if (!isCareerSupporter('Mars') && hasGoodRetroRescue('Mars')) defScore += 6.5;
             const defQ = evalCareerPlanetQuality(['Mars','Sun']); defScore += defQ.adj;
 
             let caScore = ps('Mercury')*0.27 + ps('Jupiter')*0.24 + ps('Venus')*0.15 + l2*0.08 + l11*0.09 + l10*0.08 + lagnaTotalBala*0.09 + d10Bonus(['Mercury','Jupiter','Venus']);
