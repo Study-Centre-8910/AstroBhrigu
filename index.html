@@ -3697,7 +3697,6 @@
         function renderVimshottari() {
             const lons = getChartLongitudes();
             const moonLon = lons.Moon || 0;
-            const moonRashi = pRashi.Moon || 1;
             const nakSpan = 360 / 27;
             const nakIdx = Math.floor(moonLon / nakSpan) % 27;
             const fracRemaining = 1 - ((moonLon % nakSpan) / nakSpan);
@@ -5816,7 +5815,86 @@
                 Saturn: 'आपका आत्मकारक शनि है — कठिन समय में भी आप हार नहीं मानते; जीवन आपको अनुभव से अत्यंत परिपक्व और मजबूत बनाता है।'
             };
 
-            card.innerHTML = hi ? `
+            if (activeLifestyleTab === 'career') {
+                const jobOrBiz = (dp(hLords[10]) >= dp(hLords[7]))
+                    ? (hi ? 'नौकरी / प्रशासनिक या उच्च तकनीकी सेवा' : 'Job / Administrative or Specialized Service')
+                    : (hi ? 'व्यवसाय / स्वतंत्र कार्य व नेतृत्व' : 'Business / Independent Venture');
+                const hasMed = ['green','pureYellow'].includes(cMap.Jupiter) && ['green','pureYellow','blue'].includes(cMap.Sun);
+                const hasEng = ['green','pureYellow','blue'].includes(cMap.Saturn) && ['green','pureYellow','blue'].includes(cMap.Mercury);
+                const hasDef = ['green','pureYellow'].includes(cMap.Mars) && ['green','pureYellow','blue'].includes(cMap.Moon);
+                const topTrack = hasDef ? (hi ? 'रक्षा / पुलिस / प्रशासनिक सेवा' : 'Defence / Police / Admin') : (hasMed ? (hi ? 'मेडिकल साइंस / स्वास्थ्य सेवा' : 'Medical & Healthcare') : (hasEng ? (hi ? 'इंजीनियरिंग / AI / डेटा व तकनीकी क्षेत्र' : 'Engineering / AI / Tech') : (hi ? 'वित्त / प्रबंधन / सलाहकार क्षेत्र' : 'Finance / Management / Advisory')));
+                const cWin1 = findVimWin([hLords[10], hLords[11], hLords[1]], 20, 32);
+                const cWin2 = findVimWin([hLords[9], hLords[10], 'Saturn', 'Jupiter'], 30, 50);
+                card.innerHTML = hi ? `
+                    <div class="space-y-3.5 text-xs sm:text-sm text-slate-800 leading-relaxed">
+                        <div class="p-4 rounded-xl bg-gradient-to-r from-indigo-50 to-emerald-50/70 border border-indigo-200 space-y-1.5">
+                            <div class="font-bold text-indigo-950 text-sm">करियर, व्यवसाय एवं कार्यक्षेत्र गहन रिपोर्ट</div>
+                            <p>आपकी कुंडली में दशमेश <strong>${pn(hLords[10])} (${dp(hLords[10])}%)</strong>, लाभेश <strong>${pn(hLords[11])} (${dp(hLords[11])}%)</strong>, अमात्यकारक <strong>${pn(amk)}</strong> और शनि (${dp('Saturn')}%) व बुध (${dp('Mercury')}%) कार्यक्षेत्र का निर्माण कर रहे हैं।</p>
+                            <p class="font-semibold text-emerald-900">मुख्य दिशा: ${jobOrBiz} • प्रमुख संभावित क्षेत्र: ${topTrack}</p>
+                        </div>
+                        <div class="p-4 rounded-xl bg-white border border-slate-200 space-y-2">
+                            <div class="font-bold text-slate-900">1. करियर की शुरुआत, बदलाव व पदोन्नति समय</div>
+                            <p>${cWin1 ? `<strong>${fmtDMY(cWin1.startMs)}</strong> से <strong>${fmtDMY(cWin1.endMs)}</strong> (${pn(cWin1.md)}–${pn(cWin1.ad)}) के बीच करियर की मजबूत शुरुआत या नई दिशा मिलने के योग हैं।` : '22 से 28 वर्ष की आयु के बीच करियर में ठोस आधार बनने की संभावना है।'}</p>
+                            <p>${cWin2 ? `<strong>${fmtDMY(cWin2.startMs)}</strong> से <strong>${fmtDMY(cWin2.endMs)}</strong> (${pn(cWin2.md)}–${pn(cWin2.ad)}) के बीच पदोन्नति, आय में बड़ी वृद्धि या व्यवसाय विस्तार के प्रबल अवसर बन सकते हैं।` : ''}</p>
+                        </div>
+                        <div class="p-4 rounded-xl bg-white border border-slate-200 space-y-2">
+                            <div class="font-bold text-slate-900">2. कार्यस्थल मनोविज्ञान, धन व सावधानी</div>
+                            <p>अमात्यकारक <strong>${pn(amk)}</strong> बताता है कि आप अपनी बुद्धिमत्ता व परिश्रम से शून्य से शिखर तक पहुँच सकते हैं। धनेश <strong>${pn(hLords[2])} (${dp(hLords[2])}%)</strong> और लग्नेश <strong>${pn(lagnesh)} (${dp(lagnesh)}%)</strong> के अनुसार साझेदारी में <strong>मूलांक ${badMulanks.length ? badMulanks.join(', ') : '4, 8'}</strong> वालों से स्पष्ट कागज़ी शर्तें रखना लाभकारी रहेगा।</p>
+                            ${goldenVim ? `<p><strong>सर्वश्रेष्ठ करियर दौर:</strong> <strong>${fmtDMY(goldenVim.startMs)}</strong> से शुरू होने वाली <strong>${pn(goldenVim.id)} महादशा</strong> आपको उच्च प्रतिष्ठा व आर्थिक मजबूती दिला सकती है।</p>` : ''}
+                        </div>
+                    </div>
+                ` : `
+                    <div class="space-y-3 text-xs sm:text-sm text-slate-800 leading-relaxed">
+                        <div class="p-4 rounded-xl bg-indigo-50 border border-indigo-200 space-y-1.5">
+                            <div class="font-bold text-indigo-950">Deep Career & Success Report</div>
+                            <p>10th Lord <strong>${pn(hLords[10])} (${dp(hLords[10])}%)</strong>, Amatyakaraka <strong>${pn(amk)}</strong>, and 11th Lord <strong>${pn(hLords[11])} (${dp(hLords[11])}%)</strong> indicate strong potential in <strong>${topTrack}</strong> (${jobOrBiz}).</p>
+                        </div>
+                        <div class="p-4 rounded-xl bg-white border border-slate-200 space-y-2">
+                            ${cWin1 ? `<p><strong>Career Start / Shift (${fmtDMY(cWin1.startMs)}–${fmtDMY(cWin1.endMs)}):</strong> Key breakthrough period.</p>` : ''}
+                            ${cWin2 ? `<p><strong>Growth & Promotion (${fmtDMY(cWin2.startMs)}–${fmtDMY(cWin2.endMs)}):</strong> Major career expansion window.</p>` : ''}
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            if (activeLifestyleTab === 'overview') {
+                const sade1Start = new Date(birthMs + 10 * YEAR_MS);
+                card.innerHTML = hi ? `
+                    <div class="space-y-3.5 text-xs sm:text-sm text-slate-800 leading-relaxed">
+                        <div class="p-4 rounded-xl bg-gradient-to-r from-amber-50 to-indigo-50 border border-amber-200 space-y-1.5">
+                            <div class="font-bold text-amber-950 text-sm">कम्प्लीट लाइफ ओवरव्यू (जन्म से संपूर्ण जीवन सार)</div>
+                            <p>आपका जन्म <strong>${rn(lagnaR)} लग्न (${lagnaR})</strong>, <strong>${rn(moonRashi)} चंद्र राशि (${moonRashi})</strong> और <strong>${moonNak.name} नक्षत्र (पद ${moonNak.pada})</strong> में हुआ है (<strong>मूलांक: ${mulank}</strong>, <strong>भाग्यांक: ${bhagyank}</strong>)। लग्नेश <strong>${pn(lagnesh)} (${dp(lagnesh)}%)</strong> और आत्मकारक <strong>${pn(ak)}</strong> आपके पूरे जीवन की दिशा तय करते हैं।</p>
+                            <p class="text-indigo-900 font-medium">${akSecretHi[ak]}</p>
+                        </div>
+                        <div class="p-4 rounded-xl bg-white border border-slate-200 space-y-2">
+                            <div class="font-bold text-slate-900">1. संपूर्ण जीवन के 3 प्रमुख चरण (बचपन • युवावस्था • उत्तरार्ध)</div>
+                            <p>• <strong>प्रारंभिक चरण:</strong> जन्मकालीन महादशा <strong>${pn(birthVim.id)}</strong> (${fmtDMY(birthVim.endMs)} तक) व योगिनी दशा <strong>${birthYog.nameHi}</strong> (${fmtDMY(birthYog.endMs)} तक) ने परिवार व शिक्षा की नींव रखी।</p>
+                            <p>• <strong>युवावस्था व संघर्ष:</strong> ${youthVim ? `<strong>${fmtDMY(youthVim.startMs)}</strong> से <strong>${pn(youthVim.id)} महादशा</strong> ने आपको लोगों की पहचान, मेहनत और करियर/रिश्तों की परिपक्वता दी।` : ''} ${trapYog ? `<strong>${fmtDMY(trapYog.startMs)}–${fmtDMY(trapYog.endMs)}</strong> के बीच विशेष सावधानी व संयम आवश्यक है।` : ''}</p>
+                            <p>• <strong>भाग्योदय व स्थायित्व:</strong> ${goldenVim ? `<strong>${fmtDMY(goldenVim.startMs)}</strong> से शुरू होने वाली <strong>${pn(goldenVim.id)} महादशा (${goldenVim.years} वर्ष)</strong> जीवन के सबसे सुखद व समृद्ध दौर में से एक हो सकती है।` : ''}</p>
+                        </div>
+                        <div class="p-4 rounded-xl bg-white border border-slate-200 space-y-2">
+                            <div class="font-bold text-slate-900">2. स्वास्थ्य, साढ़ेसाती, परिवार व जीवन सूत्र</div>
+                            <p>${hasVehicleRisk ? 'मंगल/दाराकारक स्थिति के कारण वाहन व क्रोध पर नियंत्रण रखें। ' : ''}${moonRahuAddict ? 'गलत संगत व व्यसन से पूरी तरह दूर रहें। ' : ''}${jupProtects ? 'गुरु का शुभ प्रभाव गंभीर संकटों से रक्षा करके दीर्घायु व सम्मान प्रदान कर सकता है।' : 'धैर्य, नियमित पूजा/मंत्र और सही संगत से कठिन समय भी आसानी से निकल सकता है।'}</p>
+                            <p><strong>मूलांक ${badMulanks.length ? badMulanks.join(', ') : '4, 6, 8'}</strong> वालों के साथ गहरे आर्थिक/भावनात्मक लेन-देन में सतर्क रहें।</p>
+                        </div>
+                    </div>
+                ` : `
+                    <div class="space-y-3 text-xs sm:text-sm text-slate-800 leading-relaxed">
+                        <div class="p-4 rounded-xl bg-amber-50 border border-amber-200 space-y-1.5">
+                            <div class="font-bold text-amber-950">Complete Life Overview</div>
+                            <p>Born in <strong>${rn(lagnaR)} Lagna</strong> & <strong>${rn(moonRashi)} Moon</strong> (${moonNak.name}, Pada ${moonNak.pada}; Mulank <strong>${mulank}</strong>, Bhagyank <strong>${bhagyank}</strong>). Atmakaraka: <strong>${pn(ak)}</strong>, Lagnesh: <strong>${pn(lagnesh)} (${dp(lagnesh)}%)</strong>.</p>
+                        </div>
+                        <div class="p-4 rounded-xl bg-white border border-slate-200 space-y-2">
+                            <p>• <strong>Birth Mahadasha:</strong> ${pn(birthVim.id)} until ${fmtDMY(birthVim.endMs)} | Yogini ${birthYog.nameEn} until ${fmtDMY(birthYog.endMs)}.</p>
+                            ${goldenVim ? `<p>• <strong>Golden Phase:</strong> ${pn(goldenVim.id)} Mahadasha starting ${fmtDMY(goldenVim.startMs)}.</p>` : ''}
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+                        card.innerHTML = hi ? `
                 <div class="space-y-3.5 text-xs sm:text-sm text-slate-800 leading-relaxed">
                     <div class="p-4 rounded-xl bg-gradient-to-r from-indigo-50 to-amber-50/70 border border-indigo-200 space-y-2">
                         <div class="font-bold text-indigo-950 text-sm">संपूर्ण जीवनशैली, संबंध एवं त्रै-दशा रिपोर्ट (विंशोत्तरी + योगिनी + चर दशा)</div>
