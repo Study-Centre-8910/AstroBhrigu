@@ -7877,6 +7877,181 @@
             return { bhagyaMsg, kalaYoga, strongMaraks, foreignHits, dkYoga, horaType };
         }
 
+        function computeLifeEventsAndSafety(lons, lagnaR, pHouse, pRashi, hLords, cMap, deepPowers, d1StateMap) {
+            const hi = currentLang === 'hi';
+            const moonLon = lons.Moon || 0;
+            const nakSpan = 360 / 27;
+            const nakIdx = Math.floor(moonLon / nakSpan) % 27;
+            const fracRemaining = 1 - ((moonLon % nakSpan) / nakSpan);
+            const startLordIdx = nakIdx % 9;
+            const birthDate = getChartStartDate();
+            const birthMs = birthDate.getTime();
+            const YEAR_MS = 365.2425 * 24 * 3600 * 1000;
+            const pNameHi = { Sun:'सूर्य', Moon:'चंद्र', Mars:'मंगल', Mercury:'बुध', Jupiter:'गुरु', Venus:'शुक्र', Saturn:'शनि', Rahu:'राहु', Ketu:'केतु' };
+            const pn = id => hi ? (pNameHi[id] || id) : id;
+            const isSup = id => ['green', 'pureYellow', 'blue'].includes(cMap[id]);
+            const isBad = id => ['red', 'orange', 'pink'].includes(cMap[id]);
+
+            // Build Vimshottari Mahadasha + Antardasha timeline (0 to 80 years)
+            const mdList = [];
+            let curMs = birthMs;
+            for (let i = 0; i < 10; i++) {
+                const mLord = VIM_ORDER[(startLordIdx + i) % 9];
+                const durYrs = (i === 0) ? (mLord.years * fracRemaining) : mLord.years;
+                const endMs = curMs + durYrs * YEAR_MS;
+                const ads = [];
+                let adCur = curMs;
+                const mIdx = VIM_ORDER.findIndex(x => x.id === mLord.id);
+                for (let j = 0; j < 9; j++) {
+                    const aLord = VIM_ORDER[(mIdx + j) % 9];
+                    const adYrs = (mLord.years * aLord.years) / 120;
+                    const adScale = (i === 0) ? fracRemaining : 1;
+                    const adEnd = adCur + (adYrs * adScale) * YEAR_MS;
+                    ads.push({
+                        md: mLord.id, ad: aLord.id,
+                        startYr: new Date(adCur).getFullYear(),
+                        endYr: new Date(adEnd).getFullYear(),
+                        startAge: (adCur - birthMs) / YEAR_MS,
+                        endAge: (adEnd - birthMs) / YEAR_MS
+                    });
+                    adCur = adEnd;
+                }
+                mdList.push({ md: mLord.id, startYr: new Date(curMs).getFullYear(), endYr: new Date(endMs).getFullYear(), startAge: (curMs - birthMs) / YEAR_MS, endAge: (endMs - birthMs) / YEAR_MS, ads });
+                curMs = endMs;
+                if ((curMs - birthMs) / YEAR_MS > 82) break;
+            }
+            const allAds = mdList.flatMap(m => m.ads);
+            const findWindows = (lordIds, minAge, maxAge, limit = 2) => {
+                const hits = allAds.filter(a => a.endAge >= minAge && a.startAge <= maxAge && (lordIds.includes(a.md) || lordIds.includes(a.ad)));
+                const unique = [];
+                hits.forEach(h => {
+                    const lbl = `${pn(h.md)}-${pn(h.ad)} (${h.startYr}–${h.endYr})`;
+                    if (!unique.some(u => u.startYr === h.startYr && u.endYr === h.endYr)) unique.push({ ...h, lbl });
+                });
+                return unique.slice(0, limit).map(u => u.lbl);
+            };
+
+            const l1 = hLords[1], l2 = hLords[2], l4 = hLords[4], l5 = hLords[5], l6 = hLords[6], l7 = hLords[7], l8 = hLords[8], l9 = hLords[9], l10 = hLords[10], l11 = hLords[11], l12 = hLords[12];
+            const eduWins = findWindows([l4, l5, 'Mercury', 'Jupiter'], 14, 26, 2);
+            const careerWins = findWindows([l10, l11, l1, l9, 'Saturn'], 21, 45, 3);
+            const marriageWins = findWindows([l7, 'Venus', 'Jupiter', l2], 21, 35, 2);
+            const childWins = findWindows([l5, 'Jupiter', l9], 24, 38, 2);
+            const wealthWins = findWindows([l2, l4, l11, 'Venus', 'Jupiter'], 24, 58, 2);
+            const foreignWins = findWindows([l12, l9, 'Rahu'], 20, 50, 2);
+            const badLords = ['Sun','Moon','Mars','Mercury','Jupiter','Venus','Saturn','Rahu','Ketu'].filter(id => isBad(id) || [l6, l8, l12].includes(id));
+            const cautionWins = findWindows([...new Set(badLords)], 12, 65, 3);
+
+            const events = [
+                {
+                    title: hi ? 'शिक्षा व उच्च अध्ययन' : 'Education & Higher Studies',
+                    desc: (isSup(l4) || isSup(l5) || isSup('Mercury') || isSup('Jupiter'))
+                        ? (hi ? 'उच्च शिक्षा व प्रतियोगी परीक्षाओं में अच्छे परिणाम संभव हैं।' : 'Good potential in higher studies & competitive exams.')
+                        : (hi ? 'शिक्षा में निरंतर परिश्रम व एकाग्रता से सफलता संभव है।' : 'Steady effort & focus support academic progress.'),
+                    timing: eduWins.length ? eduWins.join(', ') : (hi ? 'प्रमुख युवा दशा काल' : 'Youth Dasha windows')
+                },
+                {
+                    title: hi ? 'करियर, पदोन्नति व स्थायित्व' : 'Career Growth & Milestones',
+                    desc: (isSup(l10) || isSup(l11) || isSup(l1))
+                        ? (hi ? 'दशम/लाभेश के सहयोग से करियर में उन्नति व पद-प्रतिष्ठा संभव है।' : 'Career rise and recognition possible via 10th/11th lord support.')
+                        : (hi ? 'करियर में क्रमिक सुधार व अनुभव के साथ स्थिरता संभव है।' : 'Gradual career stability possible with experience.'),
+                    timing: careerWins.length ? careerWins.join(', ') : (hi ? 'दशमेश/भाग्येश दशा' : '10th/9th Lord Dashas')
+                },
+                {
+                    title: hi ? 'विवाह व जीवनसाथी योग' : 'Marriage & Partnership',
+                    desc: (isSup(l7) || isSup('Venus') || isSup('Jupiter'))
+                        ? (hi ? 'संतुलित वैवाहिक जीवन व जीवनसाथी का सहयोग मिलने की संभावना है।' : 'Balanced marriage and partner support likely.')
+                        : (hi ? 'विवाह में कुंडली मिलान व धैर्य से निर्णय लेना लाभकारी हो सकता है।' : 'Careful matching & patience advised for marriage.'),
+                    timing: marriageWins.length ? marriageWins.join(', ') : (hi ? 'सप्तमेश/शुक्र/गुरु दशा' : '7th Lord / Venus / Jupiter Dasha')
+                },
+                {
+                    title: hi ? 'संतान व परिवार सुख' : 'Children & Family Happiness',
+                    desc: (isSup(l5) || isSup('Jupiter'))
+                        ? (hi ? 'पंचम भाव व गुरु के शुभ प्रभाव से संतान सुख व परिवारिक उन्नति संभव है।' : 'Auspicious 5th house/Jupiter indicates family & child happiness.')
+                        : (hi ? 'संतान व परिवार के मामलों में सामान्य व धैर्यपूर्ण स्थिति संभव है।' : 'Moderate family & child prospects with care.'),
+                    timing: childWins.length ? childWins.join(', ') : (hi ? 'पंचमेश/गुरु दशा' : '5th Lord / Jupiter Dasha')
+                },
+                {
+                    title: hi ? 'धन, संपत्ति, वाहन व विदेश योग' : 'Wealth, Property & Foreign Travel',
+                    desc: (isSup(l2) || isSup(l4) || isSup(l11))
+                        ? (hi ? 'स्व-अर्जित धन, भूमि/वाहन सुख व यात्राओं से लाभ संभव है।' : 'Self-earned wealth, property/vehicle & travel gains possible.')
+                        : (hi ? 'बचत व निवेश में योजनाबद्ध चलने से आर्थिक संतुलन बन सकता है।' : 'Planned saving & budgeting build financial balance.'),
+                    timing: [...wealthWins, ...foreignWins].slice(0, 3).join(', ') || (hi ? 'धनेश/लाभेश दशा' : '2nd/11th Lord Dashas')
+                },
+                {
+                    title: hi ? 'स्वास्थ्य व सावधानी के संवेदनशील चरण' : 'Health & Sensitive Caution Phases',
+                    desc: hi ? 'इन दशाओं में मानसिक तनाव, स्वास्थ्य व निर्णय लेने में अतिरिक्त सावधानी रखना उपयोगी हो सकता है।' : 'Extra care with health, stress, and major decisions is helpful during these Dashas.',
+                    timing: cautionWins.length ? cautionWins.join(', ') : (hi ? 'षष्ठेश/अष्टमेश दशा' : '6th/8th Lord Dashas')
+                }
+            ];
+
+            // Personal Safety & Protection Alert (Risk Screening for severe assault / exploitation / unsafe periods)
+            let riskScore = 0;
+            const riskSignals = [];
+            const hasAspectOn = (pid, targetH) => {
+                const ph = pHouse[pid];
+                if (!ph) return false;
+                if (ph === targetH || ((ph - 1 + 6) % 12) + 1 === targetH) return true;
+                if (pid === 'Mars' && (((ph - 1 + 3) % 12) + 1 === targetH || ((ph - 1 + 7) % 12) + 1 === targetH)) return true;
+                if (pid === 'Jupiter' && (((ph - 1 + 4) % 12) + 1 === targetH || ((ph - 1 + 8) % 12) + 1 === targetH)) return true;
+                if (pid === 'Saturn' && (((ph - 1 + 2) % 12) + 1 === targetH || ((ph - 1 + 9) % 12) + 1 === targetH)) return true;
+                return false;
+            };
+            const jupProtects = hasAspectOn('Jupiter', 1) || hasAspectOn('Jupiter', pHouse.Moon);
+            const jupCleanProtects = isSup('Jupiter') && jupProtects;
+
+            const maleficsIn = (h) => ['Mars','Saturn','Rahu','Ketu'].filter(m => pHouse[m] === h);
+            const moonMal = maleficsIn(pHouse.Moon);
+            const venMal = maleficsIn(pHouse.Venus);
+            const lagnaMal = maleficsIn(1);
+            const h5Mal = maleficsIn(5);
+            const h8Mal = maleficsIn(8);
+            const h7Mal = maleficsIn(7);
+            const h12Mal = maleficsIn(12);
+            const moonDeb = (pRashi.Moon === 8);
+
+            if ([6, 8, 12].includes(pHouse[l1]) && isBad(l1)) {
+                riskScore += 22;
+                riskSignals.push(hi ? 'लग्नेश 6/8/12 भाव में कमजोर अवस्था में' : 'Lagnesh weak in 6/8/12 house');
+            }
+            if ([6, 8, 12].includes(pHouse.Moon) && (isBad('Moon') || moonDeb || moonMal.some(m => m === 'Rahu' || m === 'Saturn' || m === 'Mars'))) {
+                riskScore += moonDeb && moonMal.includes('Saturn') ? 26 : 20;
+                riskSignals.push(hi ? (moonDeb ? 'अष्टम/त्रिक भाव में नीच चंद्रमा व क्रूर ग्रह युति' : 'चंद्रमा 6/8/12 भाव या क्रूर ग्रहों से पीड़ित') : 'Moon afflicted/debilitated in 6/8/12');
+            }
+            if (moonMal.includes('Rahu') && (moonMal.includes('Mars') || moonMal.includes('Saturn') || pHouse.Mars === pHouse.Venus || pHouse.Rahu === pHouse.Venus)) {
+                riskScore += 24;
+                riskSignals.push(hi ? 'चंद्र/शुक्र पर राहु-मंगल/शनि का तीव्र पीड़ित प्रभाव' : 'Severe Rahu-Mars/Saturn affliction on Moon/Venus');
+            }
+            if ((venMal.includes('Rahu') || venMal.includes('Ketu')) && (venMal.includes('Mars') || venMal.includes('Saturn') || hasAspectOn('Saturn', pHouse.Venus) || hasAspectOn('Mars', pHouse.Venus) || isBad('Venus'))) {
+                riskScore += 24;
+                riskSignals.push(hi ? 'शुक्र पर राहु/केतु व शनि/मंगल की दृष्टि/युति से तीव्र दबाव' : 'Venus afflicted by nodes and Saturn/Mars');
+            }
+            if (pHouse.Rahu === 5 && pHouse.Venus === 5 && (hasAspectOn('Saturn', 5) || hasAspectOn('Mars', 5))) {
+                riskScore += 18;
+                riskSignals.push(hi ? 'पंचम भाव में शुक्र-राहु व शनि/मंगल दृष्टि से संवेदनशील योग' : '5th house Venus-Rahu with Saturn/Mars aspect');
+            }
+            if (lagnaMal.length >= 2 || h8Mal.length >= 2 || (h8Mal.includes('Rahu') && (h8Mal.includes('Mars') || h8Mal.includes('Saturn')))) {
+                riskScore += 16;
+                riskSignals.push(hi ? 'लग्न या अष्टम भाव में एकाधिक क्रूर ग्रहों का दबाव' : 'Multiple malefic pressure on Lagna or 8th house');
+            }
+            if (h7Mal.includes('Rahu') && h12Mal.length > 0 && isBad(l7)) {
+                riskScore += 14;
+                riskSignals.push(hi ? 'सप्तम व द्वादश भाव में सावधानी योग्य योग' : '7th & 12th house caution indicators');
+            }
+            if (jupCleanProtects) {
+                riskScore = Math.max(0, riskScore - 20);
+            } else if (jupProtects && riskScore >= 40) {
+                riskSignals.push(hi ? 'गुरु की दृष्टि लग्न/चंद्र पर होने से बचाव व सुरक्षा का सहारा संभव (पर सतर्कता आवश्यक)' : 'Jupiter aspect offers protective support, though high vigilance remains essential');
+            }
+
+            const safetyLevel = riskScore >= 48 ? 'high' : (riskScore >= 26 ? 'moderate' : 'low');
+            const alertLords = [l8, l12, 'Rahu', 'Ketu', 'Saturn', 'Venus', 'Moon'].filter((v, i, a) => a.indexOf(v) === i);
+            const youthAlerts = findWindows(alertLords, 16, 26, 5);
+            const midAlerts = findWindows(alertLords, 10, 45, 3);
+            const alertWindows = youthAlerts.length ? youthAlerts : midAlerts;
+
+            return { events, safetyLevel, riskScore, riskSignals, jupProtects, alertWindows };
+        }
+
         function renderMainAnalysisPanel() {
             const box = document.getElementById('main-analysis-content');
             if (!box) return;
@@ -8285,6 +8460,48 @@
                         </div>
                     `).join('')}
                 </div>
+
+                ${(() => {
+                    const ls = computeLifeEventsAndSafety(lons, lagnaR, pHouse, pRashi, hLords, cMap, deepPowers, d1StateMap);
+                    const safetyBadge = ls.safetyLevel === 'high'
+                        ? `<span class="px-2.5 py-0.5 rounded-full bg-rose-600 text-white text-[11px] font-bold">${hi ? 'उच्च सतर्कता आवश्यक' : 'High Vigilance Advised'}</span>`
+                        : (ls.safetyLevel === 'moderate'
+                            ? `<span class="px-2.5 py-0.5 rounded-full bg-amber-500 text-white text-[11px] font-bold">${hi ? 'मध्यम सतर्कता' : 'Moderate Caution'}</span>`
+                            : `<span class="px-2.5 py-0.5 rounded-full bg-emerald-600 text-white text-[11px] font-bold">${hi ? 'सुरक्षा स्थिति संतुलित' : 'Balanced Safety Profile'}</span>`);
+                    const safetyBoxCls = ls.safetyLevel === 'high'
+                        ? 'bg-rose-50 border-rose-300 text-rose-950'
+                        : (ls.safetyLevel === 'moderate' ? 'bg-amber-50 border-amber-200 text-amber-950' : 'bg-emerald-50/70 border-emerald-200 text-emerald-950');
+                    return `
+                        <div class="p-4 rounded-xl bg-white border border-slate-200 space-y-2.5 text-xs">
+                            <div class="font-bold text-sm text-slate-900">${hi ? 'प्रमुख जीवन घटनाएँ व संभावित समय (विंशोत्तरी दशा आधारित)' : 'Important Life Events & Potential Timing (Vimshottari Dasha)'}</div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+                                ${ls.events.map(ev => `
+                                    <div class="p-3 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1">
+                                        <div class="font-bold text-slate-900">${ev.title}</div>
+                                        <div class="text-slate-700 leading-relaxed">${ev.desc}</div>
+                                        <div class="text-[11px] font-semibold text-indigo-700">${hi ? 'संभावित दशा समय:' : 'Likely Windows:'} ${ev.timing}</div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <div class="p-4 rounded-xl border ${safetyBoxCls} space-y-2 text-xs">
+                            <div class="flex flex-wrap items-center justify-between gap-2">
+                                <div class="font-bold text-sm">${hi ? 'व्यक्तिगत सुरक्षा एवं सतर्कता अलर्ट (Safety & Protection Screening)' : 'Personal Safety & Vigilance Alert'}</div>
+                                ${safetyBadge}
+                            </div>
+                            <p class="leading-relaxed">
+                                ${ls.safetyLevel === 'high'
+                                    ? (hi ? 'इस कुंडली में चंद्र/शुक्र/लग्न या अष्टम भाव पर तीव्र पीड़ित ग्रहों का दबाव दिख रहा है। किसी अनहोनी, शोषण या असुरक्षित परिस्थिति से बचाव के लिए विशेष सतर्कता, भरोसेमंद साथ और परिवार का ध्यान रखना अत्यंत उपयोगी हो सकता है।' : 'Strong afflictions on Lagna/Moon/Venus/8th house indicate heightened vulnerability. Proactive safety precautions, trusted companions, and family awareness are strongly advised.')
+                                    : (ls.safetyLevel === 'moderate'
+                                        ? (hi ? 'कुंडली में कुछ संवेदनशील ग्रह योग मौजूद हैं। अनजान स्थानों, देर रात या संदिग्ध व्यक्तियों से सामान्य से अधिक सावधानी रखना लाभकारी हो सकता है।' : 'Some sensitive planetary indicators are present; extra caution in unfamiliar or late-hour situations is advisable.')
+                                        : (hi ? 'कुंडली में सुरक्षा के दृष्टिकोण से गंभीर अशुभ योग कम हैं (गुरु/लग्नेश का संतुलन सहायक है), फिर भी सामान्य सावधानी सदैव उपयोगी रहती है।' : 'No severe vulnerability cluster detected; standard personal safety awareness remains helpful.'))}
+                            </p>
+                            ${ls.riskSignals.length ? `<div class="text-[11px] font-medium">${hi ? 'मुख्य संकेत:' : 'Key Signals:'} ${ls.riskSignals.join(' • ')}</div>` : ''}
+                            ${ls.safetyLevel !== 'low' && ls.alertWindows.length ? `<div class="text-[11px] font-bold">${hi ? 'सावधानी के संभावित समय (दशा):' : 'Caution Dasha Windows:'} ${ls.alertWindows.join(', ')}</div>` : ''}
+                        </div>
+                    `;
+                })()}
             `;
         }
 
