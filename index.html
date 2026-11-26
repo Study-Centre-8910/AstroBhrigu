@@ -5672,28 +5672,36 @@
                 return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
             };
 
-            // Mulank & Bhagyank
             const reduceNum = (n) => { while (n > 9) n = String(n).split('').reduce((a, b) => a + Number(b), 0); return n; };
             const mulank = reduceNum(birthDate.getDate());
             const bhagyank = reduceNum((currentChart.dob || '2000-01-01').replace(/\D/g, '').split('').reduce((a, b) => a + Number(b), 0));
 
-            // 1. Exact Vimshottari Mahadasha Timeline
+            // 1. Vimshottari Mahadasha + Antardasha Timeline
             const moonLon = lons.Moon || 0;
             const moonRashi = pRashi.Moon || 1;
             const nakSpan = 360 / 27;
             const nakIdx = Math.floor(moonLon / nakSpan) % 27;
             const fracRem = 1 - ((moonLon % nakSpan) / nakSpan);
             const startVimIdx = nakIdx % 9;
-            const vimMDs = [];
+            const vimMDs = [], vimADs = [];
             let vCur = birthMs;
             for (let i = 0; i < 9; i++) {
                 const ml = VIM_ORDER[(startVimIdx + i) % 9];
-                const dur = (i === 0 ? ml.years * fracRem : ml.years) * YEAR_MS;
+                const isFirst = (i === 0);
+                const dur = (isFirst ? ml.years * fracRem : ml.years) * YEAR_MS;
                 vimMDs.push({ id: ml.id, years: ml.years, startMs: vCur, endMs: vCur + dur, startAge: (vCur - birthMs) / YEAR_MS, endAge: (vCur + dur - birthMs) / YEAR_MS });
+                let adC = vCur;
+                const mIdx = VIM_ORDER.findIndex(x => x.id === ml.id);
+                for (let j = 0; j < 9; j++) {
+                    const al = VIM_ORDER[(mIdx + j) % 9];
+                    const adDur = ((ml.years * al.years) / 120) * (isFirst ? fracRem : 1) * YEAR_MS;
+                    vimADs.push({ md: ml.id, ad: al.id, startMs: adC, endMs: adC + adDur, startAge: (adC - birthMs) / YEAR_MS, endAge: (adC + adDur - birthMs) / YEAR_MS });
+                    adC += adDur;
+                }
                 vCur += dur;
             }
 
-            // 2. Exact Yogini Dasha + Antardasha Timeline
+            // 2. Yogini Dasha + Antardasha Timeline
             const YOGINI_SEQ = [
                 { nameHi:'मंगला', nameEn:'Mangala', lord:'Moon', years:1 },
                 { nameHi:'पिंगला', nameEn:'Pingala', lord:'Sun', years:2 },
@@ -5707,7 +5715,7 @@
             const startYogIdx = ((nakIdx + 1) + 3) % 8;
             const yogMDs = [], yogADs = [];
             let yCur = birthMs;
-            for (let cycle = 0; cycle < 2; cycle++) {
+            for (let cycle = 0; cycle < 3; cycle++) {
                 for (let i = 0; i < 8; i++) {
                     const yObj = YOGINI_SEQ[(startYogIdx + i) % 8];
                     const isFirst = (cycle === 0 && i === 0);
@@ -5731,42 +5739,38 @@
                 }
             }
 
-            // 3. Birth Chara Dasha (Lagna Sign -> Lord -> years)
+            // 3. Birth Chara Dasha
             const lagnesh = hLords[1];
             const charaDiff = ((pRashi[lagnesh] - lagnaR + 12) % 12);
             const charaYrs = Math.max(1, Math.min(12, charaDiff === 0 ? 12 : charaDiff));
             const charaEndMs = birthMs + charaYrs * YEAR_MS;
 
-            // Key Yogini Windows
+            // Key Dasha Finders
             const findYogWin = (lords, minA, maxA) => yogADs.find(a => a.endAge >= minA && a.startAge <= maxA && (lords.includes(a.adLord) || lords.includes(a.mdLord)));
+            const findVimWin = (lords, minA, maxA) => vimADs.find(a => a.endAge >= minA && a.startAge <= maxA && (lords.includes(a.ad) || lords.includes(a.md)));
+
             const teenLoveYog = findYogWin(['Venus', 'Mercury', hLords[5], hLords[7]], 12, 19) || yogMDs.find(m => m.endAge >= 13 && m.startAge <= 19);
+            const ketuDetachWin = findVimWin(['Ketu', 'Rahu'], 12, 23);
             const trapYog = findYogWin(['Rahu', 'Saturn', 'Mars', hLords[6], hLords[8]], 15, 25) || yogMDs.find(m => ['Rahu','Saturn','Mars'].includes(m.lord) && m.endAge >= 15);
-            const partnerYog = findYogWin(['Venus', 'Jupiter', hLords[7], hLords[9]], 18, 30) || yogMDs.find(m => m.endAge >= 21 && m.startAge <= 29);
-            const sankataYog = yogMDs.find(m => m.lord === 'Rahu' && m.endAge >= 16 && m.startAge <= 40) || trapYog;
+            const partnerYog = findYogWin(['Venus', 'Jupiter', hLords[7], hLords[9]], 19, 31) || yogMDs.find(m => m.endAge >= 21 && m.startAge <= 29);
+            const childVimWin = findVimWin([hLords[5], 'Jupiter', hLords[9]], 22, 35);
+            const legalRiskYog = findYogWin(['Saturn', 'Rahu', 'Mars'], 17, 42);
+            const sankataYog = yogMDs.find(m => m.lord === 'Rahu' && m.endAge >= 16 && m.startAge <= 45) || trapYog;
 
             // Chara Karakas
             const sevenSorted = ['Sun','Moon','Mars','Mercury','Jupiter','Venus','Saturn']
                 .map(id => ({ id, deg: ((lons[id] || 0) % 30 + 30) % 30 }))
                 .sort((a, b) => b.deg - a.deg);
-            const ak = sevenSorted[0].id;
-            const amk = sevenSorted[1].id;
-            const dk = sevenSorted[6].id;
+            const ak = sevenSorted[0].id, amk = sevenSorted[1].id, dk = sevenSorted[6].id;
             const moonNak = typeof getNakshatraFromLon === 'function' ? getNakshatraFromLon(moonLon) : { name: '-', pada: 1, lord: '-' };
 
-            // Probable Partner/Crush Starting Syllables (from 7th lord, Venus, Darakaraka)
-            const getSyl = (pid) => {
-                if (typeof getSyllableFromLon === 'function') return getSyllableFromLon(lons[pid] || 0).letter || '';
-                return '';
-            };
-            const nameLetters = [...new Set([getSyl(hLords[7]), getSyl('Venus'), getSyl(dk)].filter(Boolean))].slice(0, 3);
+            const getSyl = (pid) => (typeof getSyllableFromLon === 'function') ? (getSyllableFromLon(lons[pid] || 0).letter || '') : '';
+            const nameLetters = [...new Set([getSyl(hLords[7]), getSyl('Venus'), getSyl(dk), getSyl(hLords[5])].filter(Boolean))].slice(0, 3);
 
-            // Marriage Direction from 7th Rashi
             const r7 = ((lagnaR - 1 + 6) % 12) + 1;
             const dirMapHi = { 1:'पूर्व (East)', 5:'पूर्व (East)', 9:'पूर्व (East)', 2:'दक्षिण (South)', 6:'दक्षिण (South)', 10:'दक्षिण (South)', 3:'पश्चिम (West)', 7:'पश्चिम (West)', 11:'पश्चिम (West)', 4:'उत्तर (North)', 8:'उत्तर (North)', 12:'उत्तर (North)' };
-            const dirMapEn = { 1:'East', 5:'East', 9:'East', 2:'South', 6:'South', 10:'South', 3:'West', 7:'West', 11:'West', 4:'North', 8:'North', 12:'North' };
-            const marriageDir = hi ? dirMapHi[r7] : dirMapEn[r7];
+            const marriageDir = dirMapHi[r7] || 'पूर्व (East)';
 
-            // Bad Mulanks
             const MULANK_NUM = { Sun:1, Moon:2, Jupiter:3, Rahu:4, Mercury:5, Venus:6, Ketu:7, Saturn:8, Mars:9 };
             const badMulanks = [...new Set(
                 Object.keys(MULANK_NUM)
@@ -5774,15 +5778,33 @@
                     .map(id => MULANK_NUM[id])
             )].sort((a, b) => a - b).slice(0, 3);
 
-            const birthVim = vimMDs[0];
-            const birthYog = yogMDs[0];
-            const youthVim = vimMDs.find(m => m.startAge >= 7 && m.startAge <= 28) || vimMDs[2] || vimMDs[1];
+            const birthVim = vimMDs[0], birthYog = yogMDs[0];
+            const youthVim = vimMDs.find(m => m.startAge >= 4 && m.startAge <= 26) || vimMDs[1];
             const goldenVim = vimMDs.find(m => ['Jupiter','Venus','Mercury','Sun','Moon'].includes(m.id) && m.startAge >= 18 && ['green','pureYellow','blue'].includes(cMap[m.id])) || vimMDs[3] || vimMDs[2];
+            const moonVim = vimMDs.find(m => m.id === 'Moon' && m.startAge >= 18);
+            const lateVim = vimMDs.find(m => m.startAge >= 52 && m.startAge <= 72) || vimMDs[vimMDs.length - 2];
+
+            // Specific Deep Chart Patterns from the 6 R. Reports
+            const isBad = id => ['red', 'orange', 'pink'].includes(cMap[id]);
+            const isStrong = id => ['green', 'pureYellow'].includes(cMap[id]);
             const jupProtects = ['green','pureYellow','blue'].includes(cMap.Jupiter);
-            const isLoveStrong = ['green','pureYellow','blue'].includes(cMap.Venus) || ['green','pureYellow','blue'].includes(cMap[hLords[7]]);
-            const hasVehicleRisk = ([6, 8, 12].includes(pHouse.Mars) || [6, 8, 12].includes(pHouse[dk]) || ['red','orange'].includes(cMap.Mars));
+            const sunSatFatherTension = (pHouse.Sun === pHouse.Saturn || Math.abs(pHouse.Sun - pHouse.Saturn) === 6 || pHouse[hLords[9]] === 8);
+            const inLawTension = ([6, 8, 12].includes(pHouse.Sun) || pHouse.Sun === 7 && hLords[8] === 'Sun') || ([6, 8].includes(pHouse[hLords[7]]) && isBad(hLords[9]));
+            const moonIn1stDeb = (pHouse.Moon === 1 && pRashi.Moon === 8);
+            const ketuVen9 = (pHouse.Ketu === 9 && pHouse.Venus === 9) || (pHouse.Ketu === 1 && isBad('Moon'));
+            const moonRahuAddict = (pHouse.Moon === pHouse.Rahu && [4, 7, 8, 12].includes(pHouse.Moon)) || (pHouse.Sun === pHouse.Saturn && pHouse.Saturn === 7);
+            const hasVehicleRisk = ([6, 8, 12].includes(pHouse.Mars) || [6, 8, 12].includes(pHouse[dk]) || isBad('Mars'));
+            const hasLegalRisk = ([6, 8, 12].includes(pHouse.Saturn) || [6, 8, 12].includes(pHouse.Rahu) || (pHouse.Venus === 6 && pHouse.Saturn === 6) || (pHouse.Jupiter === 3 && pHouse.Rahu === 3));
             const hasMultiMarriageHint = ([hLords[7], 'Venus'].some(id => [3, 6, 9, 12].includes(pRashi[id])) && ([pHouse.Rahu, pHouse.Ketu].includes(7) || pHouse[hLords[7]] === 8 || pHouse.Venus === 6));
-            const hasEarlyHomeChange = (['Rahu','Mars','Saturn'].includes(youthVim?.id) || [4, 12].includes(pHouse.Rahu));
+            const hasFirstChildCaution = ([5, 8].includes(pHouse.Rahu) || [5, 8].includes(pHouse.Ketu) || [6, 8, 12].includes(pHouse[hLords[5]]));
+            const neighborOrLoveHint = ([3, 4, 5].includes(pHouse[hLords[7]]) || pHouse.Venus === 5 || pHouse[hLords[5]] === 7);
+            const motherInLawGood = ([4, 7].includes(pHouse.Moon) || [1, 4, 5, 9].includes(pHouse[hLords[4]]) && !isBad('Venus'));
+
+            // D9 (Navamsa) Spouse Quality
+            const d9Ven = computeVargaRashi(lons.Venus || 0, 9);
+            const d9L7 = computeVargaRashi(lons[hLords[7]] || 0, 9);
+            const d9Strong = [1,2,4,5,7,9,10,12].includes(d9Ven) || [1,2,4,5,7,9,10,12].includes(d9L7);
+            const d9HealthHint = ([6, 8, 12].includes(pHouse.Venus) || isBad('Venus') || isBad(dk));
 
             const akSecretHi = {
                 Sun: 'आपका आत्मकारक सूर्य है — भीतर से आप अत्यंत स्वाभिमानी हैं और किसी के दबाव में झुकना पसंद नहीं करते; अनादर होने पर आप चुपचाप दूरी बना लेते हैं।',
@@ -5794,53 +5816,54 @@
                 Saturn: 'आपका आत्मकारक शनि है — कठिन समय में भी आप हार नहीं मानते; जीवन आपको अनुभव से अत्यंत परिपक्व और मजबूत बनाता है।'
             };
 
-            const spouseNatureHi = ['green','pureYellow'].includes(cMap[hLords[7]]) || ['green','pureYellow'].includes(cMap.Venus)
-                ? 'सक्रिय, समझदार, आकर्षक और जीवन में संतुलन लाने वाला'
-                : 'थोड़ा संवेदनशील या स्वतंत्र विचारों वाला (जहाँ धैर्य और संवाद रिश्ते को बहुत मज़बूत बना सकते हैं)';
-
             card.innerHTML = hi ? `
                 <div class="space-y-3.5 text-xs sm:text-sm text-slate-800 leading-relaxed">
                     <div class="p-4 rounded-xl bg-gradient-to-r from-indigo-50 to-amber-50/70 border border-indigo-200 space-y-2">
-                        <div class="font-bold text-indigo-950 text-sm">संपूर्ण जीवनशैली, संबंध एवं दशा रिपोर्ट (विंशोत्तरी + योगिनी + चर दशा)</div>
-                        <p>आपका जन्म <strong>${rn(lagnaR)} लग्न (${lagnaR})</strong> और <strong>${rn(moonRashi)} चंद्र राशि (${moonRashi})</strong> में <strong>${moonNak.name} नक्षत्र (पद ${moonNak.pada})</strong> के अंतर्गत हुआ है (<strong>मूलांक: ${mulank}</strong>, <strong>भाग्यांक: ${bhagyank}</strong>)। जन्म के समय आपकी विंशोत्तरी महादशा <strong>${pn(birthVim.id)}</strong> (समाप्ति: <strong>${fmtDMY(birthVim.endMs)}</strong>), योगिनी दशा <strong>${birthYog.nameHi} (${pn(birthYog.lord)})</strong> (समाप्ति: <strong>${fmtDMY(birthYog.endMs)}</strong>), तथा चर दशा <strong>${rn(lagnaR)}</strong> (समाप्ति: <strong>${fmtDMY(charaEndMs)}</strong>) चल रही थी।</p>
-                        <p class="text-indigo-900 font-medium">${akSecretHi[ak]}</p>
+                        <div class="font-bold text-indigo-950 text-sm">संपूर्ण जीवनशैली, संबंध एवं त्रै-दशा रिपोर्ट (विंशोत्तरी + योगिनी + चर दशा)</div>
+                        <p>आपका जन्म <strong>${rn(lagnaR)} लग्न (${lagnaR})</strong> और <strong>${rn(moonRashi)} चंद्र राशि (${moonRashi})</strong> में <strong>${moonNak.name} नक्षत्र (पद ${moonNak.pada})</strong> के अंतर्गत हुआ है (<strong>मूलांक: ${mulank}</strong>, <strong>भाग्यांक: ${bhagyank}</strong>)। जन्म के समय विंशोत्तरी महादशा <strong>${pn(birthVim.id)}</strong> (समाप्ति: <strong>${fmtDMY(birthVim.endMs)}</strong>), योगिनी दशा <strong>${birthYog.nameHi} (${pn(birthYog.lord)})</strong> (समाप्ति: <strong>${fmtDMY(birthYog.endMs)}</strong>), और चर दशा <strong>${rn(lagnaR)}</strong> (समाप्ति: <strong>${fmtDMY(charaEndMs)}</strong>) चल रही थी।</p>
+                        <p class="text-indigo-900 font-medium">${akSecretHi[ak]} ${ketuVen9 ? 'बाहर से आप बहुत सरल और शांत दिख सकते हैं, पर भीतर से आप स्थिति को गहराई से परखने वाले और कभी-कभी अप्रत्याशित निर्णय लेने वाले हो सकते हैं।' : ''}</p>
                     </div>
 
                     <div class="p-4 rounded-xl bg-white border border-slate-200 space-y-2">
-                        <div class="font-bold text-slate-900">1. बचपन, परिवार, घर-परिवर्तन व शुरुआती संघर्ष</div>
-                        <p>${hasEarlyHomeChange ? `प्रारंभिक दशाओं में घर के निर्माण/परिवर्तन, परिवार में स्थान बदलाव या पिता के कार्यक्षेत्र पर अतिरिक्त दबाव और स्वास्थ्य/यात्रा से जुड़े उतार-चढ़ाव देखने को मिल सकते हैं; भाई-बहन या पारिवारिक शुभ समाचार भी इस दौर में संभव हैं।` : `प्रारंभिक जीवन में परिवार के साथ उतार-चढ़ाव के बावजूद स्थिति संभलती रही और धीरे-धीरे जीवनशैली में स्थिरता आती दिखती है।`} ${youthVim ? `<strong>${fmtDMY(youthVim.startMs)}</strong> से शुरू हुई <strong>${pn(youthVim.id)} महादशा (${youthVim.years} वर्ष)</strong> ने आपको नए लोगों से मिलवाया और जीवन की असली समझ विकसित की।` : ''}</p>
+                        <div class="font-bold text-slate-900">1. बचपन, परिवार, माता-पिता व घर-परिवर्तन</div>
+                        <p>${youthVim ? `<strong>${fmtDMY(youthVim.startMs)}</strong> से <strong>${pn(youthVim.id)} महादशा (${youthVim.years} वर्ष)</strong> के दौरान परिवार में आर्थिक उतार-चढ़ाव, घर बदलने/निर्माण या भाई-बहन से जुड़ा शुभ समाचार संभव हो सकता है।` : ''} शुरुआती वर्षों में माता-पिता पर कार्य व यात्राओं का दबाव रह सकता है, और कभी-कभी स्वास्थ्य पर खर्च भी बढ़ सकता है।</p>
+                        ${sunSatFatherTension ? `<p class="text-amber-900 bg-amber-50/70 p-2 rounded-lg border border-amber-200"><strong>पिता व ससुराल संबंध संकेत:</strong> नौकरी या विवाह के बाद पिता के साथ विचारों में टकराव की संभावना रह सकती है${inLawTension ? ' तथा ससुराल पक्ष (विशेषकर जीवनसाथी के पिता) से संबंधों में उतार-चढ़ाव संभव है' : ''}—संवाद में विनम्रता रखना बहुत उपयोगी रहेगा।</p>` : ''}
                     </div>
 
                     <div class="p-4 rounded-xl bg-white border border-slate-200 space-y-2.5">
-                        <div class="font-bold text-slate-900">2. प्रेम, मित्र-समूह आकर्षण व संवेदनशील जाल से बचाव</div>
-                        ${teenLoveYog ? `<p>योगिनी दशा के अनुसार <strong>${fmtDMY(teenLoveYog.startMs)}</strong> से <strong>${fmtDMY(teenLoveYog.endMs)}</strong> (${teenLoveYog.mdName} में ${teenLoveYog.adName}) के बीच किसी परिचित या मित्र-समूह के व्यक्ति के प्रति गहरा आकर्षण हो सकता है${nameLetters.length ? ` (संभावित नाम अक्षर: <strong>${nameLetters.join(', ')}</strong>)` : ''} — यह अनुभव आपको प्यार और भरोसे का असली अर्थ सिखाने वाला हो सकता है।</p>` : ''}
-                        ${trapYog ? `<p class="text-rose-900 bg-rose-50/70 p-2.5 rounded-lg border border-rose-200"><strong>भ्रम व फँसाव से सावधानी:</strong> <strong>${fmtDMY(trapYog.startMs)}</strong> से <strong>${fmtDMY(trapYog.endMs)}</strong> (${trapYog.mdName}–${trapYog.adName || pn(trapYog.lord)}) के दौरान किसी पहले से परिचित व्यक्ति के आकर्षण, गलत संगत, पढ़ाई से भटकाव या विवाद/कानूनी उलझन में फँसने का खतरा रह सकता है—इस अवधि में भावनात्मक निर्णयों से दूर रहना अत्यंत आवश्यक है।</p>` : ''}
-                        <p>कुंडली में ${jupProtects ? `<strong>गुरु (${dp('Jupiter')}%)</strong> की रक्षक स्थिति आपको बार-बार गलत दिशा से बचा सकती है।` : `ग्रहों की परीक्षा आपको भीतर से बहुत परिपक्व बना सकती है।`} ${isLoveStrong ? 'आगे चलकर संबंधों में स्थिरता और सच्चा जुड़ाव संभव है।' : 'किशोरावस्था में दिल टूटने या तनाव के बाद आगे चलकर परिपक्व रिश्ता बनेगा।'}</p>
+                        <div class="font-bold text-slate-900">2. युवावस्था, प्रेम, मित्र-समूह आकर्षण व भ्रम/जाल से सावधानी</div>
+                        ${moonIn1stDeb ? `<p>लग्न में चंद्रमा की संवेदनशील स्थिति के कारण जब भी आप किसी को जीवन में जोड़ने का प्रयास करते हैं, कोई न कोई परिस्थिति या भीतर का संकोच आपको रोक सकता है।</p>` : ''}
+                        ${teenLoveYog ? `<p>योगिनी दशा <strong>${teenLoveYog.mdName}–${teenLoveYog.adName} (${fmtDMY(teenLoveYog.startMs)} से ${fmtDMY(teenLoveYog.endMs)})</strong> के आसपास मित्र-समूह या परिचित दायरे में किसी के प्रति गहरा आकर्षण हो सकता है${nameLetters.length ? ` (संभावित नाम अक्षर: <strong>${nameLetters.join(', ')}</strong>)` : ''} — कुछ यादगार पल बनने के बाद भी वह व्यक्ति स्थायी जीवनसाथी न हो, यह अनुभव आपको रिश्तों की असली पहचान सिखा सकता है।</p>` : ''}
+                        ${ketuDetachWin ? `<p><strong>विरक्ति/बदलाव चरण (${fmtDMY(ketuDetachWin.startMs)}–${fmtDMY(ketuDetachWin.endMs)}):</strong> केतु/राहु की अंतर्दशा में अचानक पुराने जुड़ाव से मन उचट सकता है और पढ़ाई या लक्ष्य से ध्यान भटकने का जोखिम रह सकता है।</p>` : ''}
+                        ${trapYog ? `<p class="text-rose-900 bg-rose-50/70 p-2.5 rounded-lg border border-rose-200"><strong>फँसाव व गलत संगत से सावधानी:</strong> <strong>${fmtDMY(trapYog.startMs)}</strong> से <strong>${fmtDMY(trapYog.endMs)}</strong> (${trapYog.mdName}–${trapYog.adName}) के बीच किसी परिचित व्यक्ति के आकर्षण, भ्रम या गलत दिशा में जाने का जोखिम हो सकता है—इस समय आँख मूँदकर भरोसा न करें। ${jupProtects ? `कुंडली में <strong>गुरु (${dp('Jupiter')}%)</strong> हर कठिन मोड़ पर सही रास्ता दिखाकर रक्षा कर सकते हैं।` : ''}</p>` : ''}
                     </div>
 
                     <div class="p-4 rounded-xl bg-white border border-slate-200 space-y-2.5">
-                        <div class="font-bold text-slate-900">3. सच्चा जीवनसाथी, विवाह दिशा, समय व संतान योग</div>
-                        <p>${partnerYog ? `<strong>${fmtDMY(partnerYog.startMs)}</strong> के बाद (${partnerYog.mdName}–${partnerYog.adName}) या <strong>${fmtDMY(partnerYog.endMs)}</strong> तक आपके जीवन में उस विशेष जीवनसाथी से मिलने व विवाह के प्रबल अवसर बन सकते हैं। ` : ''}आपके घर से <strong>${marriageDir}</strong> दिशा में विवाह के योग अधिक प्रबल हो सकते हैं${nameLetters.length ? ` और जीवनसाथी के नाम के शुरुआती अक्षर <strong>${nameLetters.join(' / ')}</strong> से जुड़े हो सकते हैं` : ''}।</p>
-                        <p>दाराकारक <strong>${pn(dk)}</strong> व सप्तमेश <strong>${pn(hLords[7])} (${dp(hLords[7])}%)</strong> दर्शाते हैं कि जीवनसाथी <strong>${spouseNatureHi}</strong> हो सकता है। ${hasMultiMarriageHint ? `<span class="text-amber-800 font-semibold">विवाह से पहले कुंडली मिलान और एक से अधिक संबंधों/भ्रम से दूर रहना विशेष रूप से लाभकारी रहेगा।</span> ` : ''}पंचमेश <strong>${pn(hLords[5])} (${dp(hLords[5])}%)</strong> व गुरु से विवाह के बाद <strong>संतान सुख (1–2 या 2–3 संतान, पुत्र व पुत्री दोनों के संतुलित योग)</strong> संभव है।</p>
+                        <div class="font-bold text-slate-900">3. विवाह दिशा, जीवनसाथी का स्वरूप (D9), ससुराल व संतान योग</div>
+                        <p>${partnerYog ? `<strong>${fmtDMY(partnerYog.startMs)}</strong> से <strong>${fmtDMY(partnerYog.endMs)}</strong> (${partnerYog.mdName}–${partnerYog.adName}) के आसपास विवाह या उस विशेष जीवनसाथी से मिलने के प्रबल योग बन सकते हैं। ` : ''}आपके घर से <strong>${marriageDir}</strong> दिशा में विवाह की संभावना अधिक है${neighborOrLoveHint ? ' (पड़ोस, परिचित दायरे या प्रेम विवाह के भी संकेत हैं)' : ''}${nameLetters.length ? ` तथा जीवनसाथी के नाम के शुरुआती अक्षर <strong>${nameLetters.join(' / ')}</strong> से जुड़े हो सकते हैं` : ''}।</p>
+                        <p>D9 नवांश व दाराकारक <strong>${pn(dk)}</strong> के अनुसार जीवनसाथी <strong>${d9Strong ? 'सुंदर, शिक्षित, आकर्षक और आधुनिक सोच वाला' : 'सरल, संवेदनशील और पारिवारिक मूल्यों वाला'}</strong> हो सकता है। ${motherInLawGood ? 'उनका अपनी सास (आपकी माताजी) के साथ बहुत अच्छा तालमेल रह सकता है।' : 'विवाह के शुरुआती समय में सास-बहू के बीच हल्का संवाद संतुलन आवश्यक रहेगा।'} ${d9HealthHint ? '<span class="text-amber-800">जीवनसाथी के स्वास्थ्य का विशेष ध्यान रखना लाभकारी होगा।</span> ' : ''}${hasMultiMarriageHint ? '<span class="text-rose-800 font-semibold">एक से अधिक विवाह या भटकाव की स्थिति से बचना आपके लिए अत्यंत श्रेयस्कर रहेगा।</span>' : ''}</p>
+                        <p>${childVimWin ? `<strong>${fmtDMY(childVimWin.startMs)}–${fmtDMY(childVimWin.endMs)}</strong> के आसपास संतान योग प्रबल दिखते हैं। ` : ''}कुंडली में <strong>2–3 संतान</strong> (पुत्र व पुत्री दोनों के योग) संभव हैं${hasFirstChildCaution ? ' — पहली संतान के समय स्वास्थ्य व चिकित्सकीय देखभाल में अतिरिक्त सावधानी रखें' : ''}।</p>
                     </div>
 
                     <div class="p-4 rounded-xl bg-white border border-slate-200 space-y-2.5">
-                        <div class="font-bold text-slate-900">4. स्वास्थ्य, वाहन/विवाद सावधानी, मूलांक व भाग्योदय</div>
-                        <p><strong>मूलांक सावधानी:</strong> <strong>मूलांक ${badMulanks.length ? badMulanks.join(', ') : '4, 6, 8'}</strong> वाले लोगों के साथ साझेदारी, गहरे भरोसे या आर्थिक लेन-देन में अतिरिक्त सावधानी रखें। ${sankataYog ? `योगिनी दशा <strong>${sankataYog.nameHi}</strong> (${fmtDMY(sankataYog.startMs)}–${fmtDMY(sankataYog.endMs)}) में` : 'कठिन दशाओं में'} अनावश्यक विवाद, नशे/गलत आदतों और पुलिस-कोर्ट जैसे मामलों से दूरी बनाए रखें।</p>
-                        <p>${hasVehicleRisk ? `<span class="text-rose-800 font-semibold">वाहन व चोट सावधानी:</span> मंगल/दाराकारक की संवेदनशील स्थिति के कारण तेज़ वाहन चलाने और क्रोध से बचना अत्यंत ज़रूरी है। ` : ''}अमात्यकारक <strong>${pn(amk)}</strong> दर्शाता है कि करियर में स्थिर मेहनत से उच्च सम्मान प्राप्त हो सकता है।</p>
-                        ${goldenVim ? `<p><strong>जीवन का स्वर्ण मोड़:</strong> <strong>${fmtDMY(goldenVim.startMs)}</strong> से शुरू होने वाली <strong>${pn(goldenVim.id)} महादशा (${goldenVim.years} वर्ष)</strong> करियर, धन, परिवार और सामाजिक प्रतिष्ठा के लिए जीवन का सबसे श्रेष्ठ दौर हो सकती है। ${jupProtects ? 'गुरु का आशीर्वाद गंभीर संकटों से रक्षा करते हुए पूर्ण आयु व शांत जीवन का मार्ग प्रशस्त कर सकता है।' : ''}</p>` : ''}
+                        <div class="font-bold text-slate-900">4. शत्रु, वाहन दुर्घटना, कानूनी/नशा सावधानी, मूलांक व भाग्योदय</div>
+                        <p><strong>मूलांक चेतावनी:</strong> <strong>मूलांक ${badMulanks.length ? badMulanks.join(', ') : '4, 6, 8'}</strong> वाले लोगों के साथ साझेदारी, पैसों के लेन-देन या बहुत गहरे भरोसे में सतर्क रहें। शत्रुओं पर आप अंततः विजय पा सकते हैं, पर कुछ गुप्त विरोधियों या बाहरी लोगों के दिए भोजन/प्रलोभन से सदैव सावधान रहें।</p>
+                        <p>${hasVehicleRisk ? `<span class="text-rose-800 font-semibold">वाहन व चोट सावधानी:</span> मंगल व दाराकारक (${pn(dk)}) की स्थिति के कारण तेज़ वाहन चलाने से बचें। ` : ''}${hasLegalRisk ? `<span class="text-rose-800 font-semibold">कानूनी/विवाद सावधानी (${legalRiskYog ? fmtDMY(legalRiskYog.startMs)+'–'+fmtDMY(legalRiskYog.endMs) : sankataYog ? fmtDMY(sankataYog.startMs)+'–'+fmtDMY(sankataYog.endMs) : 'कठिन दशा'}):</span> किसी की बदनामी, झूठे आरोप या पुलिस-कोर्ट के झमेले से दूर रहें। ` : ''}${moonRahuAddict ? `<span class="text-amber-900 font-semibold">नशा व गलत आदत बचाव:</span> किसी भी प्रकार के नशे या व्यसन से पूरी तरह दूर रहना अत्यंत आवश्यक है।` : ''}</p>
+                        ${moonVim ? `<p><strong>स्वास्थ्य चरण (${fmtDMY(moonVim.startMs)}–${fmtDMY(moonVim.endMs)}):</strong> चंद्र महादशा में माता, पत्नी या स्वयं के स्वास्थ्य पर विशेष ध्यान देना उपयोगी होगा।</p>` : ''}
+                        ${goldenVim ? `<p><strong>स्वर्णिम भाग्योदय:</strong> <strong>${fmtDMY(goldenVim.startMs)}</strong> से शुरू होने वाली <strong>${pn(goldenVim.id)} महादशा (${goldenVim.years} वर्ष)</strong> करियर, व्यवसाय/नौकरी, धन और सम्मान के लिए जीवन का सबसे उत्तम मोड़ सिद्ध हो सकती है। ${lateVim ? `उम्र के उत्तरार्ध में (${fmtDMY(lateVim.startMs)} के बाद व तीसरी साढ़ेसाती में) आध्यात्मिक शांति और पूर्व-निर्धारित ग्रह शांति अनुष्ठान करने से सभी अवरोध हल्के हो सकते हैं।` : ''}</p>` : ''}
                     </div>
                 </div>
             ` : `
                 <div class="space-y-3 text-xs sm:text-sm text-slate-800 leading-relaxed">
                     <div class="p-4 rounded-xl bg-indigo-50 border border-indigo-200 space-y-1.5">
-                        <div class="font-bold text-indigo-950">Complete Lifestyle & Relation Report (Vimshottari + Yogini + Chara)</div>
+                        <div class="font-bold text-indigo-950">Complete Lifestyle & Tri-Dasha Report (Vimshottari + Yogini + Chara)</div>
                         <p>Born in <strong>${rn(lagnaR)} Lagna</strong> and <strong>${rn(moonRashi)} Moon</strong> (${moonNak.name} Nakshatra, Pada ${moonNak.pada}; Mulank <strong>${mulank}</strong>, Bhagyank <strong>${bhagyank}</strong>). Birth Vimshottari <strong>${pn(birthVim.id)}</strong> ended <strong>${fmtDMY(birthVim.endMs)}</strong>, Yogini <strong>${birthYog.nameEn}</strong> ended <strong>${fmtDMY(birthYog.endMs)}</strong>, and Chara Dasha ended <strong>${fmtDMY(charaEndMs)}</strong>.</p>
                     </div>
                     <div class="p-4 rounded-xl bg-white border border-slate-200 space-y-2">
-                        ${trapYog ? `<p><strong>Caution Window:</strong> Between <strong>${fmtDMY(trapYog.startMs)}</strong> and <strong>${fmtDMY(trapYog.endMs)}</strong>, stay alert against emotional traps or distractions.</p>` : ''}
-                        ${partnerYog ? `<p><strong>Marriage & Partner:</strong> Strong partner meeting/marriage window around <strong>${fmtDMY(partnerYog.startMs)}–${fmtDMY(partnerYog.endMs)}</strong> in <strong>${marriageDir}</strong> direction${nameLetters.length ? ` (probable initials: <strong>${nameLetters.join(', ')}</strong>)` : ''}.</p>` : ''}
-                        <p><strong>Mulank Caution:</strong> Exercise caution with Mulank <strong>${badMulanks.length ? badMulanks.join(', ') : '4, 6, 8'}</strong>. ${hasVehicleRisk ? 'Drive carefully and manage anger.' : ''}</p>
+                        ${teenLoveYog ? `<p><strong>Youth & Attraction (${fmtDMY(teenLoveYog.startMs)}–${fmtDMY(teenLoveYog.endMs)}):</strong> Possible attraction in friend circle${nameLetters.length ? ` (initials: <strong>${nameLetters.join(', ')}</strong>)` : ''}.</p>` : ''}
+                        ${trapYog ? `<p><strong>Caution Window (${fmtDMY(trapYog.startMs)}–${fmtDMY(trapYog.endMs)}):</strong> Stay alert against distractions, emotional traps, or disputes.</p>` : ''}
+                        ${partnerYog ? `<p><strong>Marriage & Partner (${fmtDMY(partnerYog.startMs)}–${fmtDMY(partnerYog.endMs)}):</strong> Marriage likely in <strong>${marriageDir}</strong> direction${nameLetters.length ? ` (initials: <strong>${nameLetters.join(' / ')}</strong>)` : ''}.</p>` : ''}
+                        <p><strong>Mulank Caution:</strong> Exercise caution with Mulank <strong>${badMulanks.length ? badMulanks.join(', ') : '4, 6, 8'}</strong>. ${hasVehicleRisk ? 'Drive carefully.' : ''} ${hasLegalRisk ? 'Avoid disputes & legal traps.' : ''}</p>
                     </div>
                 </div>
             `;
