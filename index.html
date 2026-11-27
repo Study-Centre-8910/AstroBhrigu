@@ -1131,6 +1131,34 @@
         </div>
     </div>
 
+    <!-- ==================== मॉडल: एस्ट्रोलॉजर मोड से बाहर निकलें ==================== -->
+    <div id="modal-astrologer-quit" class="fixed inset-0 z-50 hidden bg-slate-900/50 backdrop-blur-sm items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl border border-slate-200 max-w-sm w-full p-5">
+            <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center border border-amber-200">
+                        <svg class="w-6 h-6" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M32 2L27 15L30 17V58H34V17L37 15L32 2Z" fill="currentColor" />
+                            <path d="M30 30C18 30 12 22 13 10L9 12L12 5L17 12L14 10.5C14 19 18 25 30 25V30Z" fill="currentColor" />
+                            <path d="M34 30C46 30 52 22 51 10L55 12L52 5L47 12L50 10.5C50 19 46 25 34 25V30Z" fill="currentColor" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-bold text-slate-900" data-lang-en="Astrologer Mode Active" data-lang-hi="एस्ट्रोलॉजर मोड सक्रिय है">एस्ट्रोलॉजर मोड सक्रिय है</h3>
+                        <p class="text-[11px] text-slate-500" data-lang-en="Do you want to quit Astrologer Mode?" data-lang-hi="क्या आप एस्ट्रोलॉजर मोड से बाहर निकलना चाहते हैं?">क्या आप एस्ट्रोलॉजर मोड से बाहर निकलना चाहते हैं?</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeModals()" class="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div class="flex items-center justify-end gap-2 pt-3 mt-3 border-t border-slate-100">
+                <button type="button" onclick="closeModals()" class="px-4 py-2 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-100" data-lang-en="Cancel" data-lang-hi="रद्द करें">रद्द करें</button>
+                <button type="button" onclick="logoutAstrologerMode(); closeModals();" class="px-4 py-2 rounded-xl text-sm font-bold bg-rose-600 hover:bg-rose-700 text-white shadow-sm" data-lang-en="Quit Astrologer Mode" data-lang-hi="क्विट एस्ट्रोलॉजर मोड">क्विट एस्ट्रोलॉजर मोड</button>
+            </div>
+        </div>
+    </div>
+
     <!-- ==================== मॉडल: पुष्टि संवाद ==================== -->
     <div id="modal-confirm" class="fixed inset-0 z-50 hidden bg-slate-900/50 backdrop-blur-sm items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-xl border border-slate-200 max-w-sm w-full p-5">
@@ -1317,7 +1345,7 @@
                 if (trishulClickCount >= 3) {
                     trishulClickCount = 0;
                     if (isAstrologerUnlocked) {
-                        showToast(currentLang === 'hi' ? 'एस्ट्रोलॉजर मोड पहले से सक्रिय है!' : 'Astrologer mode already active!');
+                        openModal('modal-astrologer-quit');
                     } else {
                         document.getElementById('input-astrologer-uid').value = '';
                         openModal('modal-astrologer-uid');
@@ -1385,6 +1413,8 @@
                 if (lockBtn) lockBtn.classList.add('hidden');
             }
             renderFullChart();
+            if (typeof renderMainFaladeshPanel === 'function') { try { renderMainFaladeshPanel(); } catch(e){} }
+            if (typeof refreshMilanIfVisible === 'function') { try { refreshMilanIfVisible(); } catch(e){} }
         }
 
         window.addEventListener('DOMContentLoaded', () => {
@@ -6015,7 +6045,8 @@
                 yoni: NAK_YONI[nakIdx][1],
                 lord: RASHIS.find(x => x.num === moonRashi).lord,
                 gana: NAK_GANA_EN[NAK_GANA[nakIdx]],
-                nadi: NAK_NADI_EN[NAK_NADI[nakIdx]]
+                nadi: NAK_NADI_EN[NAK_NADI[nakIdx]],
+                res, dob
             };
         }
 
@@ -6080,6 +6111,8 @@
                 ['नाड़ी (Nadi)', nadiScore, 8]
             ];
 
+            lastMilanTriggerAvailable = true;
+            const milanLoyaltyHTML = (typeof isAstrologerUnlocked !== 'undefined' && isAstrologerUnlocked) ? renderMilanLoyaltyGraphHTML(n1, n2, computeMilanLoyaltyCompatibility(a, b, { total })) : '';
             const box = document.getElementById('milan-result-box');
             box.classList.remove('hidden');
             box.innerHTML = `
@@ -6105,6 +6138,7 @@
                     <span><strong>${n1}:</strong> ${a.isManglik ? (currentLang === 'hi' ? 'मांगलिक (भाव ' + a.marsHouse + ')' : 'Manglik (H' + a.marsHouse + ')') : (currentLang === 'hi' ? 'मांगलिक नहीं' : 'Non-Manglik')}</span>
                     <span><strong>${n2}:</strong> ${b.isManglik ? (currentLang === 'hi' ? 'मांगलिक (भाव ' + b.marsHouse + ')' : 'Manglik (H' + b.marsHouse + ')') : (currentLang === 'hi' ? 'मांगलिक नहीं' : 'Non-Manglik')}</span>
                 </div>
+                ${milanLoyaltyHTML}
             `;
         }
 
@@ -8614,6 +8648,302 @@
         }
 
         // ==================== MAIN UPGRADE: FALADESH (BILINGUAL, SADE SATI + GEMSTONES & REMEDIES) ====================
+        
+        // ==================== ASTROLOGER MODE: LOYALTY ENGINE (D1, Chalit, D9, Nakshatra, Rashi, Mulank) ====================
+        function getD9SignFromLon(lon) {
+            const norm = ((lon % 360) + 360) % 360;
+            const rashi0 = Math.floor(norm / 30);
+            const degInSign = norm % 30;
+            const part = Math.min(8, Math.floor(degInSign / (30 / 9)));
+            const startMap = [0, 9, 6, 3, 0, 9, 6, 3, 0, 9, 6, 3];
+            return ((startMap[rashi0] + part) % 12) + 1;
+        }
+
+        function reduceDigit1to9(num) {
+            let n = Math.abs(Math.floor(num));
+            while (n > 9) {
+                n = String(n).split('').reduce((a, b) => a + Number(b), 0);
+            }
+            return n || 9;
+        }
+
+        function computeLoyaltyProfile(lons, ascDeg, dobStr, pHouseOverride, cMapOverride) {
+            const hi = currentLang === 'hi';
+            const rLords = { 1:'Mars',2:'Venus',3:'Mercury',4:'Moon',5:'Sun',6:'Mercury',7:'Venus',8:'Mars',9:'Jupiter',10:'Saturn',11:'Saturn',12:'Jupiter' };
+            const asc = typeof ascDeg === 'number' ? ascDeg : (lons.Asc || 0);
+            const lagnaR = Math.floor((((asc % 360) + 360) % 360) / 30) + 1;
+
+            const pRashi = {};
+            const pHouse = {};
+            PLANETS.forEach(p => {
+                const lon = lons[p.id] || 0;
+                pRashi[p.id] = Math.floor((((lon % 360) + 360) % 360) / 30) + 1;
+                pHouse[p.id] = (pHouseOverride && pHouseOverride[p.id]) ? pHouseOverride[p.id] : (((pRashi[p.id] - lagnaR + 12) % 12) + 1);
+            });
+
+            const chalitHouse = {};
+            PLANETS.forEach(p => {
+                const lon = lons[p.id] || 0;
+                const diff = ((lon - asc + 360) % 360);
+                chalitHouse[p.id] = (Math.floor(((diff + 15) % 360) / 30)) + 1;
+            });
+
+            const hLords = {};
+            for (let h = 1; h <= 12; h++) hLords[h] = rLords[((lagnaR - 1 + (h - 1)) % 12) + 1];
+            const l7 = hLords[7];
+
+            const positives = [];
+            const cautions = [];
+
+            // --- Pillar 1: D1 & Chalit Houses (max 25) ---
+            let sD1Chalit = 16;
+            const h7Planets = PLANETS.filter(p => pHouse[p.id] === 7).map(p => p.id);
+            const h4Planets = PLANETS.filter(p => pHouse[p.id] === 4).map(p => p.id);
+            const h12Planets = PLANETS.filter(p => pHouse[p.id] === 12).map(p => p.id);
+
+            if ([1, 2, 4, 5, 7, 9, 10, 11].includes(pHouse[l7])) { sD1Chalit += 4; positives.push(hi ? 'D1 सप्तमेश केंद्र/त्रिकोण या शुभ भाव में होने से रिश्ते में स्थिरता।' : '7th lord in supportive D1 house strengthens commitment.'); }
+            if ([6, 8, 12].includes(pHouse[l7])) { sD1Chalit -= 4; cautions.push(hi ? 'D1 सप्तमेश 6/8/12 भाव में होने से भावनात्मक उतार-चढ़ाव संभव।' : '7th lord in 6/8/12 can create emotional fluctuations.'); }
+            if (chalitHouse[l7] !== pHouse[l7]) {
+                if ([6, 8, 12].includes(chalitHouse[l7]) && ![6, 8, 12].includes(pHouse[l7])) {
+                    sD1Chalit -= 3;
+                    cautions.push(hi ? 'चलित कुंडली में सप्तमेश 6/8/12 भाव में सरकने से गुप्त द्वंद्व संभव।' : '7th lord shifts to 6/8/12 in Chalit, adding hidden restlessness.');
+                } else if (![6, 8, 12].includes(chalitHouse[l7]) && [6, 8, 12].includes(pHouse[l7])) {
+                    sD1Chalit += 3;
+                    positives.push(hi ? 'चलित कुंडली में सप्तमेश शुभ भाव में आने से निष्ठा को संबल।' : 'Chalit shift rescues 7th lord into a supportive house.');
+                }
+            }
+            if (chalitHouse.Venus === 12 || pHouse.Venus === 12) { sD1Chalit -= 2; cautions.push(hi ? '12वें भाव में शुक्र गोपनीय आकर्षण बढ़ा सकता है।' : 'Venus in 12th can increase private temptations.'); }
+            if (h7Planets.includes('Jupiter') || h4Planets.includes('Jupiter')) { sD1Chalit += 3; positives.push(hi ? 'गुरु की 4थे/7वें भाव में उपस्थिति नैतिक निष्ठा को मजबूत करती है।' : 'Jupiter in 4th/7th reinforces ethical loyalty.'); }
+            if (h7Planets.includes('Rahu') || h12Planets.includes('Rahu')) { sD1Chalit -= 3; cautions.push(hi ? 'राहु का 7वें/12वें भाव से संबंध भ्रम या अस्थिरता दे सकता है।' : 'Rahu in 7th/12th can cause illusions or restless desires.'); }
+            sD1Chalit = Math.max(4, Math.min(25, Math.round(sD1Chalit)));
+
+            // --- Pillar 2: D9 Navamsa (max 20) ---
+            let sD9 = 13;
+            const d9Lagna = getD9SignFromLon(asc);
+            const d9R = {};
+            PLANETS.forEach(p => { d9R[p.id] = getD9SignFromLon(lons[p.id] || 0); });
+            const d9H = {};
+            PLANETS.forEach(p => { d9H[p.id] = ((d9R[p.id] - d9Lagna + 12) % 12) + 1; });
+            const d9L7 = rLords[((d9Lagna - 1 + 6) % 12) + 1];
+
+            if (d9R.Moon === pRashi.Moon || d9R.Venus === pRashi.Venus || d9Lagna === lagnaR) {
+                sD9 += 3;
+                positives.push(hi ? 'नवांश (D9) में वर्गोत्तम स्थिति गहरी आत्मिक निष्ठा दर्शाती है।' : 'Vargottama placement in D9 shows deep-rooted faithfulness.');
+            }
+            if ([1, 4, 5, 7, 9, 10, 11].includes(d9H[d9L7])) sD9 += 2;
+            else sD9 -= 3;
+            if ([1, 4, 5, 7, 9].includes(d9H.Jupiter)) sD9 += 2;
+            if (d9H.Rahu === 7 || d9H.Ketu === 7 || d9H.Venus === 8 || d9H.Venus === 12) {
+                sD9 -= 3;
+                cautions.push(hi ? 'D9 नवांश के 7वें/8वें/12वें भाव में पाप प्रभाव से सावधानी आवश्यक।' : 'D9 7th/8th/12th affliction calls for conscious boundaries.');
+            }
+            sD9 = Math.max(3, Math.min(20, Math.round(sD9)));
+
+            // --- Pillar 3: Planet Placements, Conjunctions & Aspects (max 25) ---
+            let sPlanets = 16;
+            const aspDist = (fromH, toH) => ((toH - fromH + 12) % 12) + 1;
+            const jupAspects7 = [1, 5, 7, 9].includes(aspDist(pHouse.Jupiter, 7)) || pHouse.Jupiter === pHouse.Venus || pHouse.Jupiter === pHouse.Moon;
+            if (jupAspects7) { sPlanets += 4; positives.push(hi ? 'गुरु की शुभ दृष्टि सप्तम/शुक्र/चंद्र पर होने से चरित्र व वफादारी की रक्षा होती है।' : 'Jupiter aspecting 7th/Venus/Moon protects faithfulness.'); }
+            if (pHouse.Saturn === 7 || [3, 7, 10].includes(aspDist(pHouse.Saturn, 7))) {
+                sPlanets += 2;
+            }
+            if (pHouse.Venus === pHouse.Rahu || pHouse.Moon === pHouse.Rahu) {
+                sPlanets -= 4;
+                cautions.push(hi ? 'शुक्र/चंद्र के साथ राहु की युति मन में भटकाव या तीव्र आकर्षण दे सकती है।' : 'Rahu conjunct Venus/Moon can trigger restlessness or infatuation.');
+            }
+            if (pHouse.Venus === pHouse.Mars) {
+                sPlanets -= 2;
+                cautions.push(hi ? 'शुक्र-मंगल युति तीव्र भावनात्मक आवेग बढ़ा सकती है।' : 'Venus-Mars conjunction heightens passion and impulsiveness.');
+            }
+            if (cMapOverride) {
+                const vCol = cMapOverride.Venus, mCol = cMapOverride.Moon, jCol = cMapOverride.Jupiter, l7Col = cMapOverride[l7];
+                if (jCol === 'golden' || jCol === 'green') sPlanets += 2;
+                if (vCol === 'golden' || vCol === 'green') sPlanets += 1;
+                if (l7Col === 'red' || l7Col === 'orange') sPlanets -= 2;
+                if (mCol === 'red' || mCol === 'orange') sPlanets -= 2;
+            }
+            sPlanets = Math.max(4, Math.min(25, Math.round(sPlanets)));
+
+            // --- Pillar 4: Nakshatra & Rashi (max 15) ---
+            let sNakRashi = 9;
+            const fixedSigns = [2, 5, 8, 11];
+            const dualSigns = [3, 6, 9, 12];
+            if (fixedSigns.includes(lagnaR)) { sNakRashi += 2; positives.push(hi ? 'स्थिर लग्न राशि वचन और रिश्ते निभाने की प्रवृत्ति देती है।' : 'Fixed Lagna sign supports steady long-term devotion.'); }
+            if (fixedSigns.includes(pRashi.Moon)) { sNakRashi += 2; }
+            else if (dualSigns.includes(pRashi.Moon)) { sNakRashi -= 2; cautions.push(hi ? 'द्विस्वभाव चंद्र राशि में विचारों का दोहराव संभव।' : 'Dual Moon sign can create indecisiveness.'); }
+
+            const moonNak = Math.floor(((((lons.Moon || 0) % 360) + 360) % 360) / (360 / 27)) % 27;
+            const dhruvaMriduNaks = [3, 4, 11, 13, 16, 20, 25, 26];
+            const volatileNaks = [1, 5, 8, 10, 14, 17, 18, 19, 23];
+            if (dhruvaMriduNaks.includes(moonNak)) { sNakRashi += 2; positives.push(hi ? 'चंद्र नक्षत्र स्वभाव से विश्वसनीय व समर्पित प्रवृत्ति देता है।' : 'Moon Nakshatra naturally favors sincerity and devotion.'); }
+            else if (volatileNaks.includes(moonNak)) { sNakRashi -= 2; }
+            sNakRashi = Math.max(3, Math.min(15, Math.round(sNakRashi)));
+
+            // --- Pillar 5: Numerology Mulank & Bhagyank (max 15) ---
+            let sNum = 10;
+            let mulank = 9, bhagyank = 9;
+            if (dobStr && dobStr.includes('-')) {
+                const parts = dobStr.split('-').map(Number);
+                if (parts.length === 3 && parts[2]) {
+                    mulank = reduceDigit1to9(parts[2]);
+                    bhagyank = reduceDigit1to9(String(parts[0] + '' + parts[1] + '' + parts[2]).split('').reduce((a, b) => a + Number(b), 0));
+                }
+            }
+            if ([2, 4, 6, 8, 9].includes(mulank)) sNum += 3;
+            else if ([1, 3].includes(mulank)) sNum += 1;
+            else sNum -= 2;
+            if ([2, 4, 6, 8, 9].includes(bhagyank)) sNum += 2;
+            else if ([5, 7].includes(bhagyank)) sNum -= 1;
+            sNum = Math.max(3, Math.min(15, Math.round(sNum)));
+
+            const total = Math.max(15, Math.min(99, sD1Chalit + sD9 + sPlanets + sNakRashi + sNum));
+            const labelHi = total >= 80 ? 'अत्यंत विश्वसनीय व निष्ठावान (High Loyalty)' : (total >= 65 ? 'संतुलित व वफादार (Stable Loyalty)' : (total >= 50 ? 'मध्यम — परिस्थितिजन्य (Moderate)' : 'संवेदनशील — सजगता आवश्यक (Caution Needed)'));
+            const labelEn = total >= 80 ? 'Highly Loyal & Committed' : (total >= 65 ? 'Stable & Dependable Loyalty' : (total >= 50 ? 'Moderate / Situational' : 'Sensitive — Needs Clear Boundaries'));
+
+            return {
+                score: total,
+                labelHi, labelEn,
+                mulank, bhagyank,
+                moonNakName: hi ? NAKSHATRAS_HI[moonNak] : NAKSHATRAS_EN[moonNak],
+                breakdown: [
+                    { nameHi: 'D1 व चलित भाव', nameEn: 'D1 & Chalit', val: sD1Chalit, max: 25, color: '#4f46e5' },
+                    { nameHi: 'D9 नवांश कुंडली', nameEn: 'D9 Navamsa', val: sD9, max: 20, color: '#0284c7' },
+                    { nameHi: 'ग्रह स्थिति व दृष्टि', nameEn: 'Planets & Aspects', val: sPlanets, max: 25, color: '#059669' },
+                    { nameHi: 'नक्षत्र व राशि', nameEn: 'Nakshatra & Rashi', val: sNakRashi, max: 15, color: '#d97706' },
+                    { nameHi: 'मूलांक व भाग्यांक', nameEn: 'Numerology', val: sNum, max: 15, color: '#e11d48' }
+                ],
+                positives: positives.slice(0, 3),
+                cautions: cautions.slice(0, 3)
+            };
+        }
+
+        function renderLoyaltyGraphCardHTML(lp) {
+            const hi = currentLang === 'hi';
+            const strokeColor = lp.score >= 80 ? '#059669' : (lp.score >= 65 ? '#2563eb' : (lp.score >= 50 ? '#d97706' : '#e11d48'));
+            const r = 46, circ = Math.PI * r;
+            const dash = (lp.score / 100) * circ;
+            const barsHTML = lp.breakdown.map(b => {
+                const pct = Math.round((b.val / b.max) * 100);
+                return `
+                    <div class="space-y-1">
+                        <div class="flex justify-between text-[11px] font-semibold text-slate-700">
+                            <span>${hi ? b.nameHi : b.nameEn}</span>
+                            <span class="font-bold" style="color:${b.color}">${b.val}/${b.max} (${pct}%)</span>
+                        </div>
+                        <div class="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
+                            <div class="h-full rounded-full transition-all" style="width:${pct}%; background:${b.color}"></div>
+                        </div>
+                    </div>`;
+            }).join('');
+
+            return `
+                <div class="md:col-span-2 p-4 rounded-2xl bg-gradient-to-br from-amber-50/90 via-white to-emerald-50/70 border-2 border-amber-300 shadow-sm space-y-4">
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <div>
+                            <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-900 text-amber-50 text-[10px] font-bold mb-1">🔐 ${hi ? 'एस्ट्रोलॉजर मोड विशेष' : 'Astrologer Mode Exclusive'}</div>
+                            <h4 class="text-sm font-extrabold text-slate-900">${hi ? 'लॉयल्टी ग्राफ व निष्ठा विश्लेषण (0–100%)' : 'Loyalty Graph & Faithfulness Index (0–100%)'}</h4>
+                            <p class="text-[11px] text-slate-600">${hi ? `D1, चलित, D9 नवांश, ग्रह स्थिति, नक्षत्र (${lp.moonNakName}), राशि व मूलांक (${lp.mulank}) पर आधारित` : `Based on D1, Chalit, D9 Navamsa, Planets, Nakshatra (${lp.moonNakName}), Sign & Mulank (${lp.mulank})`}</p>
+                        </div>
+                        <span class="px-3 py-1 rounded-full text-xs font-extrabold text-white shadow-sm" style="background:${strokeColor}">${lp.score}% ${hi ? 'लॉयल' : 'Loyal'}</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+                        <div class="flex flex-col items-center justify-center p-3 rounded-xl bg-white border border-slate-200">
+                            <svg viewBox="0 0 120 72" class="w-40 h-24">
+                                <path d="M 14 62 A 46 46 0 0 1 106 62" fill="none" stroke="#e2e8f0" stroke-width="11" stroke-linecap="round" />
+                                <path d="M 14 62 A 46 46 0 0 1 106 62" fill="none" stroke="${strokeColor}" stroke-width="11" stroke-linecap="round" stroke-dasharray="${dash.toFixed(1)} ${circ.toFixed(1)}" />
+                                <text x="60" y="52" text-anchor="middle" font-size="20" font-weight="800" fill="#0f172a">${lp.score}%</text>
+                                <text x="60" y="66" text-anchor="middle" font-size="8.5" font-weight="700" fill="#475569">${hi ? 'कुल लॉयल्टी स्कोर' : 'Overall Loyalty'}</text>
+                            </svg>
+                            <div class="text-xs font-bold text-center mt-1" style="color:${strokeColor}">${hi ? lp.labelHi : lp.labelEn}</div>
+                        </div>
+                        <div class="md:col-span-2 space-y-2.5 bg-white p-3.5 rounded-xl border border-slate-200">
+                            ${barsHTML}
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-[11px]">
+                        <div class="p-3 rounded-xl bg-emerald-50/70 border border-emerald-200 space-y-1">
+                            <div class="font-bold text-emerald-900">${hi ? 'सकारात्मक आधार' : 'Positive Indicators'}</div>
+                            ${(lp.positives.length ? lp.positives : [hi ? 'सामान्य शुभ ग्रह संतुलन रिश्तों में स्थिरता देता है।' : 'Balanced planetary dignity supports steadiness.']).map(x => `<div>• ${x}</div>`).join('')}
+                        </div>
+                        <div class="p-3 rounded-xl bg-rose-50/70 border border-rose-200 space-y-1">
+                            <div class="font-bold text-rose-900">${hi ? 'संवेदनशील बिंदु' : 'Sensitivity Notes'}</div>
+                            ${(lp.cautions.length ? lp.cautions : [hi ? 'कोई बड़ा निष्ठा-विरोधी दोष प्रमुख रूप से सक्रिय नहीं दिखता।' : 'No major anti-loyalty affliction prominently active.']).map(x => `<div>• ${x}</div>`).join('')}
+                        </div>
+                    </div>
+                </div>`;
+        }
+
+        function computeMilanLoyaltyCompatibility(a, b, milanMeta) {
+            const lBoy = computeLoyaltyProfile(a.res.pLons, a.res.asc, a.dob);
+            const lGirl = computeLoyaltyProfile(b.res.pLons, b.res.asc, b.dob);
+
+            const synastryBoost = Math.round(((milanMeta.total / 36) - 0.5) * 16);
+            const moonDiff = ((b.moonRashi - a.moonRashi + 12) % 12) + 1;
+            const moonHarmony = [1, 3, 4, 5, 7, 9, 10, 11].includes(moonDiff) ? 5 : -4;
+            const rashiOf = lon => Math.floor((((lon % 360) + 360) % 360) / 30) + 1;
+            const venusMarsCross = (rashiOf(a.res.pLons.Venus) === rashiOf(b.res.pLons.Mars) || rashiOf(b.res.pLons.Venus) === rashiOf(a.res.pLons.Mars)) ? 4 : 0;
+            const jupCross = (rashiOf(a.res.pLons.Jupiter) === b.moonRashi || rashiOf(b.res.pLons.Jupiter) === a.moonRashi) ? 4 : 0;
+
+            const boyToGirl = Math.max(20, Math.min(99, Math.round(lBoy.score * 0.72 + (lGirl.score * 0.18) + synastryBoost + moonHarmony + venusMarsCross + jupCross + 6)));
+            const girlToBoy = Math.max(20, Math.min(99, Math.round(lGirl.score * 0.72 + (lBoy.score * 0.18) + synastryBoost + moonHarmony + venusMarsCross + jupCross + 6)));
+            const overall = Math.round((boyToGirl + girlToBoy) / 2);
+
+            return { boyToGirl, girlToBoy, overall, lBoy, lGirl, moonHarmony, venusMarsCross, jupCross };
+        }
+
+        function renderMilanLoyaltyGraphHTML(n1, n2, comp) {
+            const hi = currentLang === 'hi';
+            const label1 = n1 || (hi ? 'लड़का / वर' : 'Boy');
+            const label2 = n2 || (hi ? 'लड़की / वधू' : 'Girl');
+            const colOf = v => v >= 80 ? '#059669' : (v >= 65 ? '#2563eb' : (v >= 50 ? '#d97706' : '#e11d48'));
+            const rows = [
+                { title: hi ? `${label1} की ${label2} के प्रति लॉयल्टी` : `${label1}'s Loyalty to ${label2}`, val: comp.boyToGirl },
+                { title: hi ? `${label2} की ${label1} के प्रति लॉयल्टी` : `${label2}'s Loyalty to ${label1}`, val: comp.girlToBoy },
+                { title: hi ? 'ओवरऑल दोनों की एक-दूसरे के प्रति लॉयल्टी' : 'Overall Mutual Loyalty', val: comp.overall }
+            ];
+            return `
+                <div class="mt-5 p-4 rounded-2xl bg-gradient-to-br from-amber-50 via-white to-rose-50/60 border-2 border-amber-300 shadow-sm space-y-3 text-left">
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <div>
+                            <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-900 text-amber-50 text-[10px] font-bold mb-1">🔐 ${hi ? 'एस्ट्रोलॉजर मोड विशेष' : 'Astrologer Mode Exclusive'}</div>
+                            <h4 class="text-sm font-extrabold text-slate-900">${hi ? 'कुंडली मिलान — आपसी लॉयल्टी ग्राफ' : 'Kundli Milan — Mutual Loyalty Graph'}</h4>
+                        </div>
+                        <span class="px-3 py-1 rounded-full text-xs font-extrabold text-white" style="background:${colOf(comp.overall)}">${comp.overall}% ${hi ? 'ओवरऑल लॉयल्टी' : 'Overall Loyalty'}</span>
+                    </div>
+                    <div class="space-y-3 bg-white p-3.5 rounded-xl border border-slate-200">
+                        ${rows.map(r => `
+                            <div class="space-y-1">
+                                <div class="flex justify-between text-xs font-bold text-slate-800">
+                                    <span>${r.title}</span>
+                                    <span style="color:${colOf(r.val)}">${r.val}%</span>
+                                </div>
+                                <div class="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
+                                    <div class="h-full rounded-full transition-all" style="width:${r.val}%; background:${colOf(r.val)}"></div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-[11px] text-slate-700">
+                        <div class="p-2.5 rounded-xl bg-indigo-50/70 border border-indigo-200">
+                            <strong>${label1}:</strong> ${hi ? 'व्यक्तिगत लॉयल्टी' : 'Individual Loyalty'} ${comp.lBoy.score}% • ${hi ? 'नक्षत्र' : 'Nakshatra'}: ${comp.lBoy.moonNakName} • ${hi ? 'मूलांक' : 'Mulank'}: ${comp.lBoy.mulank}
+                        </div>
+                        <div class="p-2.5 rounded-xl bg-rose-50/70 border border-rose-200">
+                            <strong>${label2}:</strong> ${hi ? 'व्यक्तिगत लॉयल्टी' : 'Individual Loyalty'} ${comp.lGirl.score}% • ${hi ? 'नक्षत्र' : 'Nakshatra'}: ${comp.lGirl.moonNakName} • ${hi ? 'मूलांक' : 'Mulank'}: ${comp.lGirl.mulank}
+                        </div>
+                    </div>
+                </div>`;
+        }
+
+        let lastMilanTriggerAvailable = false;
+        function refreshMilanIfVisible() {
+            const box = document.getElementById('milan-result-box');
+            if (box && !box.classList.contains('hidden') && lastMilanTriggerAvailable) {
+                try { calculateKundliMilan({ preventDefault(){} }); } catch(e){}
+            }
+        }
+
         function renderMainFaladeshPanel() {
             const box = document.getElementById('main-faladesh-content');
             if (!box) return;
@@ -8727,6 +9057,12 @@
                             </div>
                         `;
                     })()}
+                    ${(typeof isAstrologerUnlocked !== 'undefined' && isAstrologerUnlocked) ? (() => {
+                        const dobStr = document.getElementById('inDate')?.value || '';
+                        const { pHouse, cMap } = evaluateD1YogasAndDoshas();
+                        const lp = computeLoyaltyProfile(lons, lons.Asc || 0, dobStr, pHouse, cMap);
+                        return renderLoyaltyGraphCardHTML(lp);
+                    })() : ''}
                 </div>
             `;
         }
